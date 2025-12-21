@@ -18,6 +18,23 @@
         .active\:scale-98:active {
             transform: scale(0.98);
         }
+        /* Mobile menu animations */
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        .mobile-menu-enter {
+            animation: slideDown 0.2s ease-out;
+        }
+        #mobile-menu.show {
+            display: block;
+        }
     </style>
     {% block styles %}{% endblock %}
 </head>
@@ -29,10 +46,13 @@
                 <h1 class="text-base md:text-xl lg:text-2xl font-semibold truncate">
                     {% block header_title %}Church Overlay{% endblock %}
                 </h1>
-                <div class="flex items-center gap-1.5 md:gap-2 flex-shrink-0">
+
+                <!-- Desktop Navigation -->
+                <div class="hidden md:flex items-center gap-1.5 md:gap-2 flex-shrink-0">
                     {% if current_user.is_authenticated %}
-                        <span class="text-xs hidden lg:inline truncate max-w-[120px]">{{ current_user.name or current_user.email }}</span>
+                        <span class="text-xs lg:inline truncate max-w-[120px]">{{ current_user.name or current_user.email }}</span>
                         {% if current_user.is_admin %}
+                            <a href="{{ url_for('user_panel') }}" class="px-2 py-1.5 md:px-3 md:py-2 bg-white/10 hover:bg-white/20 rounded text-xs md:text-sm font-medium transition whitespace-nowrap">User View</a>
                             <a href="{{ url_for('admin') }}" class="px-2 py-1.5 md:px-3 md:py-2 bg-white/10 hover:bg-white/20 rounded text-xs md:text-sm font-medium transition whitespace-nowrap">Admin</a>
                         {% endif %}
                         <a href="{{ url_for('logout') }}" class="px-2 py-1.5 md:px-3 md:py-2 bg-red-500/90 hover:bg-red-600 rounded text-xs md:text-sm font-medium transition whitespace-nowrap">Logout</a>
@@ -40,6 +60,42 @@
                         <a href="{{ url_for('login') }}" class="px-2 py-1.5 md:px-3 md:py-2 bg-white/10 hover:bg-white/20 rounded text-xs md:text-sm font-medium transition whitespace-nowrap">Login</a>
                     {% endif %}
                     {% block header_actions %}{% endblock %}
+                </div>
+
+                <!-- Mobile Hamburger Button -->
+                <button id="mobile-menu-btn" class="md:hidden p-2 hover:bg-white/10 rounded transition" aria-label="Menu">
+                    <svg id="hamburger-icon" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+                    </svg>
+                    <svg id="close-icon" class="w-5 h-5 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                </button>
+            </div>
+
+            <!-- Mobile Navigation Menu -->
+            <div id="mobile-menu" class="hidden md:hidden mt-3 pt-3 border-t border-white/20 mobile-menu-enter">
+                <div class="flex flex-col gap-2">
+                    {% if current_user.is_authenticated %}
+                        <div class="px-3 py-2 text-xs text-white/80 truncate">
+                            {{ current_user.name or current_user.email }}
+                        </div>
+                        {% if current_user.is_admin %}
+                            <a href="{{ url_for('user_panel') }}" class="px-3 py-2 bg-white/10 hover:bg-white/20 rounded text-sm font-medium transition">
+                                User View
+                            </a>
+                            <a href="{{ url_for('admin') }}" class="px-3 py-2 bg-white/10 hover:bg-white/20 rounded text-sm font-medium transition">
+                                Admin Panel
+                            </a>
+                        {% endif %}
+                        <a href="{{ url_for('logout') }}" class="px-3 py-2 bg-red-500/90 hover:bg-red-600 rounded text-sm font-medium transition">
+                            Logout
+                        </a>
+                    {% else %}
+                        <a href="{{ url_for('login') }}" class="px-3 py-2 bg-white/10 hover:bg-white/20 rounded text-sm font-medium transition">
+                            Login
+                        </a>
+                    {% endif %}
                 </div>
             </div>
         </div>
@@ -49,6 +105,46 @@
             {% block body %}{% endblock %}
         </div>
     </div>
+
+    <!-- Mobile Menu Toggle Script -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+            const mobileMenu = document.getElementById('mobile-menu');
+            const hamburgerIcon = document.getElementById('hamburger-icon');
+            const closeIcon = document.getElementById('close-icon');
+
+            if (mobileMenuBtn && mobileMenu) {
+                mobileMenuBtn.addEventListener('click', function() {
+                    const isHidden = mobileMenu.classList.contains('hidden');
+
+                    if (isHidden) {
+                        mobileMenu.classList.remove('hidden');
+                        mobileMenu.classList.add('show');
+                        hamburgerIcon.classList.add('hidden');
+                        closeIcon.classList.remove('hidden');
+                    } else {
+                        mobileMenu.classList.add('hidden');
+                        mobileMenu.classList.remove('show');
+                        hamburgerIcon.classList.remove('hidden');
+                        closeIcon.classList.add('hidden');
+                    }
+                });
+
+                // Close menu when clicking outside
+                document.addEventListener('click', function(event) {
+                    const isClickInside = mobileMenuBtn.contains(event.target) || mobileMenu.contains(event.target);
+
+                    if (!isClickInside && !mobileMenu.classList.contains('hidden')) {
+                        mobileMenu.classList.add('hidden');
+                        mobileMenu.classList.remove('show');
+                        hamburgerIcon.classList.remove('hidden');
+                        closeIcon.classList.add('hidden');
+                    }
+                });
+            }
+        });
+    </script>
 
     {% block scripts %}{% endblock %}
 </body>
