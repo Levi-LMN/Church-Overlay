@@ -1,0 +1,726 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=1920, height=1080">
+    <title>OBS Overlay Display</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            width: 1920px;
+            height: 1080px;
+            overflow: hidden;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: transparent;
+        }
+
+        /* Lower Third Container */
+        .lower-third {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 350px;
+            display: none;
+            pointer-events: none;
+        }
+
+        .lower-third.visible {
+            display: block;
+        }
+
+        /* Modern Geometric Background */
+        .background-shapes {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+        }
+
+        .shape-1 {
+            position: absolute;
+            bottom: -50px;
+            left: -100px;
+            width: 600px;
+            height: 600px;
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.15) 0%, rgba(5, 150, 105, 0.08) 100%);
+            border-radius: 50%;
+            filter: blur(60px);
+        }
+
+        .shape-2 {
+            position: absolute;
+            bottom: -80px;
+            left: 400px;
+            width: 400px;
+            height: 400px;
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.12) 0%, rgba(37, 99, 235, 0.06) 100%);
+            border-radius: 50%;
+            filter: blur(50px);
+        }
+
+        /* Main Content Container */
+        .overlay-content {
+            position: absolute;
+            bottom: 80px;
+            left: 100px;
+            max-width: 1600px;
+            max-height: 280px;
+            background: rgba(17, 24, 39, 0.92);
+            backdrop-filter: blur(20px) saturate(180%);
+            padding: 0;
+            border-radius: 24px;
+            box-shadow:
+                0 25px 50px rgba(0, 0, 0, 0.5),
+                0 0 0 1px rgba(255, 255, 255, 0.1),
+                inset 0 1px 0 rgba(255, 255, 255, 0.05);
+            overflow: hidden;
+            width: fit-content;
+        }
+
+        /* Accent Stripe */
+        .accent-stripe {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 8px;
+            height: 100%;
+            background: linear-gradient(180deg, #10b981 0%, #059669 50%, #047857 100%);
+        }
+
+        /* Content Wrapper */
+        .content-wrapper {
+            padding: 30px 40px 30px 60px;
+            position: relative;
+            max-height: 280px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        /* Church Label */
+        .church-label {
+            display: inline-block;
+            font-size: clamp(10px, 0.8vw, 12px);
+            font-weight: 700;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            color: #10b981;
+            margin-bottom: 10px;
+            padding: 6px 12px;
+            background: rgba(16, 185, 129, 0.1);
+            border-radius: 6px;
+            border: 1px solid rgba(16, 185, 129, 0.2);
+            flex-shrink: 0;
+            width: fit-content;
+            max-width: 90%;
+        }
+
+        /* Main Title */
+        .main-title {
+            font-size: clamp(28px, 3.5vw, 50px);
+            font-weight: 800;
+            color: #ffffff;
+            margin-bottom: 8px;
+            line-height: 1.1;
+            letter-spacing: -1px;
+            text-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+            hyphens: auto;
+            max-width: 1400px;
+            flex-shrink: 1;
+        }
+
+        /* Subtitle */
+        .subtitle {
+            font-size: clamp(18px, 2vw, 28px);
+            color: rgba(255, 255, 255, 0.85);
+            font-weight: 500;
+            line-height: 1.2;
+            letter-spacing: -0.5px;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+            max-width: 1400px;
+            margin-bottom: 6px;
+            flex-shrink: 1;
+        }
+
+        /* Bible Verse */
+        .bible-verse {
+            font-size: clamp(16px, 1.5vw, 22px);
+            color: #10b981;
+            margin-top: 8px;
+            font-weight: 600;
+            letter-spacing: 0.3px;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+            max-width: 1400px;
+            flex-shrink: 0;
+        }
+
+        /* Decorative Corner Element */
+        .corner-decoration {
+            position: absolute;
+            top: -1px;
+            right: -1px;
+            width: 120px;
+            height: 120px;
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.15) 0%, transparent 60%);
+            border-radius: 0 24px 0 0;
+        }
+
+        .corner-decoration::before {
+            content: '';
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            width: 40px;
+            height: 40px;
+            border-top: 3px solid rgba(16, 185, 129, 0.4);
+            border-right: 3px solid rgba(16, 185, 129, 0.4);
+            border-radius: 0 8px 0 0;
+        }
+
+        /* Bottom Glow Effect */
+        .bottom-glow {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg,
+                transparent 0%,
+                #10b981 20%,
+                #059669 50%,
+                #10b981 80%,
+                transparent 100%);
+            opacity: 0.6;
+        }
+
+        /* ============== ANIMATIONS ============== */
+
+        /* Slide Up */
+        @keyframes slideUp {
+            from {
+                transform: translateY(150px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .anim-slide-up .overlay-content {
+            animation: slideUp 1s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        /* Fade In */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: scale(0.95);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        .anim-fade-in .overlay-content {
+            animation: fadeIn 1s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        /* Slide Left */
+        @keyframes slideLeft {
+            from {
+                transform: translateX(-150px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        .anim-slide-left .overlay-content {
+            animation: slideLeft 1s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        /* Slide Down */
+        @keyframes slideDown {
+            from {
+                transform: translateY(-150px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .anim-slide-down .overlay-content {
+            animation: slideDown 1s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        /* Zoom In */
+        @keyframes zoomIn {
+            from {
+                transform: scale(0.8);
+                opacity: 0;
+            }
+            to {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        .anim-zoom-in .overlay-content {
+            animation: zoomIn 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        /* Bounce In */
+        @keyframes bounceIn {
+            0% {
+                transform: translateY(150px) scale(0.95);
+                opacity: 0;
+            }
+            60% {
+                transform: translateY(-15px) scale(1.02);
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(0) scale(1);
+                opacity: 1;
+            }
+        }
+
+        .anim-bounce-in .overlay-content {
+            animation: bounceIn 1.2s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        /* Typewriter - Character by character */
+        .anim-typewriter .church-label,
+        .anim-typewriter .main-title,
+        .anim-typewriter .subtitle,
+        .anim-typewriter .bible-verse {
+            opacity: 0;
+        }
+
+        .anim-typewriter .church-label.typing,
+        .anim-typewriter .main-title.typing,
+        .anim-typewriter .subtitle.typing,
+        .anim-typewriter .bible-verse.typing {
+            opacity: 1;
+        }
+
+        .anim-typewriter .church-label.typed,
+        .anim-typewriter .main-title.typed,
+        .anim-typewriter .subtitle.typed,
+        .anim-typewriter .bible-verse.typed {
+            opacity: 1;
+        }
+
+        .anim-typewriter .church-label.typing::after,
+        .anim-typewriter .main-title.typing::after,
+        .anim-typewriter .subtitle.typing::after,
+        .anim-typewriter .bible-verse.typing::after {
+            content: '|';
+            color: #10b981;
+            animation: blink 0.7s step-end infinite;
+            margin-left: 2px;
+        }
+
+        @keyframes blink {
+            50% {
+                opacity: 0;
+            }
+        }
+
+        /* Wave In */
+        @keyframes waveIn {
+            0% {
+                opacity: 0;
+                transform: translateX(-30px);
+            }
+            100% {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .anim-wave-in .church-label,
+        .anim-wave-in .main-title,
+        .anim-wave-in .subtitle,
+        .anim-wave-in .bible-verse {
+            animation: waveIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) backwards;
+        }
+
+        .anim-wave-in .church-label {
+            animation-delay: 0s;
+        }
+
+        .anim-wave-in .main-title {
+            animation-delay: 0.15s;
+        }
+
+        .anim-wave-in .subtitle {
+            animation-delay: 0.3s;
+        }
+
+        .anim-wave-in .bible-verse {
+            animation-delay: 0.45s;
+        }
+
+        /* Glitch */
+        @keyframes glitch {
+            0%, 100% {
+                transform: translate(0);
+            }
+            20% {
+                transform: translate(-3px, 3px);
+            }
+            40% {
+                transform: translate(-3px, -3px);
+            }
+            60% {
+                transform: translate(3px, 3px);
+            }
+            80% {
+                transform: translate(3px, -3px);
+            }
+        }
+
+        @keyframes glitchColor {
+            0%, 100% {
+                text-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+            }
+            25% {
+                text-shadow: -3px 0 #10b981, 3px 0 #3b82f6, 0 4px 12px rgba(0, 0, 0, 0.4);
+            }
+            75% {
+                text-shadow: 3px 0 #10b981, -3px 0 #3b82f6, 0 4px 12px rgba(0, 0, 0, 0.4);
+            }
+        }
+
+        .anim-glitch .main-title {
+            animation: glitch 0.4s ease-in-out 3, glitchColor 0.4s ease-in-out 3;
+        }
+
+        /* Reveal */
+        @keyframes reveal {
+            from {
+                clip-path: polygon(0 0, 0 0, 0 100%, 0 100%);
+            }
+            to {
+                clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
+            }
+        }
+
+        .anim-reveal .overlay-content {
+            animation: reveal 1.2s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        /* None - Static appearance */
+        .anim-none .overlay-content {
+            animation: none;
+        }
+
+        /* Glow Animation for Accent */
+        @keyframes glowPulse {
+            0%, 100% {
+                box-shadow: 0 0 20px rgba(16, 185, 129, 0.3);
+            }
+            50% {
+                box-shadow: 0 0 40px rgba(16, 185, 129, 0.6);
+            }
+        }
+
+        .accent-stripe {
+            animation: glowPulse 3s ease-in-out infinite;
+        }
+    </style>
+</head>
+<body>
+    <div id="lower-third" class="lower-third">
+        <div class="background-shapes">
+            <div class="shape-1"></div>
+            <div class="shape-2"></div>
+        </div>
+
+        <div class="overlay-content">
+            <div class="accent-stripe"></div>
+            <div class="corner-decoration"></div>
+            <div class="content-wrapper">
+                <div class="church-label" id="church-info"></div>
+                <div class="main-title" id="main-title"></div>
+                <div class="subtitle" id="subtitle"></div>
+                <div class="bible-verse" id="bible-verse"></div>
+            </div>
+            <div class="bottom-glow"></div>
+        </div>
+    </div>
+
+    <script>
+        const lowerThird = document.getElementById('lower-third');
+        const churchInfo = document.getElementById('church-info');
+        const mainTitle = document.getElementById('main-title');
+        const subtitle = document.getElementById('subtitle');
+        const bibleVerse = document.getElementById('bible-verse');
+
+        let currentState = null;
+        let currentAnimation = 'slide-up';
+        let autoAnimationInterval = null;
+        let autoAnimationTimeout = null;
+        let typewriterTimeouts = [];
+
+        // Animation class mapping
+        const animationClasses = {
+            'none': 'anim-none',
+            'slide-up': 'anim-slide-up',
+            'fade-in': 'anim-fade-in',
+            'slide-left': 'anim-slide-left',
+            'slide-down': 'anim-slide-down',
+            'zoom-in': 'anim-zoom-in',
+            'bounce-in': 'anim-bounce-in',
+            'typewriter': 'anim-typewriter',
+            'wave-in': 'anim-wave-in',
+            'glitch': 'anim-glitch',
+            'reveal': 'anim-reveal'
+        };
+
+        // All animations including text animations
+        const allAnimations = [
+            'slide-up', 'fade-in', 'slide-left', 'slide-down',
+            'zoom-in', 'bounce-in', 'wave-in', 'reveal',
+            'typewriter', 'glitch'
+        ];
+
+        function getRandomAnimation() {
+            return allAnimations[Math.floor(Math.random() * allAnimations.length)];
+        }
+
+        function clearAnimations() {
+            Object.values(animationClasses).forEach(cls => {
+                lowerThird.classList.remove(cls);
+            });
+        }
+
+        function clearTypewriterTimeouts() {
+            typewriterTimeouts.forEach(timeout => clearTimeout(timeout));
+            typewriterTimeouts = [];
+        }
+
+        function typewriterEffect(element, text, speed = 50) {
+            return new Promise((resolve) => {
+                element.textContent = '';
+                element.classList.add('typing');
+                element.classList.remove('typed');
+                let i = 0;
+
+                function type() {
+                    if (i < text.length) {
+                        element.textContent += text.charAt(i);
+                        i++;
+                        const timeout = setTimeout(type, speed);
+                        typewriterTimeouts.push(timeout);
+                    } else {
+                        element.classList.remove('typing');
+                        element.classList.add('typed');
+                        resolve();
+                    }
+                }
+                type();
+            });
+        }
+
+        async function applyTypewriter() {
+            clearTypewriterTimeouts();
+
+            // Reset all elements to hidden state
+            churchInfo.classList.remove('typing', 'typed');
+            mainTitle.classList.remove('typing', 'typed');
+            subtitle.classList.remove('typing', 'typed');
+            bibleVerse.classList.remove('typing', 'typed');
+
+            // Get all visible elements in order
+            const elements = [];
+
+            if (churchInfo.style.display !== 'none' && churchInfo.textContent) {
+                elements.push({ element: churchInfo, text: churchInfo.textContent, speed: 30 });
+            }
+
+            if (mainTitle.textContent) {
+                elements.push({ element: mainTitle, text: mainTitle.textContent, speed: 40 });
+            }
+
+            if (subtitle.style.display !== 'none' && subtitle.textContent) {
+                elements.push({ element: subtitle, text: subtitle.textContent, speed: 35 });
+            }
+
+            if (bibleVerse.style.display !== 'none' && bibleVerse.textContent) {
+                elements.push({ element: bibleVerse, text: bibleVerse.textContent, speed: 30 });
+            }
+
+            // Type each visible section sequentially
+            for (const item of elements) {
+                await typewriterEffect(item.element, item.text, item.speed);
+            }
+        }
+
+        function applyAnimation(animation) {
+            clearAnimations();
+            clearTypewriterTimeouts();
+
+            // If auto, pick random animation
+            if (animation === 'auto') {
+                animation = getRandomAnimation();
+            }
+
+            const animClass = animationClasses[animation] || animationClasses['slide-up'];
+            lowerThird.classList.add(animClass);
+
+            // If typewriter, trigger the effect
+            if (animation === 'typewriter') {
+                setTimeout(() => applyTypewriter(), 100);
+            }
+        }
+
+        function startAutoAnimation() {
+            // Clear any existing interval and timeout to prevent race conditions
+            stopAutoAnimation();
+
+            // Only start auto animation if mode is 'auto' and overlay is visible
+            if (currentAnimation === 'auto' && currentState && currentState.mode !== 'hidden') {
+                autoAnimationInterval = setInterval(() => {
+                    // Double-check we're still in auto mode before animating
+                    if (currentAnimation !== 'auto' || !currentState || currentState.mode === 'hidden') {
+                        stopAutoAnimation();
+                        return;
+                    }
+
+                    // Force re-animation by toggling visibility
+                    lowerThird.classList.remove('visible');
+                    clearAnimations();
+
+                    // Small delay before reapplying to ensure clean transition
+                    autoAnimationTimeout = setTimeout(() => {
+                        // Triple-check we're still in auto mode
+                        if (currentAnimation !== 'auto' || !currentState || currentState.mode === 'hidden') {
+                            stopAutoAnimation();
+                            return;
+                        }
+
+                        const randomAnim = getRandomAnimation();
+                        const animClass = animationClasses[randomAnim];
+                        lowerThird.classList.add(animClass);
+                        lowerThird.classList.add('visible');
+                    }, 50);
+                }, 5000); // Every 5 seconds
+            }
+        }
+
+        function stopAutoAnimation() {
+            if (autoAnimationInterval) {
+                clearInterval(autoAnimationInterval);
+                autoAnimationInterval = null;
+            }
+            if (autoAnimationTimeout) {
+                clearTimeout(autoAnimationTimeout);
+                autoAnimationTimeout = null;
+            }
+            clearTypewriterTimeouts();
+        }
+
+        function updateDisplay(state) {
+            if (!state) return;
+
+            currentState = state;
+
+            // Update animation if specified
+            if (state.animation) {
+                currentAnimation = state.animation;
+            }
+
+            if (state.mode === 'hidden') {
+                lowerThird.classList.remove('visible');
+                stopAutoAnimation();
+                return;
+            }
+
+            // Set church info
+            if (state.church) {
+                // Show both name and description if available
+                if (state.church.description && state.church.description.trim()) {
+                    churchInfo.textContent = `${state.church.name} • ${state.church.description}`;
+                } else {
+                    churchInfo.textContent = state.church.name;
+                }
+                churchInfo.style.display = 'inline-block';
+            } else {
+                churchInfo.style.display = 'none';
+            }
+
+            if (state.mode === 'minister' && state.minister) {
+                mainTitle.textContent = state.minister.name;
+                subtitle.textContent = state.minister.title || '';
+                subtitle.style.display = state.minister.title ? 'block' : 'none';
+                bibleVerse.style.display = 'none';
+            }
+
+            if (state.mode === 'sermon' && state.sermon) {
+                mainTitle.textContent = state.sermon.title;
+                subtitle.textContent = state.sermon.minister_name || '';
+                subtitle.style.display = state.sermon.minister_name ? 'block' : 'none';
+
+                if (state.sermon.bible_verse) {
+                    bibleVerse.textContent = state.sermon.bible_verse;
+                    bibleVerse.style.display = 'block';
+                } else {
+                    bibleVerse.style.display = 'none';
+                }
+            }
+
+            // Apply animation and show
+            applyAnimation(currentAnimation);
+            lowerThird.classList.add('visible');
+
+            // Start auto animation if set to auto
+            if (currentAnimation === 'auto') {
+                startAutoAnimation();
+            } else {
+                stopAutoAnimation();
+            }
+        }
+
+        async function fetchState() {
+            try {
+                const response = await fetch('/api/overlay/state');
+                const state = await response.json();
+
+                // Only update if state actually changed
+                if (JSON.stringify(state) !== JSON.stringify(currentState)) {
+                    updateDisplay(state);
+                }
+            } catch (error) {
+                console.error('Error fetching overlay state:', error);
+            }
+        }
+
+        // Poll for updates every 500ms
+        setInterval(fetchState, 500);
+
+        // Initial fetch
+        fetchState();
+    </script>
+</body>
+</html>

@@ -1,0 +1,784 @@
+{% extends "base.html" %}
+
+{% block title %}Control Panel - {{ church.name if church else 'Church' }} Overlay{% endblock %}
+
+{% block header_title %}{{ church.name if church else 'Church' }} Overlay{% endblock %}
+
+{% block styles %}
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+    @keyframes pulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.8; }
+    }
+    @keyframes blink {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.3; }
+    }
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes slideInRight {
+        from { transform: translateX(400px); opacity: 0; }
+        to { transform: translateX(0); opacity: 1; }
+    }
+    @keyframes slideOutRight {
+        from { transform: translateX(0); opacity: 1; }
+        to { transform: translateX(400px); opacity: 0; }
+    }
+    .animate-pulse-slow { animation: pulse 2s ease-in-out infinite; }
+    .animate-blink { animation: blink 1.5s ease-in-out infinite; }
+    .tab-content { display: none; }
+    .tab-content.active { display: block; animation: fadeIn 0.3s ease-in; }
+    .tabs::-webkit-scrollbar { display: none; }
+    .tabs { scrollbar-width: none; }
+
+    /* Ensure mobile bottom padding for fixed button */
+    @media (max-width: 1023px) {
+        .mobile-bottom-padding {
+            padding-bottom: 80px;
+        }
+    }
+
+    /* Better mobile touch targets */
+    @media (max-width: 768px) {
+        .tab {
+            min-height: 70px;
+        }
+        select, input, button {
+            font-size: 16px !important; /* Prevents zoom on iOS */
+        }
+    }
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="mobile-bottom-padding">
+    <!-- Live Status - Mobile First -->
+    <div id="preview" class="bg-gradient-to-br from-blue-900 to-blue-800 rounded-lg md:rounded-xl p-4 md:p-5 text-white shadow-lg mb-4 lg:hidden">
+        <div class="flex items-start justify-between gap-3">
+            <div class="flex-1 min-w-0">
+                <div class="text-xs uppercase tracking-wider opacity-80 mb-1 font-semibold">Current Overlay</div>
+                <div class="text-lg md:text-xl font-bold mb-1 leading-tight truncate">Hidden</div>
+                <div class="text-xs md:text-sm opacity-90 truncate">No overlay displayed</div>
+            </div>
+            <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold tracking-wider bg-gray-500 flex-shrink-0">
+                HIDDEN
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content Grid -->
+    <div class="grid lg:grid-cols-[1fr_380px] gap-4 md:gap-6">
+        <!-- Main Content -->
+        <div class="order-2 lg:order-1">
+            <!-- Tabs Container -->
+            <div class="bg-white rounded-lg md:rounded-xl shadow-md overflow-hidden">
+                <!-- Tab Navigation -->
+                <div class="flex overflow-x-auto border-b-2 border-gray-200 tabs bg-gray-50">
+                    <button class="tab flex-1 min-w-[100px] sm:min-w-[120px] px-3 sm:px-5 py-3 sm:py-4 border-b-4 border-transparent text-gray-500 font-semibold text-xs sm:text-sm hover:bg-gray-100 hover:text-blue-600 transition active" onclick="switchTab('ministers')">
+                        <span class="block text-xl sm:text-2xl mb-1 transition-transform duration-200">🎓</span>
+                        <span class="block text-xs">Ministers</span>
+                    </button>
+                    <button class="tab flex-1 min-w-[100px] sm:min-w-[120px] px-3 sm:px-5 py-3 sm:py-4 border-b-4 border-transparent text-gray-500 font-semibold text-xs sm:text-sm hover:bg-gray-100 hover:text-blue-600 transition" onclick="switchTab('sermons')">
+                        <span class="block text-xl sm:text-2xl mb-1 transition-transform duration-200">📖</span>
+                        <span class="block text-xs">Sermons</span>
+                    </button>
+                    <button class="tab flex-1 min-w-[100px] sm:min-w-[120px] px-3 sm:px-5 py-3 sm:py-4 border-b-4 border-transparent text-gray-500 font-semibold text-xs sm:text-sm hover:bg-gray-100 hover:text-blue-600 transition" onclick="switchTab('custom')">
+                        <span class="block text-xl sm:text-2xl mb-1 transition-transform duration-200">✏️</span>
+                        <span class="block text-xs">Custom</span>
+                    </button>
+                </div>
+
+                <!-- Ministers Tab -->
+                <div id="ministers-tab" class="tab-content active p-4 md:p-5">
+                    <div class="bg-gradient-to-br from-gray-50 to-white border-2 border-gray-200 rounded-lg md:rounded-xl p-4 md:p-5 hover:border-blue-500 hover:shadow-md transition">
+                        <h3 class="text-sm md:text-base font-semibold text-gray-800 mb-3 md:mb-4 flex items-center gap-2">
+                            🎓 Select Minister
+                        </h3>
+                        {% if ministers %}
+                        <div class="flex flex-col gap-3">
+                            <select id="minister-select" class="w-full px-3 md:px-4 py-3 md:py-3.5 text-sm border-2 border-gray-300 rounded-lg bg-white text-gray-700 cursor-pointer transition focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-100 appearance-none bg-[url('data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 fill=%27none%27 viewBox=%270 0 24 24%27 stroke=%27%236b7280%27%3E%3Cpath stroke-linecap=%27round%27 stroke-linejoin=%27round%27 stroke-width=%272%27 d=%27M19 9l-7 7-7-7%27%3E%3C/path%3E%3C/svg%3E')] bg-no-repeat bg-[center_right_0.75rem] bg-[length:1.25rem] pr-10">
+                                <option value="">-- Select a minister --</option>
+                                {% for minister in ministers %}
+                                <option value="{{ minister.id }}"
+                                        data-name="{{ minister.name }}"
+                                        data-title="{{ minister.title or '' }}">
+                                    {{ minister.name }}{% if minister.title %} - {{ minister.title }}{% endif %}
+                                </option>
+                                {% endfor %}
+                            </select>
+                            <div class="flex flex-col sm:flex-row gap-2">
+                                <button class="flex-1 px-3 md:px-4 py-3 md:py-3.5 bg-green-600 hover:bg-green-700 text-white rounded-lg text-sm font-semibold transition active:scale-98 min-h-[44px]" onclick="goLiveMinister()">
+                                    🔴 Go Live
+                                </button>
+                                <button class="flex-1 px-3 md:px-4 py-3 md:py-3.5 bg-cyan-600 hover:bg-cyan-700 text-white rounded-lg text-sm font-semibold transition active:scale-98 min-h-[44px]" onclick="loadMinisterToCustom()">
+                                    📝 Load to Custom
+                                </button>
+                            </div>
+                        </div>
+                        {% else %}
+                        <div class="text-center py-8 md:py-12 text-gray-400">
+                            <div class="text-4xl md:text-5xl mb-3 md:mb-4 opacity-50">🎓</div>
+                            <p class="text-xs md:text-sm text-gray-500">No ministers added yet.<br>Ask an admin to add ministers.</p>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Sermons Tab -->
+                <div id="sermons-tab" class="tab-content p-4 md:p-5">
+                    <div class="bg-gradient-to-br from-gray-50 to-white border-2 border-gray-200 rounded-lg md:rounded-xl p-4 md:p-5 hover:border-blue-500 hover:shadow-md transition">
+                        <h3 class="text-sm md:text-base font-semibold text-gray-800 mb-3 md:mb-4 flex items-center gap-2">
+                            📖 Select Sermon
+                        </h3>
+                        {% if sermons %}
+                        <div class="flex flex-col gap-3">
+                            <select id="sermon-select" class="w-full px-3 md:px-4 py-3 md:py-3.5 text-sm border-2 border-gray-300 rounded-lg bg-white text-gray-700 cursor-pointer transition focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-100 appearance-none bg-[url('data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 fill=%27none%27 viewBox=%270 0 24 24%27 stroke=%27%236b7280%27%3E%3Cpath stroke-linecap=%27round%27 stroke-linejoin=%27round%27 stroke-width=%272%27 d=%27M19 9l-7 7-7-7%27%3E%3C/path%3E%3C/svg%3E')] bg-no-repeat bg-[center_right_0.75rem] bg-[length:1.25rem] pr-10">
+                                <option value="">-- Select a sermon --</option>
+                                {% for sermon in sermons %}
+                                <option value="{{ sermon.id }}"
+                                        data-title="{{ sermon.title }}"
+                                        data-minister="{{ sermon.minister_name or '' }}"
+                                        data-verse="{{ sermon.bible_verse or '' }}">
+                                    {{ sermon.title }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                            <div class="flex flex-col sm:flex-row gap-2">
+                                <button class="flex-1 px-3 md:px-4 py-3 md:py-3.5 bg-green-600 hover:bg-green-700 text-white rounded-lg text-sm font-semibold transition active:scale-98 min-h-[44px]" onclick="goLiveSermon()">
+                                    🔴 Go Live
+                                </button>
+                                <button class="flex-1 px-3 md:px-4 py-3 md:py-3.5 bg-cyan-600 hover:bg-cyan-700 text-white rounded-lg text-sm font-semibold transition active:scale-98 min-h-[44px]" onclick="loadSermonToCustom()">
+                                    📝 Load to Custom
+                                </button>
+                            </div>
+                        </div>
+                        {% else %}
+                        <div class="text-center py-8 md:py-12 text-gray-400">
+                            <div class="text-4xl md:text-5xl mb-3 md:mb-4 opacity-50">📖</div>
+                            <p class="text-xs md:text-sm text-gray-500">No sermons added yet.<br>Ask an admin to add sermons.</p>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Custom Tab -->
+                <div id="custom-tab" class="tab-content p-4 md:p-5">
+                    <div class="bg-white border-2 border-dashed border-gray-300 rounded-lg md:rounded-xl p-4 md:p-5 mb-4 hover:border-blue-500 hover:bg-gray-50 transition">
+                        <h3 class="text-sm font-semibold text-gray-700 mb-3 md:mb-4 flex items-center gap-2">
+                            🎭 Custom Minister
+                        </h3>
+                        <div class="space-y-3 md:space-y-4">
+                            <div>
+                                <label class="block mb-2 font-semibold text-gray-700 text-xs md:text-sm">Minister Name *</label>
+                                <input type="text" id="custom-minister-name" placeholder="Enter name" class="w-full px-3 md:px-4 py-3 md:py-3.5 border-2 border-gray-300 rounded-lg text-sm transition focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-100">
+                            </div>
+                            <div>
+                                <label class="block mb-2 font-semibold text-gray-700 text-xs md:text-sm">Title (Optional)</label>
+                                <input type="text" id="custom-minister-title" placeholder="e.g., Pastor, Reverend" class="w-full px-3 md:px-4 py-3 md:py-3.5 border-2 border-gray-300 rounded-lg text-sm transition focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-100">
+                            </div>
+                            <button class="w-full px-3 md:px-4 py-3 md:py-3.5 bg-green-600 hover:bg-green-700 text-white rounded-lg text-sm font-semibold transition active:scale-98 min-h-[44px]" onclick="showCustomMinister()">
+                                🔴 Go Live
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="bg-white border-2 border-dashed border-gray-300 rounded-lg md:rounded-xl p-4 md:p-5 hover:border-blue-500 hover:bg-gray-50 transition">
+                        <h3 class="text-sm font-semibold text-gray-700 mb-3 md:mb-4 flex items-center gap-2">
+                            📝 Custom Sermon
+                        </h3>
+                        <div class="space-y-3 md:space-y-4">
+                            <div>
+                                <label class="block mb-2 font-semibold text-gray-700 text-xs md:text-sm">Sermon Title *</label>
+                                <input type="text" id="custom-sermon-title" placeholder="Enter sermon title" class="w-full px-3 md:px-4 py-3 md:py-3.5 border-2 border-gray-300 rounded-lg text-sm transition focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-100">
+                            </div>
+                            <div>
+                                <label class="block mb-2 font-semibold text-gray-700 text-xs md:text-sm">Minister Name (Optional)</label>
+                                <input type="text" id="custom-sermon-minister" placeholder="Enter minister name" class="w-full px-3 md:px-4 py-3 md:py-3.5 border-2 border-gray-300 rounded-lg text-sm transition focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-100">
+                            </div>
+                            <div>
+                                <label class="block mb-2 font-semibold text-gray-700 text-xs md:text-sm">Bible Verse (Optional)</label>
+                                <input type="text" id="custom-sermon-verse" placeholder="e.g., John 3:16" class="w-full px-3 md:px-4 py-3 md:py-3.5 border-2 border-gray-300 rounded-lg text-sm transition focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-100">
+                            </div>
+                            <button class="w-full px-3 md:px-4 py-3 md:py-3.5 bg-green-600 hover:bg-green-700 text-white rounded-lg text-sm font-semibold transition active:scale-98 min-h-[44px]" onclick="showCustomSermon()">
+                                🔴 Go Live
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Animation Section -->
+            <div class="bg-white rounded-lg md:rounded-xl shadow-md p-4 md:p-5 mt-4 md:mt-6">
+                <h2 class="text-base md:text-lg font-semibold text-gray-800 mb-3 md:mb-4 flex items-center gap-2">
+                    🎬 Animation Style
+                </h2>
+
+                <div class="mb-4 md:mb-6">
+                    <h4 class="text-xs font-semibold text-gray-600 mb-2 md:mb-3 uppercase tracking-wider">Container Animations</h4>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                        <label class="flex items-center gap-2 md:gap-3 px-3 md:px-4 py-3 md:py-3.5 bg-gray-50 border-2 border-gray-200 rounded-lg cursor-pointer hover:bg-blue-50 hover:border-blue-500 transition has-[:checked]:bg-blue-100 has-[:checked]:border-blue-500">
+                            <input type="radio" name="animation" value="none" onchange="changeAnimation()" class="w-4 h-4 md:w-5 md:h-5 cursor-pointer accent-blue-600 flex-shrink-0">
+                            <span class="flex-1 text-xs md:text-sm text-gray-700 font-medium has-[:checked]:text-blue-800 has-[:checked]:font-semibold">⭕ None (Static)</span>
+                        </label>
+                        <label class="flex items-center gap-2 md:gap-3 px-3 md:px-4 py-3 md:py-3.5 bg-gray-50 border-2 border-gray-200 rounded-lg cursor-pointer hover:bg-blue-50 hover:border-blue-500 transition has-[:checked]:bg-blue-100 has-[:checked]:border-blue-500">
+                            <input type="radio" name="animation" value="slide-up" onchange="changeAnimation()" checked class="w-4 h-4 md:w-5 md:h-5 cursor-pointer accent-blue-600 flex-shrink-0">
+                            <span class="flex-1 text-xs md:text-sm text-gray-700 font-medium has-[:checked]:text-blue-800 has-[:checked]:font-semibold">⬆️ Slide Up</span>
+                        </label>
+                        <label class="flex items-center gap-2 md:gap-3 px-3 md:px-4 py-3 md:py-3.5 bg-gray-50 border-2 border-gray-200 rounded-lg cursor-pointer hover:bg-blue-50 hover:border-blue-500 transition has-[:checked]:bg-blue-100 has-[:checked]:border-blue-500">
+                            <input type="radio" name="animation" value="fade-in" onchange="changeAnimation()" class="w-4 h-4 md:w-5 md:h-5 cursor-pointer accent-blue-600 flex-shrink-0">
+                            <span class="flex-1 text-xs md:text-sm text-gray-700 font-medium has-[:checked]:text-blue-800 has-[:checked]:font-semibold">💫 Fade In</span>
+                        </label>
+                        <label class="flex items-center gap-2 md:gap-3 px-3 md:px-4 py-3 md:py-3.5 bg-gray-50 border-2 border-gray-200 rounded-lg cursor-pointer hover:bg-blue-50 hover:border-blue-500 transition has-[:checked]:bg-blue-100 has-[:checked]:border-blue-500">
+                            <input type="radio" name="animation" value="slide-left" onchange="changeAnimation()" class="w-4 h-4 md:w-5 md:h-5 cursor-pointer accent-blue-600 flex-shrink-0">
+                            <span class="flex-1 text-xs md:text-sm text-gray-700 font-medium has-[:checked]:text-blue-800 has-[:checked]:font-semibold">⬅️ Slide Left</span>
+                        </label>
+                        <label class="flex items-center gap-2 md:gap-3 px-3 md:px-4 py-3 md:py-3.5 bg-gray-50 border-2 border-gray-200 rounded-lg cursor-pointer hover:bg-blue-50 hover:border-blue-500 transition has-[:checked]:bg-blue-100 has-[:checked]:border-blue-500">
+                            <input type="radio" name="animation" value="slide-down" onchange="changeAnimation()" class="w-4 h-4 md:w-5 md:h-5 cursor-pointer accent-blue-600 flex-shrink-0">
+                            <span class="flex-1 text-xs md:text-sm text-gray-700 font-medium has-[:checked]:text-blue-800 has-[:checked]:font-semibold">⬇️ Slide Down</span>
+                        </label>
+                        <label class="flex items-center gap-2 md:gap-3 px-3 md:px-4 py-3 md:py-3.5 bg-gray-50 border-2 border-gray-200 rounded-lg cursor-pointer hover:bg-blue-50 hover:border-blue-500 transition has-[:checked]:bg-blue-100 has-[:checked]:border-blue-500">
+                            <input type="radio" name="animation" value="zoom-in" onchange="changeAnimation()" class="w-4 h-4 md:w-5 md:h-5 cursor-pointer accent-blue-600 flex-shrink-0">
+                            <span class="flex-1 text-xs md:text-sm text-gray-700 font-medium has-[:checked]:text-blue-800 has-[:checked]:font-semibold">🔍 Zoom In</span>
+                        </label>
+                        <label class="flex items-center gap-2 md:gap-3 px-3 md:px-4 py-3 md:py-3.5 bg-gray-50 border-2 border-gray-200 rounded-lg cursor-pointer hover:bg-blue-50 hover:border-blue-500 transition has-[:checked]:bg-blue-100 has-[:checked]:border-blue-500">
+                            <input type="radio" name="animation" value="bounce-in" onchange="changeAnimation()" class="w-4 h-4 md:w-5 md:h-5 cursor-pointer accent-blue-600 flex-shrink-0">
+                            <span class="flex-1 text-xs md:text-sm text-gray-700 font-medium has-[:checked]:text-blue-800 has-[:checked]:font-semibold">🎾 Bounce In</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="mb-4 md:mb-6">
+                    <h4 class="text-xs font-semibold text-gray-600 mb-2 md:mb-3 uppercase tracking-wider">Text Animations</h4>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                        <label class="flex items-center gap-2 md:gap-3 px-3 md:px-4 py-3 md:py-3.5 bg-gray-50 border-2 border-gray-200 rounded-lg cursor-pointer hover:bg-blue-50 hover:border-blue-500 transition has-[:checked]:bg-blue-100 has-[:checked]:border-blue-500">
+                            <input type="radio" name="animation" value="typewriter" onchange="changeAnimation()" class="w-4 h-4 md:w-5 md:h-5 cursor-pointer accent-blue-600 flex-shrink-0">
+                            <span class="flex-1 text-xs md:text-sm text-gray-700 font-medium has-[:checked]:text-blue-800 has-[:checked]:font-semibold">⌨️ Typewriter</span>
+                        </label>
+                        <label class="flex items-center gap-2 md:gap-3 px-3 md:px-4 py-3 md:py-3.5 bg-gray-50 border-2 border-gray-200 rounded-lg cursor-pointer hover:bg-blue-50 hover:border-blue-500 transition has-[:checked]:bg-blue-100 has-[:checked]:border-blue-500">
+                            <input type="radio" name="animation" value="wave-in" onchange="changeAnimation()" class="w-4 h-4 md:w-5 md:h-5 cursor-pointer accent-blue-600 flex-shrink-0">
+                            <span class="flex-1 text-xs md:text-sm text-gray-700 font-medium has-[:checked]:text-blue-800 has-[:checked]:font-semibold">🌊 Wave In</span>
+                        </label>
+                        <label class="flex items-center gap-2 md:gap-3 px-3 md:px-4 py-3 md:py-3.5 bg-gray-50 border-2 border-gray-200 rounded-lg cursor-pointer hover:bg-blue-50 hover:border-blue-500 transition has-[:checked]:bg-blue-100 has-[:checked]:border-blue-500">
+                            <input type="radio" name="animation" value="glitch" onchange="changeAnimation()" class="w-4 h-4 md:w-5 md:h-5 cursor-pointer accent-blue-600 flex-shrink-0">
+                            <span class="flex-1 text-xs md:text-sm text-gray-700 font-medium has-[:checked]:text-blue-800 has-[:checked]:font-semibold">⚡ Glitch</span>
+                        </label>
+                        <label class="flex items-center gap-2 md:gap-3 px-3 md:px-4 py-3 md:py-3.5 bg-gray-50 border-2 border-gray-200 rounded-lg cursor-pointer hover:bg-blue-50 hover:border-blue-500 transition has-[:checked]:bg-blue-100 has-[:checked]:border-blue-500">
+                            <input type="radio" name="animation" value="reveal" onchange="changeAnimation()" class="w-4 h-4 md:w-5 md:h-5 cursor-pointer accent-blue-600 flex-shrink-0">
+                            <span class="flex-1 text-xs md:text-sm text-gray-700 font-medium has-[:checked]:text-blue-800 has-[:checked]:font-semibold">🎭 Reveal</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div>
+                    <h4 class="text-xs font-semibold text-gray-600 mb-2 md:mb-3 uppercase tracking-wider">Special</h4>
+                    <div class="grid grid-cols-1 gap-2">
+                        <label class="flex items-center gap-2 md:gap-3 px-3 md:px-4 py-3 md:py-3.5 bg-gray-50 border-2 border-gray-200 rounded-lg cursor-pointer hover:bg-blue-50 hover:border-blue-500 transition has-[:checked]:bg-blue-100 has-[:checked]:border-blue-500">
+                            <input type="radio" name="animation" value="auto" onchange="changeAnimation()" class="w-4 h-4 md:w-5 md:h-5 cursor-pointer accent-blue-600 flex-shrink-0">
+                            <span class="flex-1 text-xs md:text-sm text-gray-700 font-medium has-[:checked]:text-blue-800 has-[:checked]:font-semibold">🎲 Auto Random</span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar - Desktop Only -->
+        <div class="order-1 lg:order-2 hidden lg:block lg:sticky lg:top-4 lg:self-start">
+            <!-- Live Status -->
+            <div id="preview-desktop" class="bg-gradient-to-br from-blue-900 to-blue-800 rounded-xl p-5 text-white shadow-lg">
+                <div class="flex items-center justify-between gap-4 flex-wrap">
+                    <div class="flex-1 min-w-[200px]">
+                        <div class="text-xs uppercase tracking-wider opacity-80 mb-1 font-semibold">Current Overlay</div>
+                        <div class="text-xl font-bold mb-1 leading-tight">Hidden</div>
+                        <div class="text-sm opacity-90">No overlay displayed</div>
+                    </div>
+                    <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full text-xs font-bold tracking-wider bg-gray-500">
+                        HIDDEN
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Actions - Desktop -->
+            <div class="mt-4">
+                <button id="toggle-overlay-btn-desktop" class="w-full px-4 py-3.5 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm font-bold shadow-md transition active:scale-98 flex items-center justify-center gap-2" onclick="toggleOverlay()">
+                    ⭕ Hide Overlay
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Fixed Bottom Button - Mobile Only -->
+    <div class="fixed bottom-0 left-0 right-0 lg:hidden bg-white p-3 md:p-4 shadow-[0_-4px_12px_rgba(0,0,0,0.15)] z-[90] border-t-2 border-gray-200">
+        <button id="toggle-overlay-btn-mobile" class="w-full px-4 py-3.5 bg-red-600 hover:bg-red-700 text-white rounded-lg text-base font-bold shadow-md transition active:scale-98 flex items-center justify-center gap-2 min-h-[48px]" onclick="toggleOverlay()">
+            ⭕ Hide Overlay
+        </button>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    let currentState = {{ current_state|tojson }};
+    let authCheckInterval;
+    let lastOverlay = null;
+
+    // Load saved custom fields and last overlay from sessionStorage
+    function loadSavedData() {
+        // Load custom minister fields
+        const savedMinisterName = sessionStorage.getItem('customMinisterName');
+        const savedMinisterTitle = sessionStorage.getItem('customMinisterTitle');
+        if (savedMinisterName) document.getElementById('custom-minister-name').value = savedMinisterName;
+        if (savedMinisterTitle) document.getElementById('custom-minister-title').value = savedMinisterTitle;
+
+        // Load custom sermon fields
+        const savedSermonTitle = sessionStorage.getItem('customSermonTitle');
+        const savedSermonMinister = sessionStorage.getItem('customSermonMinister');
+        const savedSermonVerse = sessionStorage.getItem('customSermonVerse');
+        if (savedSermonTitle) document.getElementById('custom-sermon-title').value = savedSermonTitle;
+        if (savedSermonMinister) document.getElementById('custom-sermon-minister').value = savedSermonMinister;
+        if (savedSermonVerse) document.getElementById('custom-sermon-verse').value = savedSermonVerse;
+
+        // Load last overlay
+        const saved = sessionStorage.getItem('lastOverlay');
+        if (saved) {
+            try {
+                lastOverlay = JSON.parse(saved);
+            } catch (e) {
+                console.error('Failed to parse saved overlay:', e);
+            }
+        }
+    }
+
+    // Save custom field values to sessionStorage
+    function saveCustomFields() {
+        sessionStorage.setItem('customMinisterName', document.getElementById('custom-minister-name').value);
+        sessionStorage.setItem('customMinisterTitle', document.getElementById('custom-minister-title').value);
+        sessionStorage.setItem('customSermonTitle', document.getElementById('custom-sermon-title').value);
+        sessionStorage.setItem('customSermonMinister', document.getElementById('custom-sermon-minister').value);
+        sessionStorage.setItem('customSermonVerse', document.getElementById('custom-sermon-verse').value);
+    }
+
+    // Add event listeners to save on input
+    ['custom-minister-name', 'custom-minister-title', 'custom-sermon-title', 'custom-sermon-minister', 'custom-sermon-verse'].forEach(id => {
+        document.getElementById(id).addEventListener('input', saveCustomFields);
+    });
+
+    // Save overlay to memory
+    function saveLastOverlay(state) {
+        if (state.mode !== 'hidden') {
+            lastOverlay = {
+                mode: state.mode,
+                data: state.mode === 'minister' ? state.minister : state.sermon,
+                animation: getSelectedAnimation()
+            };
+            sessionStorage.setItem('lastOverlay', JSON.stringify(lastOverlay));
+        }
+    }
+
+    function showAlert(message, type = 'success') {
+        const alert = document.createElement('div');
+        const colors = {
+            success: 'bg-green-100 text-green-800 border-green-500',
+            error: 'bg-red-100 text-red-800 border-red-500',
+            warning: 'bg-yellow-100 text-yellow-800 border-yellow-500'
+        };
+        alert.className = `fixed top-5 right-5 z-[9999] min-w-[280px] max-w-[90vw] md:min-w-[300px] md:max-w-[400px] px-4 md:px-5 py-3 rounded-lg shadow-xl border-2 text-xs md:text-sm font-medium ${colors[type] || colors.success}`;
+        alert.style.animation = 'slideInRight 0.3s ease-out';
+        alert.textContent = message;
+        document.body.appendChild(alert);
+        setTimeout(() => {
+            alert.style.animation = 'slideOutRight 0.3s ease-out';
+            setTimeout(() => alert.remove(), 300);
+        }, 3000);
+    }
+
+    async function checkAuthStatus() {
+        try {
+            const res = await fetch('/api/auth/check');
+            const data = await res.json();
+            if (data.auth_required && !data.authenticated) {
+                clearInterval(authCheckInterval);
+                window.location.href = '/login';
+            }
+        } catch (error) {
+            console.error('Error checking auth:', error);
+        }
+    }
+
+    authCheckInterval = setInterval(checkAuthStatus, 5000);
+
+    function updatePreview(state) {
+        // Update both mobile and desktop previews
+        const previewMobile = document.getElementById('preview');
+        const previewDesktop = document.getElementById('preview-desktop');
+        const toggleBtnMobile = document.getElementById('toggle-overlay-btn-mobile');
+        const toggleBtnDesktop = document.getElementById('toggle-overlay-btn-desktop');
+
+        if (state.mode !== 'hidden') saveLastOverlay(state);
+
+        let previewHTML = '';
+        let btnClass = '';
+        let btnText = '';
+        let btnAction = null;
+        let btnDisabled = false;
+
+        if (state.mode === 'hidden') {
+            previewHTML = `
+                <div class="flex items-start justify-between gap-3">
+                    <div class="flex-1 min-w-0">
+                        <div class="text-xs uppercase tracking-wider opacity-80 mb-1 font-semibold">Current Overlay</div>
+                        <div class="text-lg md:text-xl font-bold mb-1 leading-tight truncate">Hidden</div>
+                        <div class="text-xs md:text-sm opacity-90 truncate">No overlay displayed</div>
+                    </div>
+                    <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold tracking-wider bg-gray-500 flex-shrink-0">HIDDEN</div>
+                </div>
+            `;
+            if (lastOverlay) {
+                btnClass = 'bg-blue-600 hover:bg-blue-700';
+                btnText = '👁️ Show Last Overlay';
+                btnAction = showLastOverlay;
+                btnDisabled = false;
+            } else {
+                btnClass = 'bg-gray-400 opacity-50 cursor-not-allowed';
+                btnText = '👁️ No Overlay Yet';
+                btnAction = null;
+                btnDisabled = true;
+            }
+        } else if (state.mode === 'minister' && state.minister) {
+            previewHTML = `
+                <div class="flex items-start justify-between gap-3">
+                    <div class="flex-1 min-w-0">
+                        <div class="text-xs uppercase tracking-wider opacity-80 mb-1 font-semibold">Minister Display</div>
+                        <div class="text-lg md:text-xl font-bold mb-1 leading-tight truncate">${state.minister.name}</div>
+                        <div class="text-xs md:text-sm opacity-90 truncate">${state.minister.title || 'No title'}</div>
+                    </div>
+                    <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold tracking-wider bg-green-600 animate-pulse-slow flex-shrink-0">
+                        <span class="w-2 h-2 rounded-full bg-white animate-blink"></span>
+                        LIVE
+                    </div>
+                </div>
+            `;
+            btnClass = 'bg-red-600 hover:bg-red-700';
+            btnText = '⭕ Hide Overlay';
+            btnAction = hideOverlay;
+            btnDisabled = false;
+        } else if (state.mode === 'sermon' && state.sermon) {
+            previewHTML = `
+                <div class="flex items-start justify-between gap-3">
+                    <div class="flex-1 min-w-0">
+                        <div class="text-xs uppercase tracking-wider opacity-80 mb-1 font-semibold">Sermon Display</div>
+                        <div class="text-lg md:text-xl font-bold mb-1 leading-tight truncate">${state.sermon.title}</div>
+                        <div class="text-xs md:text-sm opacity-90 truncate">${state.sermon.minister_name || 'No minister'} ${state.sermon.bible_verse ? '• ' + state.sermon.bible_verse : ''}</div>
+                    </div>
+                    <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold tracking-wider bg-green-600 animate-pulse-slow flex-shrink-0">
+                        <span class="w-2 h-2 rounded-full bg-white animate-blink"></span>
+                        LIVE
+                    </div>
+                </div>
+            `;
+            btnClass = 'bg-red-600 hover:bg-red-700';
+            btnText = '⭕ Hide Overlay';
+            btnAction = hideOverlay;
+            btnDisabled = false;
+        }
+
+        // Update mobile preview
+        previewMobile.innerHTML = previewHTML;
+
+        // Update desktop preview (with different layout for desktop)
+        if (previewDesktop) {
+            const desktopHTML = previewHTML.replace('items-start', 'items-center')
+                                          .replace('flex-shrink-0', '')
+                                          .replace('px-3 py-1.5', 'px-4 py-2')
+                                          .replace('text-lg md:text-xl', 'text-xl')
+                                          .replace('text-xs md:text-sm', 'text-sm');
+            previewDesktop.innerHTML = `
+                <div class="flex items-center justify-between gap-4 flex-wrap">
+                    ${desktopHTML.replace(/text-xs md:text-/g, 'text-').replace(/text-lg md:text-/g, 'text-')}
+                </div>
+            `;
+        }
+
+        // Update mobile button
+        toggleBtnMobile.className = `w-full px-4 py-3.5 ${btnClass} text-white rounded-lg text-base font-bold shadow-md transition active:scale-98 flex items-center justify-center gap-2 min-h-[48px]`;
+        toggleBtnMobile.innerHTML = btnText;
+        toggleBtnMobile.onclick = btnAction;
+        toggleBtnMobile.disabled = btnDisabled;
+
+        // Update desktop button
+        if (toggleBtnDesktop) {
+            toggleBtnDesktop.className = `w-full px-4 py-3.5 ${btnClass} text-white rounded-lg text-sm font-bold shadow-md transition active:scale-98 flex items-center justify-center gap-2`;
+            toggleBtnDesktop.innerHTML = btnText;
+            toggleBtnDesktop.onclick = btnAction;
+            toggleBtnDesktop.disabled = btnDisabled;
+        }
+    }
+
+    function switchTab(tabName) {
+        document.querySelectorAll('.tab').forEach(t => {
+            t.classList.remove('active', 'border-blue-600', 'bg-white', 'text-blue-600', 'shadow-sm');
+            const icon = t.querySelector('span:first-child');
+            if (icon) icon.style.transform = 'scale(1)';
+        });
+        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+
+        // Find the tab button for the given tabName
+        const targetTab = Array.from(document.querySelectorAll('.tab')).find(tab => {
+            return tab.getAttribute('onclick').includes(`'${tabName}'`);
+        });
+
+        if (targetTab) {
+            targetTab.classList.add('active', 'border-blue-600', 'bg-white', 'text-blue-600', 'shadow-sm');
+            const icon = targetTab.querySelector('span:first-child');
+            if (icon) {
+                icon.style.transform = 'scale(1.1)';
+            }
+        }
+
+        document.getElementById(tabName + '-tab').classList.add('active');
+    }
+
+    function getSelectedAnimation() {
+        const selected = document.querySelector('input[name="animation"]:checked');
+        return selected ? selected.value : 'auto';
+    }
+
+    function loadMinisterToCustom() {
+        const select = document.getElementById('minister-select');
+        const option = select.options[select.selectedIndex];
+        if (!select.value) {
+            showAlert('⚠️ Please select a minister first', 'error');
+            return;
+        }
+        document.getElementById('custom-minister-name').value = option.dataset.name;
+        document.getElementById('custom-minister-title').value = option.dataset.title;
+        saveCustomFields();
+        switchTab('custom');
+
+        // Scroll to the custom minister section
+        setTimeout(() => {
+            const ministerSection = document.getElementById('custom-minister-name').closest('.border-dashed');
+            ministerSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            // Add a highlight effect
+            ministerSection.classList.add('ring-4', 'ring-blue-400');
+            setTimeout(() => {
+                ministerSection.classList.remove('ring-4', 'ring-blue-400');
+            }, 2000);
+        }, 100);
+
+        showAlert('✅ Loaded minister to custom section!');
+    }
+
+    function loadSermonToCustom() {
+        const select = document.getElementById('sermon-select');
+        const option = select.options[select.selectedIndex];
+        if (!select.value) {
+            showAlert('⚠️ Please select a sermon first', 'error');
+            return;
+        }
+        document.getElementById('custom-sermon-title').value = option.dataset.title;
+        document.getElementById('custom-sermon-minister').value = option.dataset.minister;
+        document.getElementById('custom-sermon-verse').value = option.dataset.verse;
+        saveCustomFields();
+        switchTab('custom');
+
+        // Scroll to the custom sermon section
+        setTimeout(() => {
+            const sermonSection = document.getElementById('custom-sermon-title').closest('.border-dashed');
+            sermonSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            // Add a highlight effect
+            sermonSection.classList.add('ring-4', 'ring-blue-400');
+            setTimeout(() => {
+                sermonSection.classList.remove('ring-4', 'ring-blue-400');
+            }, 2000);
+        }, 100);
+
+        showAlert('✅ Loaded sermon to custom section!');
+    }
+
+    async function goLiveMinister() {
+        const select = document.getElementById('minister-select');
+        if (!select.value) {
+            showAlert('⚠️ Please select a minister', 'error');
+            return;
+        }
+        const res = await fetch('/api/overlay/update', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({
+                mode: 'minister',
+                minister_id: parseInt(select.value),
+                animation: getSelectedAnimation()
+            })
+        });
+        if (res.ok) {
+            const result = await res.json();
+            currentState = result.state;
+            updatePreview(currentState);
+            showAlert('✅ Minister is now live!');
+        } else {
+            showAlert('❌ Failed to go live', 'error');
+        }
+    }
+
+    async function goLiveSermon() {
+        const select = document.getElementById('sermon-select');
+        if (!select.value) {
+            showAlert('⚠️ Please select a sermon', 'error');
+            return;
+        }
+        const res = await fetch('/api/overlay/update', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({
+                mode: 'sermon',
+                sermon_id: parseInt(select.value),
+                animation: getSelectedAnimation()
+            })
+        });
+        if (res.ok) {
+            const result = await res.json();
+            currentState = result.state;
+            updatePreview(currentState);
+            showAlert('✅ Sermon is now live!');
+        } else {
+            showAlert('❌ Failed to go live', 'error');
+        }
+    }
+
+    async function showCustomMinister() {
+        const name = document.getElementById('custom-minister-name').value.trim();
+        if (!name) {
+            showAlert('⚠️ Please enter a minister name', 'error');
+            return;
+        }
+        const res = await fetch('/api/overlay/update', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({
+                mode: 'minister',
+                minister_name: name,
+                minister_title: document.getElementById('custom-minister-title').value.trim(),
+                animation: getSelectedAnimation()
+            })
+        });
+        if (res.ok) {
+            const result = await res.json();
+            currentState = result.state;
+            updatePreview(currentState);
+            showAlert('✅ Custom minister is now live!');
+        }
+    }
+
+    async function showCustomSermon() {
+        const title = document.getElementById('custom-sermon-title').value.trim();
+        if (!title) {
+            showAlert('⚠️ Please enter a sermon title', 'error');
+            return;
+        }
+        const res = await fetch('/api/overlay/update', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({
+                mode: 'sermon',
+                sermon_title: title,
+                minister_name: document.getElementById('custom-sermon-minister').value.trim(),
+                bible_verse: document.getElementById('custom-sermon-verse').value.trim(),
+                animation: getSelectedAnimation()
+            })
+        });
+        if (res.ok) {
+            const result = await res.json();
+            currentState = result.state;
+            updatePreview(currentState);
+            showAlert('✅ Custom sermon is now live!');
+        }
+    }
+
+    async function hideOverlay() {
+        const res = await fetch('/api/overlay/update', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({mode: 'hidden'})
+        });
+        if (res.ok) {
+            const data = await res.json();
+            currentState = data.state;
+            updatePreview(currentState);
+            showAlert('✅ Overlay hidden');
+        }
+    }
+
+    async function showLastOverlay() {
+        if (!lastOverlay) {
+            showAlert('⚠️ No previous overlay to show', 'error');
+            return;
+        }
+        let data;
+        if (lastOverlay.mode === 'minister') {
+            data = lastOverlay.data.id ? {
+                mode: 'minister',
+                minister_id: lastOverlay.data.id,
+                animation: lastOverlay.animation
+            } : {
+                mode: 'minister',
+                minister_name: lastOverlay.data.name,
+                minister_title: lastOverlay.data.title || '',
+                animation: lastOverlay.animation
+            };
+        } else if (lastOverlay.mode === 'sermon') {
+            data = lastOverlay.data.id ? {
+                mode: 'sermon',
+                sermon_id: lastOverlay.data.id,
+                animation: lastOverlay.animation
+            } : {
+                mode: 'sermon',
+                sermon_title: lastOverlay.data.title,
+                minister_name: lastOverlay.data.minister_name || '',
+                bible_verse: lastOverlay.data.bible_verse || '',
+                animation: lastOverlay.animation
+            };
+        }
+        const res = await fetch('/api/overlay/update', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(data)
+        });
+        if (res.ok) {
+            const result = await res.json();
+            currentState = result.state;
+            updatePreview(currentState);
+            showAlert('✅ Overlay restored!');
+        } else {
+            showAlert('❌ Failed to restore overlay', 'error');
+        }
+    }
+
+    function toggleOverlay() {
+        if (currentState.mode === 'hidden') {
+            showLastOverlay();
+        } else {
+            hideOverlay();
+        }
+    }
+
+    async function changeAnimation() {
+        const animation = getSelectedAnimation();
+        const res = await fetch('/api/animation/select', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({animation})
+        });
+        if (res.ok) showAlert('✅ Animation style updated');
+    }
+
+    // Initialize
+    loadSavedData();
+    updatePreview(currentState);
+
+    // Initialize the first tab as active on page load
+    switchTab('ministers');
+</script>
+{% endblock %}

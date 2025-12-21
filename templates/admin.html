@@ -1,0 +1,944 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Dashboard - OBS Overlay{% endblock %}
+
+{% block styles %}
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+    @keyframes slideInRight {
+        from { transform: translateX(400px); opacity: 0; }
+        to { transform: translateX(0); opacity: 1; }
+    }
+    @keyframes slideOutRight {
+        from { transform: translateX(0); opacity: 1; }
+        to { transform: translateX(400px); opacity: 0; }
+    }
+
+    .admin-tab-content { display: none; }
+    .admin-tab-content.active { display: block; }
+
+    .admin-tabs::-webkit-scrollbar { display: none; }
+    .admin-tabs { scrollbar-width: none; }
+
+    /* Better mobile touch targets */
+    @media (max-width: 768px) {
+        select, input, button {
+            font-size: 16px !important;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="max-w-7xl mx-auto">
+    <!-- Alert Container -->
+    <div id="alert-container"></div>
+
+    <!-- Admin Tabs -->
+    <div class="bg-white rounded-lg md:rounded-xl shadow-md overflow-hidden mb-6">
+        <div class="flex overflow-x-auto border-b-2 border-gray-200 admin-tabs bg-gray-50">
+            <button class="admin-tab flex-1 min-w-[90px] sm:min-w-[110px] px-3 sm:px-5 py-3 sm:py-4 border-b-4 border-transparent text-gray-500 font-semibold text-xs sm:text-sm hover:bg-gray-100 hover:text-blue-600 transition active" onclick="switchAdminTab('overview')">
+                <span class="block text-xl sm:text-2xl mb-1">📊</span>
+                <span class="block text-xs">Overview</span>
+            </button>
+            <button class="admin-tab flex-1 min-w-[90px] sm:min-w-[110px] px-3 sm:px-5 py-3 sm:py-4 border-b-4 border-transparent text-gray-500 font-semibold text-xs sm:text-sm hover:bg-gray-100 hover:text-blue-600 transition" onclick="switchAdminTab('church')">
+                <span class="block text-xl sm:text-2xl mb-1">⛪</span>
+                <span class="block text-xs">Church</span>
+            </button>
+            <button class="admin-tab flex-1 min-w-[90px] sm:min-w-[110px] px-3 sm:px-5 py-3 sm:py-4 border-b-4 border-transparent text-gray-500 font-semibold text-xs sm:text-sm hover:bg-gray-100 hover:text-blue-600 transition" onclick="switchAdminTab('ministers')">
+                <span class="block text-xl sm:text-2xl mb-1">🎓</span>
+                <span class="block text-xs">Ministers</span>
+            </button>
+            <button class="admin-tab flex-1 min-w-[90px] sm:min-w-[110px] px-3 sm:px-5 py-3 sm:py-4 border-b-4 border-transparent text-gray-500 font-semibold text-xs sm:text-sm hover:bg-gray-100 hover:text-blue-600 transition" onclick="switchAdminTab('sermons')">
+                <span class="block text-xl sm:text-2xl mb-1">📖</span>
+                <span class="block text-xs">Sermons</span>
+            </button>
+            <button class="admin-tab flex-1 min-w-[90px] sm:min-w-[110px] px-3 sm:px-5 py-3 sm:py-4 border-b-4 border-transparent text-gray-500 font-semibold text-xs sm:text-sm hover:bg-gray-100 hover:text-blue-600 transition" onclick="switchAdminTab('users')">
+                <span class="block text-xl sm:text-2xl mb-1">👥</span>
+                <span class="block text-xs">Users</span>
+            </button>
+            <button class="admin-tab flex-1 min-w-[90px] sm:min-w-[110px] px-3 sm:px-5 py-3 sm:py-4 border-b-4 border-transparent text-gray-500 font-semibold text-xs sm:text-sm hover:bg-gray-100 hover:text-blue-600 transition" onclick="switchAdminTab('settings')">
+                <span class="block text-xl sm:text-2xl mb-1">⚙️</span>
+                <span class="block text-xs">Settings</span>
+            </button>
+            <button class="admin-tab flex-1 min-w-[90px] sm:min-w-[110px] px-3 sm:px-5 py-3 sm:py-4 border-b-4 border-transparent text-gray-500 font-semibold text-xs sm:text-sm hover:bg-gray-100 hover:text-blue-600 transition" onclick="switchAdminTab('logs')">
+                <span class="block text-xl sm:text-2xl mb-1">📋</span>
+                <span class="block text-xs">Logs</span>
+            </button>
+        </div>
+
+        <!-- Overview Tab -->
+        <div id="overview-tab" class="admin-tab-content active p-4 md:p-6">
+            <h2 class="text-xl md:text-2xl font-bold text-gray-800 mb-4 md:mb-6">📊 Dashboard Overview</h2>
+
+            <!-- Stats Grid -->
+            <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4 mb-6">
+                <div class="bg-gradient-to-br from-blue-50 to-blue-100 p-4 md:p-6 rounded-lg md:rounded-xl border border-blue-200">
+                    <div class="text-2xl md:text-3xl font-bold text-blue-600">{{ ministers|length }}</div>
+                    <div class="text-xs md:text-sm text-gray-600 mt-1">Total Ministers</div>
+                </div>
+                <div class="bg-gradient-to-br from-green-50 to-green-100 p-4 md:p-6 rounded-lg md:rounded-xl border border-green-200">
+                    <div class="text-2xl md:text-3xl font-bold text-green-600">{{ sermons|length }}</div>
+                    <div class="text-xs md:text-sm text-gray-600 mt-1">Total Sermons</div>
+                </div>
+                <div class="bg-gradient-to-br from-purple-50 to-purple-100 p-4 md:p-6 rounded-lg md:rounded-xl border border-purple-200">
+                    <div class="text-2xl md:text-3xl font-bold text-purple-600">{{ all_users|length }}</div>
+                    <div class="text-xs md:text-sm text-gray-600 mt-1">Total Users</div>
+                </div>
+                <div class="bg-gradient-to-br from-orange-50 to-orange-100 p-4 md:p-6 rounded-lg md:rounded-xl border border-orange-200">
+                    <div class="text-2xl md:text-3xl font-bold text-orange-600" id="overview-logs">0</div>
+                    <div class="text-xs md:text-sm text-gray-600 mt-1">Activity Logs</div>
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="bg-white border-2 border-gray-200 rounded-lg md:rounded-xl p-4 md:p-6">
+                <h3 class="text-lg md:text-xl font-semibold text-gray-800 mb-4">🚀 Quick Actions</h3>
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                    <button class="px-4 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-semibold transition shadow-sm" onclick="switchAdminTab('ministers')">
+                        🎓 Manage Ministers
+                    </button>
+                    <button class="px-4 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-semibold transition shadow-sm" onclick="switchAdminTab('sermons')">
+                        📖 Manage Sermons
+                    </button>
+                    <button class="px-4 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-semibold transition shadow-sm" onclick="switchAdminTab('users')">
+                        👥 Manage Users
+                    </button>
+                    <button class="px-4 py-3 bg-gray-600 hover:bg-gray-700 text-white rounded-lg text-sm font-semibold transition shadow-sm" onclick="switchAdminTab('logs')">
+                        📋 View Logs
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Church Tab -->
+        <div id="church-tab" class="admin-tab-content p-4 md:p-6">
+            <h2 class="text-xl md:text-2xl font-bold text-gray-800 mb-4 md:mb-6">⛪ Church Information</h2>
+            <form id="church-form" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Church Name</label>
+                    <input type="text" id="church-name" value="{{ church.name if church else '' }}" required class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-100 transition">
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Description</label>
+                    <input type="text" id="church-description" value="{{ church.description if church else '' }}" class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-100 transition">
+                </div>
+                <button type="submit" class="w-full sm:w-auto px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold transition shadow-sm">
+                    💾 Save Church Info
+                </button>
+            </form>
+        </div>
+
+        <!-- Ministers Tab -->
+        <div id="ministers-tab" class="admin-tab-content p-4 md:p-6">
+            <h2 class="text-xl md:text-2xl font-bold text-gray-800 mb-4 md:mb-6">🎓 Ministers Management</h2>
+
+            <!-- Add Minister Form -->
+            <form id="minister-form" class="bg-gray-50 border-2 border-gray-200 rounded-lg md:rounded-xl p-4 md:p-5 mb-6">
+                <h3 class="text-base md:text-lg font-semibold text-gray-800 mb-4">Add New Minister</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Minister Name</label>
+                        <input type="text" id="minister-name" required class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-100 transition">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Title</label>
+                        <input type="text" id="minister-title" placeholder="e.g., Pastor, Reverend" class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-100 transition">
+                    </div>
+                </div>
+                <button type="submit" class="w-full sm:w-auto px-6 py-3 bg-green-600 hover:bg-green-700 text-white rounded-lg font-semibold transition shadow-sm">
+                    ➕ Add Minister
+                </button>
+            </form>
+
+            <!-- Ministers List -->
+            <div class="overflow-x-auto">
+                <table class="w-full bg-white border border-gray-200 rounded-lg overflow-hidden">
+                    <thead class="bg-gray-50 border-b border-gray-200">
+                        <tr>
+                            <th class="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase">Name</th>
+                            <th class="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase hidden sm:table-cell">Title</th>
+                            <th class="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase hidden md:table-cell">Last Used</th>
+                            <th class="px-4 py-3 text-right text-xs font-semibold text-gray-700 uppercase">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="ministers-list" class="divide-y divide-gray-200">
+                        {% for minister in ministers %}
+                        <tr class="hover:bg-gray-50 transition">
+                            <td class="px-4 py-3 text-sm text-gray-900">
+                                <div class="font-semibold">{{ minister.name }}</div>
+                                <div class="text-xs text-gray-500 sm:hidden">{{ minister.title or '-' }}</div>
+                            </td>
+                            <td class="px-4 py-3 text-sm text-gray-600 hidden sm:table-cell">{{ minister.title or '-' }}</td>
+                            <td class="px-4 py-3 text-sm text-gray-600 hidden md:table-cell">{{ minister.last_used.strftime('%Y-%m-%d') if minister.last_used else 'Never' }}</td>
+                            <td class="px-4 py-3 text-right">
+                                <div class="flex justify-end gap-2">
+                                    <button type="button" class="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded text-xs font-semibold transition" onclick="editMinister({{ minister.id }}, `{{ minister.name|replace('`', '\\`') }}`, `{{ (minister.title or '')|replace('`', '\\`') }}`)">Edit</button>
+                                    <button type="button" class="px-3 py-1.5 bg-red-600 hover:bg-red-700 text-white rounded text-xs font-semibold transition" onclick="deleteMinister({{ minister.id }})">Delete</button>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Sermons Tab -->
+        <div id="sermons-tab" class="admin-tab-content p-4 md:p-6">
+            <h2 class="text-xl md:text-2xl font-bold text-gray-800 mb-4 md:mb-6">📖 Sermons Management</h2>
+
+            <!-- Add Sermon Form -->
+            <form id="sermon-form" class="bg-gray-50 border-2 border-gray-200 rounded-lg md:rounded-xl p-4 md:p-5 mb-6">
+                <h3 class="text-base md:text-lg font-semibold text-gray-800 mb-4">Add New Sermon</h3>
+                <div class="space-y-4 mb-4">
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Sermon Title</label>
+                        <input type="text" id="sermon-title" required class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-100 transition">
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">Minister Name</label>
+                            <input type="text" id="sermon-minister" class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-100 transition">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">Bible Verse</label>
+                            <input type="text" id="sermon-verse" placeholder="e.g., John 3:16" class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-100 transition">
+                        </div>
+                    </div>
+                </div>
+                <button type="submit" class="w-full sm:w-auto px-6 py-3 bg-green-600 hover:bg-green-700 text-white rounded-lg font-semibold transition shadow-sm">
+                    ➕ Add Sermon
+                </button>
+            </form>
+
+            <!-- Sermons List -->
+            <div class="overflow-x-auto">
+                <table class="w-full bg-white border border-gray-200 rounded-lg overflow-hidden">
+                    <thead class="bg-gray-50 border-b border-gray-200">
+                        <tr>
+                            <th class="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase">Title</th>
+                            <th class="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase hidden sm:table-cell">Minister</th>
+                            <th class="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase hidden lg:table-cell">Bible Verse</th>
+                            <th class="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase hidden md:table-cell">Date</th>
+                            <th class="px-4 py-3 text-right text-xs font-semibold text-gray-700 uppercase">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="sermons-list" class="divide-y divide-gray-200">
+                        {% for sermon in sermons %}
+                        <tr class="hover:bg-gray-50 transition">
+                            <td class="px-4 py-3 text-sm text-gray-900">
+                                <div class="font-semibold">{{ sermon.title }}</div>
+                                <div class="text-xs text-gray-500 sm:hidden">{{ sermon.minister_name or '-' }}</div>
+                            </td>
+                            <td class="px-4 py-3 text-sm text-gray-600 hidden sm:table-cell">{{ sermon.minister_name or '-' }}</td>
+                            <td class="px-4 py-3 text-sm text-gray-600 hidden lg:table-cell">{{ sermon.bible_verse or '-' }}</td>
+                            <td class="px-4 py-3 text-sm text-gray-600 hidden md:table-cell">{{ sermon.date.strftime('%Y-%m-%d') }}</td>
+                            <td class="px-4 py-3 text-right">
+                                <div class="flex justify-end gap-2">
+                                    <button type="button" class="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded text-xs font-semibold transition" onclick="editSermon({{ sermon.id }}, `{{ sermon.title|replace('`', '\\`') }}`, `{{ (sermon.minister_name or '')|replace('`', '\\`') }}`, `{{ (sermon.bible_verse or '')|replace('`', '\\`') }}`)">Edit</button>
+                                    <button type="button" class="px-3 py-1.5 bg-red-600 hover:bg-red-700 text-white rounded text-xs font-semibold transition" onclick="deleteSermon({{ sermon.id }})">Delete</button>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Users Tab -->
+        <div id="users-tab" class="admin-tab-content p-4 md:p-6">
+            <h2 class="text-xl md:text-2xl font-bold text-gray-800 mb-4 md:mb-6">👥 User Management</h2>
+
+            <!-- Add User Form -->
+            <form id="user-form" class="bg-gray-50 border-2 border-gray-200 rounded-lg md:rounded-xl p-4 md:p-5 mb-6">
+                <h3 class="text-base md:text-lg font-semibold text-gray-800 mb-4">Add New User</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Email Address</label>
+                        <input type="email" id="user-email" required class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-100 transition">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Name (Optional)</label>
+                        <input type="text" id="user-name" class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-100 transition">
+                    </div>
+                </div>
+                <label class="flex items-center gap-3 mb-4 cursor-pointer">
+                    <input type="checkbox" id="user-is-admin" class="w-5 h-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer">
+                    <span class="text-sm font-semibold text-gray-700">Grant Admin Privileges</span>
+                </label>
+                <button type="submit" class="w-full sm:w-auto px-6 py-3 bg-green-600 hover:bg-green-700 text-white rounded-lg font-semibold transition shadow-sm">
+                    ➕ Add User
+                </button>
+            </form>
+
+            <!-- Users List -->
+            <div class="overflow-x-auto">
+                <table class="w-full bg-white border border-gray-200 rounded-lg overflow-hidden">
+                    <thead class="bg-gray-50 border-b border-gray-200">
+                        <tr>
+                            <th class="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase">Name</th>
+                            <th class="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase hidden sm:table-cell">Email</th>
+                            <th class="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase">Role</th>
+                            <th class="px-4 py-3 text-right text-xs font-semibold text-gray-700 uppercase">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="users-list" class="divide-y divide-gray-200">
+                        {% for user in all_users %}
+                        <tr class="hover:bg-gray-50 transition">
+                            <td class="px-4 py-3 text-sm text-gray-900">
+                                <div class="font-semibold">{{ user.name or '-' }}</div>
+                                <div class="text-xs text-gray-500 sm:hidden">{{ user.email }}</div>
+                            </td>
+                            <td class="px-4 py-3 text-sm text-gray-600 hidden sm:table-cell">{{ user.email }}</td>
+                            <td class="px-4 py-3 text-sm">
+                                {% if user.is_admin %}
+                                    <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-purple-100 text-purple-800">Admin</span>
+                                {% else %}
+                                    <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">User</span>
+                                {% endif %}
+                            </td>
+                            <td class="px-4 py-3 text-right">
+                                {% if user.email != 'mukuhalevi@gmail.com' %}
+                                <div class="flex justify-end gap-2">
+                                    <button type="button" class="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded text-xs font-semibold transition" onclick="toggleUserRole({{ user.id }}, {{ user.is_admin|lower }})">
+                                        {% if user.is_admin %}Demote{% else %}Promote{% endif %}
+                                    </button>
+                                    <button type="button" class="px-3 py-1.5 bg-red-600 hover:bg-red-700 text-white rounded text-xs font-semibold transition" onclick="deleteUser({{ user.id }})">Delete</button>
+                                </div>
+                                {% else %}
+                                <span class="text-xs text-gray-500">Primary Admin</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Settings Tab -->
+        <div id="settings-tab" class="admin-tab-content p-4 md:p-6">
+            <h2 class="text-xl md:text-2xl font-bold text-gray-800 mb-4 md:mb-6">⚙️ Settings</h2>
+            <form id="settings-form" class="bg-gray-50 border-2 border-gray-200 rounded-lg md:rounded-xl p-4 md:p-5">
+                <label class="flex items-center gap-3 mb-4 cursor-pointer">
+                    <input type="checkbox" id="require-auth" {% if settings.require_auth == 'true' %}checked{% endif %} class="w-5 h-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer">
+                    <span class="text-sm font-semibold text-gray-700">Require Authentication for User Panel</span>
+                </label>
+                <button type="submit" class="w-full sm:w-auto px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold transition shadow-sm">
+                    💾 Save Settings
+                </button>
+            </form>
+        </div>
+
+        <!-- Activity Logs Tab -->
+        <div id="logs-tab" class="admin-tab-content p-4 md:p-6">
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-4">
+                <h2 class="text-xl md:text-2xl font-bold text-gray-800">📋 Activity Logs</h2>
+                <button class="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg text-sm font-semibold transition shadow-sm" onclick="refreshLogs()">
+                    🔄 Refresh
+                </button>
+            </div>
+
+            <!-- Log Stats -->
+            <div class="grid grid-cols-3 gap-3 md:gap-4 mb-6">
+                <div class="bg-gradient-to-br from-blue-50 to-blue-100 p-4 rounded-lg border border-blue-200">
+                    <div class="text-xl md:text-2xl font-bold text-blue-600" id="stat-total">0</div>
+                    <div class="text-xs md:text-sm text-gray-600 mt-1">Total Actions</div>
+                </div>
+                <div class="bg-gradient-to-br from-green-50 to-green-100 p-4 rounded-lg border border-green-200">
+                    <div class="text-xl md:text-2xl font-bold text-green-600" id="stat-today">0</div>
+                    <div class="text-xs md:text-sm text-gray-600 mt-1">Today</div>
+                </div>
+                <div class="bg-gradient-to-br from-purple-50 to-purple-100 p-4 rounded-lg border border-purple-200">
+                    <div class="text-xl md:text-2xl font-bold text-purple-600" id="stat-users">0</div>
+                    <div class="text-xs md:text-sm text-gray-600 mt-1">Active Users</div>
+                </div>
+            </div>
+
+            <!-- Bulk Actions Bar -->
+            <div id="bulk-actions" class="hidden bg-blue-50 border-2 border-blue-200 rounded-lg p-3 md:p-4 mb-4">
+                <div class="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+                    <label class="flex items-center gap-2 cursor-pointer">
+                        <input type="checkbox" id="select-all-logs" onchange="toggleSelectAll()" class="w-5 h-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer">
+                        <span class="text-sm font-semibold text-blue-900" id="selection-count">0 logs selected</span>
+                    </label>
+                    <button class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm font-semibold transition shadow-sm sm:ml-auto" onclick="massDeleteLogs()">
+                        🗑️ Delete Selected
+                    </button>
+                </div>
+            </div>
+
+            <!-- Filter Bar -->
+            <div class="flex flex-wrap items-center gap-2 mb-4">
+                <span class="text-xs font-semibold text-gray-600 mr-2">Filter:</span>
+                <button class="filter-btn px-3 py-1.5 border-2 border-gray-300 bg-white rounded-lg text-xs font-semibold transition hover:bg-gray-50 active" onclick="filterLogs('all')">All</button>
+                <button class="filter-btn px-3 py-1.5 border-2 border-gray-300 bg-white rounded-lg text-xs font-semibold transition hover:bg-gray-50" onclick="filterLogs('LOGIN')">🔐 Logins</button>
+                <button class="filter-btn px-3 py-1.5 border-2 border-gray-300 bg-white rounded-lg text-xs font-semibold transition hover:bg-gray-50" onclick="filterLogs('OVERLAY_UPDATE')">📺 Overlays</button>
+                <button class="filter-btn px-3 py-1.5 border-2 border-gray-300 bg-white rounded-lg text-xs font-semibold transition hover:bg-gray-50" onclick="filterLogs('MINISTER_ADD')">🎓 Ministers</button>
+                <button class="filter-btn px-3 py-1.5 border-2 border-gray-300 bg-white rounded-lg text-xs font-semibold transition hover:bg-gray-50" onclick="filterLogs('SERMON_ADD')">📖 Sermons</button>
+                <button class="filter-btn px-3 py-1.5 border-2 border-gray-300 bg-white rounded-lg text-xs font-semibold transition hover:bg-gray-50" onclick="filterLogs('USER_ADD')">👥 Users</button>
+                <button class="filter-btn px-3 py-1.5 border-2 border-gray-300 bg-white rounded-lg text-xs font-semibold transition hover:bg-gray-50" onclick="filterLogs('SETTINGS_UPDATE')">⚙️ Settings</button>
+            </div>
+
+            <!-- Activity Logs Container -->
+            <div class="bg-gray-50 rounded-lg p-3 md:p-4 max-h-[600px] overflow-y-auto space-y-2" id="activity-logs">
+                <div class="text-center py-10 text-gray-400">
+                    Loading activity logs...
+                </div>
+            </div>
+
+            <!-- Pagination -->
+            <div class="flex flex-wrap justify-center items-center gap-2 mt-4" id="pagination"></div>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Minister Modal -->
+<div id="edit-minister-modal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden items-center justify-center p-4">
+    <div class="bg-white rounded-xl max-w-md w-full p-6 shadow-2xl">
+        <div class="flex justify-between items-center mb-4">
+            <h3 class="text-xl font-bold text-gray-800">✏️ Edit Minister</h3>
+            <button class="text-gray-400 hover:text-gray-600 text-2xl" onclick="closeModal('edit-minister-modal')">&times;</button>
+        </div>
+        <form id="edit-minister-form">
+            <input type="hidden" id="edit-minister-id">
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Minister Name</label>
+                    <input type="text" id="edit-minister-name" required class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-100 transition">
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Title</label>
+                    <input type="text" id="edit-minister-title" placeholder="e.g., Pastor, Reverend" class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-100 transition">
+                </div>
+            </div>
+            <div class="flex gap-3 mt-6">
+                <button type="button" class="flex-1 px-4 py-2.5 bg-gray-200 hover:bg-gray-300 text-gray-800 rounded-lg font-semibold transition" onclick="closeModal('edit-minister-modal')">Cancel</button>
+                <button type="submit" class="flex-1 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold transition">Save Changes</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Edit Sermon Modal -->
+<div id="edit-sermon-modal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden items-center justify-center p-4">
+    <div class="bg-white rounded-xl max-w-md w-full p-6 shadow-2xl">
+        <div class="flex justify-between items-center mb-4">
+            <h3 class="text-xl font-bold text-gray-800">✏️ Edit Sermon</h3>
+            <button class="text-gray-400 hover:text-gray-600 text-2xl" onclick="closeModal('edit-sermon-modal')">&times;</button>
+        </div>
+        <form id="edit-sermon-form">
+            <input type="hidden" id="edit-sermon-id">
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Sermon Title</label>
+                    <input type="text" id="edit-sermon-title" required class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-100 transition">
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Minister Name</label>
+                    <input type="text" id="edit-sermon-minister" class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-100 transition">
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Bible Verse</label>
+                    <input type="text" id="edit-sermon-verse" placeholder="e.g., John 3:16" class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-100 transition">
+                </div>
+            </div>
+            <div class="flex gap-3 mt-6">
+                <button type="button" class="flex-1 px-4 py-2.5 bg-gray-200 hover:bg-gray-300 text-gray-800 rounded-lg font-semibold transition" onclick="closeModal('edit-sermon-modal')">Cancel</button>
+                <button type="submit" class="flex-1 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold transition">Save Changes</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    let currentFilter = 'all';
+    let currentPage = 1;
+    let totalPages = 1;
+    let selectedLogs = new Set();
+
+    function showAlert(message, type = 'success') {
+        const alert = document.createElement('div');
+        const colors = {
+            success: 'bg-green-100 text-green-800 border-green-500',
+            error: 'bg-red-100 text-red-800 border-red-500',
+            warning: 'bg-yellow-100 text-yellow-800 border-yellow-500'
+        };
+        alert.className = `fixed top-5 right-5 z-[9999] min-w-[280px] max-w-[90vw] md:min-w-[300px] md:max-w-[400px] px-4 md:px-5 py-3 rounded-lg shadow-xl border-2 text-xs md:text-sm font-medium ${colors[type] || colors.success}`;
+        alert.style.animation = 'slideInRight 0.3s ease-out';
+        alert.textContent = message;
+        document.body.appendChild(alert);
+        setTimeout(() => {
+            alert.style.animation = 'slideOutRight 0.3s ease-out';
+            setTimeout(() => alert.remove(), 300);
+        }, 3000);
+    }
+
+    function switchAdminTab(tabName) {
+        document.querySelectorAll('.admin-tab').forEach(t => {
+            t.classList.remove('active', 'border-blue-600', 'bg-white', 'text-blue-600', 'shadow-sm');
+            const icon = t.querySelector('span:first-child');
+            if (icon) icon.style.transform = 'scale(1)';
+        });
+        document.querySelectorAll('.admin-tab-content').forEach(c => c.classList.remove('active'));
+
+        const targetTab = Array.from(document.querySelectorAll('.admin-tab')).find(tab => {
+            return tab.getAttribute('onclick').includes(`'${tabName}'`);
+        });
+
+        if (targetTab) {
+            targetTab.classList.add('active', 'border-blue-600', 'bg-white', 'text-blue-600', 'shadow-sm');
+            const icon = targetTab.querySelector('span:first-child');
+            if (icon) icon.style.transform = 'scale(1.1)';
+        }
+
+        document.getElementById(tabName + '-tab').classList.add('active');
+
+        if (tabName === 'logs') {
+            loadActivityLogs(currentFilter, currentPage);
+        }
+    }
+
+    // Modal functions
+    function openModal(modalId) {
+        document.getElementById(modalId).classList.remove('hidden');
+        document.getElementById(modalId).classList.add('flex');
+    }
+
+    function closeModal(modalId) {
+        document.getElementById(modalId).classList.add('hidden');
+        document.getElementById(modalId).classList.remove('flex');
+    }
+
+    // Edit Minister
+    function editMinister(id, name, title) {
+        document.getElementById('edit-minister-id').value = id;
+        document.getElementById('edit-minister-name').value = name;
+        document.getElementById('edit-minister-title').value = title;
+        openModal('edit-minister-modal');
+    }
+
+    document.getElementById('edit-minister-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const id = document.getElementById('edit-minister-id').value;
+        const res = await fetch(`/api/ministers/${id}`, {
+            method: 'PUT',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({
+                name: document.getElementById('edit-minister-name').value,
+                title: document.getElementById('edit-minister-title').value
+            })
+        });
+        if (res.ok) {
+            showAlert('✅ Minister updated successfully!');
+            closeModal('edit-minister-modal');
+            setTimeout(() => location.reload(), 1000);
+        }
+    });
+
+    // Edit Sermon
+    function editSermon(id, title, minister, verse) {
+        document.getElementById('edit-sermon-id').value = id;
+        document.getElementById('edit-sermon-title').value = title;
+        document.getElementById('edit-sermon-minister').value = minister;
+        document.getElementById('edit-sermon-verse').value = verse;
+        openModal('edit-sermon-modal');
+    }
+
+    document.getElementById('edit-sermon-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const id = document.getElementById('edit-sermon-id').value;
+        const res = await fetch(`/api/sermons/${id}`, {
+            method: 'PUT',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({
+                title: document.getElementById('edit-sermon-title').value,
+                minister_name: document.getElementById('edit-sermon-minister').value,
+                bible_verse: document.getElementById('edit-sermon-verse').value
+            })
+        });
+        if (res.ok) {
+            showAlert('✅ Sermon updated successfully!');
+            closeModal('edit-sermon-modal');
+            setTimeout(() => location.reload(), 1000);
+        }
+    });
+
+    // Log selection functions
+    function toggleLogSelection(logId) {
+        if (selectedLogs.has(logId)) {
+            selectedLogs.delete(logId);
+        } else {
+            selectedLogs.add(logId);
+        }
+        updateBulkActionsBar();
+    }
+
+    function toggleSelectAll() {
+        const selectAll = document.getElementById('select-all-logs').checked;
+        const checkboxes = document.querySelectorAll('.log-checkbox');
+
+        selectedLogs.clear();
+        checkboxes.forEach(cb => {
+            cb.checked = selectAll;
+            if (selectAll) {
+                selectedLogs.add(parseInt(cb.dataset.logId));
+            }
+        });
+        updateBulkActionsBar();
+    }
+
+    function updateBulkActionsBar() {
+        const bulkActions = document.getElementById('bulk-actions');
+        const count = document.getElementById('selection-count');
+
+        if (selectedLogs.size > 0) {
+            bulkActions.classList.remove('hidden');
+            bulkActions.classList.add('flex');
+            count.textContent = `${selectedLogs.size} log${selectedLogs.size > 1 ? 's' : ''} selected`;
+        } else {
+            bulkActions.classList.add('hidden');
+            bulkActions.classList.remove('flex');
+        }
+    }
+
+    async function massDeleteLogs() {
+        if (selectedLogs.size === 0) {
+            showAlert('⚠️ No logs selected', 'error');
+            return;
+        }
+
+        if (!confirm(`Are you sure you want to delete ${selectedLogs.size} log${selectedLogs.size > 1 ? 's' : ''}? This action cannot be undone.`)) {
+            return;
+        }
+
+        const res = await fetch('/api/activity-logs/mass-delete', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ ids: Array.from(selectedLogs) })
+        });
+
+        if (res.ok) {
+            const data = await res.json();
+            showAlert(`✅ Successfully deleted ${data.deleted} logs`);
+            selectedLogs.clear();
+            document.getElementById('select-all-logs').checked = false;
+            loadActivityLogs(currentFilter === 'all' ? null : currentFilter, currentPage);
+        } else {
+            showAlert('❌ Failed to delete logs', 'error');
+        }
+    }
+
+    async function loadActivityLogs(action = null, page = 1) {
+        try {
+            const url = action && action !== 'all'
+                ? `/api/activity-logs?action=${action}&page=${page}&per_page=20`
+                : `/api/activity-logs?page=${page}&per_page=20`;
+
+            const res = await fetch(url);
+            const data = await res.json();
+
+            currentPage = data.current_page;
+            totalPages = data.pages;
+            selectedLogs.clear();
+            document.getElementById('select-all-logs').checked = false;
+            updateBulkActionsBar();
+
+            const container = document.getElementById('activity-logs');
+
+            if (data.logs.length === 0) {
+                container.innerHTML = '<div class="text-center py-10 text-gray-400">No activity logs found.</div>';
+                document.getElementById('pagination').innerHTML = '';
+                return;
+            }
+
+            container.innerHTML = data.logs.map(log => {
+                const actionType = log.action.toLowerCase().split('_')[0];
+                const borderColors = {
+                    login: 'border-green-500',
+                    logout: 'border-gray-500',
+                    overlay: 'border-purple-500',
+                    minister: 'border-orange-500',
+                    sermon: 'border-orange-500',
+                    user: 'border-red-500',
+                    settings: 'border-cyan-500'
+                };
+                return `
+                    <div class="bg-white border-l-4 ${borderColors[actionType] || 'border-blue-500'} p-3 md:p-4 rounded-lg shadow-sm">
+                        <div class="flex items-start gap-3">
+                            <input type="checkbox" class="log-checkbox w-4 h-4 md:w-5 md:h-5 mt-1 rounded border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer flex-shrink-0" data-log-id="${log.id}" onchange="toggleLogSelection(${log.id})">
+                            <div class="flex-1 min-w-0">
+                                <div class="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-1 sm:gap-2 mb-1">
+                                    <span class="font-semibold text-gray-900 text-sm">${log.user_name || log.user_email}</span>
+                                    <span class="text-xs text-gray-500">${log.timestamp}</span>
+                                </div>
+                                <div class="text-sm text-gray-700 mb-1">${formatAction(log.action)}</div>
+                                ${log.details ? `<div class="text-xs text-gray-500 italic mb-1">${log.details}</div>` : ''}
+                                <div class="text-xs text-gray-400 font-mono">IP: ${log.ip_address}</div>
+                            </div>
+                            <button class="px-2 py-1 text-xs bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 rounded transition flex-shrink-0" onclick="deleteLog(${log.id})" title="Delete this log">
+                                🗑️
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            updateStats(data.total);
+            updatePagination(data.current_page, data.pages);
+        } catch (error) {
+            console.error('Error loading logs:', error);
+        }
+    }
+
+    function formatAction(action) {
+        const icons = {
+            'LOGIN': '🔐',
+            'LOGOUT': '🚪',
+            'LOGIN_DENIED': '🚫',
+            'OVERLAY_UPDATE': '📺',
+            'MINISTER_ADD': '🎓➕',
+            'MINISTER_UPDATE': '🎓✏️',
+            'MINISTER_DELETE': '🎓🗑️',
+            'SERMON_ADD': '📖➕',
+            'SERMON_UPDATE': '📖✏️',
+            'SERMON_DELETE': '📖🗑️',
+            'USER_ADD': '👥➕',
+            'USER_DELETE': '👥🗑️',
+            'USER_ROLE_CHANGE': '👥🔄',
+            'SETTINGS_UPDATE': '⚙️',
+            'CHURCH_UPDATE': '⛪',
+            'ANIMATION_SELECT': '🎬',
+            'LOGS_CLEARED': '📋🗑️',
+            'LOGS_MASS_DELETE': '📋🗑️'
+        };
+
+        const icon = icons[action] || '📝';
+        const text = action.replace(/_/g, ' ').toLowerCase()
+            .split(' ')
+            .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+            .join(' ');
+
+        return `${icon} ${text}`;
+    }
+
+    function updateStats(total) {
+        document.getElementById('stat-total').textContent = total;
+        document.getElementById('overview-logs').textContent = total;
+    }
+
+    function updatePagination(current, total) {
+        const pagination = document.getElementById('pagination');
+
+        if (total <= 1) {
+            pagination.innerHTML = '';
+            return;
+        }
+
+        let html = `
+            <button onclick="changePage(${current - 1})" ${current === 1 ? 'disabled' : ''} class="px-4 py-2 border-2 border-gray-300 bg-white rounded-lg text-sm font-semibold transition hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed">
+                ◀ Previous
+            </button>
+            <span class="px-4 py-2 text-sm text-gray-600">Page ${current} of ${total}</span>
+            <button onclick="changePage(${current + 1})" ${current === total ? 'disabled' : ''} class="px-4 py-2 border-2 border-gray-300 bg-white rounded-lg text-sm font-semibold transition hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed">
+                Next ▶
+            </button>
+        `;
+
+        pagination.innerHTML = html;
+    }
+
+    function changePage(page) {
+        if (page < 1 || page > totalPages) return;
+        loadActivityLogs(currentFilter === 'all' ? null : currentFilter, page);
+    }
+
+    function filterLogs(action) {
+        currentFilter = action;
+        currentPage = 1;
+
+        document.querySelectorAll('.filter-btn').forEach(btn => {
+            btn.classList.remove('active', 'bg-blue-600', 'text-white', 'border-blue-600');
+            btn.classList.add('bg-white', 'border-gray-300', 'text-gray-700');
+        });
+        event.target.classList.add('active', 'bg-blue-600', 'text-white', 'border-blue-600');
+        event.target.classList.remove('bg-white', 'border-gray-300', 'text-gray-700');
+
+        loadActivityLogs(action === 'all' ? null : action, 1);
+    }
+
+    function refreshLogs() {
+        loadActivityLogs(currentFilter === 'all' ? null : currentFilter, currentPage);
+        showAlert('✅ Logs refreshed');
+    }
+
+    async function deleteLog(id) {
+        if (!confirm('Are you sure you want to delete this log entry?')) return;
+
+        const res = await fetch(`/api/activity-logs/${id}`, {method: 'DELETE'});
+        if (res.ok) {
+            showAlert('✅ Log deleted');
+            loadActivityLogs(currentFilter === 'all' ? null : currentFilter, currentPage);
+        } else {
+            showAlert('❌ Failed to delete log', 'error');
+        }
+    }
+
+    // Church form
+    document.getElementById('church-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const res = await fetch('/api/church', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({
+                name: document.getElementById('church-name').value,
+                description: document.getElementById('church-description').value
+            })
+        });
+        if (res.ok) showAlert('✅ Church information saved!');
+    });
+
+    // Minister form
+    document.getElementById('minister-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const res = await fetch('/api/ministers', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({
+                name: document.getElementById('minister-name').value,
+                title: document.getElementById('minister-title').value
+            })
+        });
+        if (res.ok) {
+            showAlert('✅ Minister added successfully!');
+            document.getElementById('minister-form').reset();
+            setTimeout(() => location.reload(), 1000);
+        }
+    });
+
+    async function deleteMinister(id) {
+        if (!confirm('Are you sure you want to delete this minister?')) return;
+        const res = await fetch(`/api/ministers/${id}`, {method: 'DELETE'});
+        if (res.ok) {
+            showAlert('✅ Minister deleted!');
+            setTimeout(() => location.reload(), 1000);
+        }
+    }
+
+    // Sermon form
+    document.getElementById('sermon-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const res = await fetch('/api/sermons', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({
+                title: document.getElementById('sermon-title').value,
+                minister_name: document.getElementById('sermon-minister').value,
+                bible_verse: document.getElementById('sermon-verse').value
+            })
+        });
+        if (res.ok) {
+            showAlert('✅ Sermon added successfully!');
+            document.getElementById('sermon-form').reset();
+            setTimeout(() => location.reload(), 1000);
+        }
+    });
+
+    async function deleteSermon(id) {
+        if (!confirm('Are you sure you want to delete this sermon?')) return;
+        const res = await fetch(`/api/sermons/${id}`, {method: 'DELETE'});
+        if (res.ok) {
+            showAlert('✅ Sermon deleted!');
+            setTimeout(() => location.reload(), 1000);
+        }
+    }
+
+    // User form
+    document.getElementById('user-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const res = await fetch('/api/users', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({
+                email: document.getElementById('user-email').value,
+                name: document.getElementById('user-name').value,
+                is_admin: document.getElementById('user-is-admin').checked
+            })
+        });
+
+        const data = await res.json();
+        if (res.ok) {
+            showAlert('✅ User added successfully!');
+            document.getElementById('user-form').reset();
+            setTimeout(() => location.reload(), 1000);
+        } else {
+            showAlert('❌ ' + (data.error || 'Failed to add user'), 'error');
+        }
+    });
+
+    async function toggleUserRole(id, isAdmin) {
+        const action = isAdmin ? 'demote to User' : 'promote to Admin';
+        if (!confirm(`Are you sure you want to ${action}?`)) return;
+
+        const res = await fetch(`/api/users/${id}`, {
+            method: 'PUT',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({
+                is_admin: !isAdmin
+            })
+        });
+
+        const data = await res.json();
+        if (res.ok) {
+            showAlert('✅ User role updated!');
+            setTimeout(() => location.reload(), 1000);
+        } else {
+            showAlert('❌ ' + (data.error || 'Failed to update user'), 'error');
+        }
+    }
+
+    async function deleteUser(id) {
+        if (!confirm('Are you sure you want to delete this user? They will no longer be able to access the system.')) return;
+        const res = await fetch(`/api/users/${id}`, {method: 'DELETE'});
+        const data = await res.json();
+        if (res.ok) {
+            showAlert('✅ User deleted!');
+            setTimeout(() => location.reload(), 1000);
+        } else {
+            showAlert('❌ ' + (data.error || 'Failed to delete user'), 'error');
+        }
+    }
+
+    // Settings form
+    document.getElementById('settings-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const res = await fetch('/api/settings', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({
+                require_auth: document.getElementById('require-auth').checked ? 'true' : 'false'
+            })
+        });
+        if (res.ok) showAlert('✅ Settings saved successfully!');
+    });
+
+    // Load overview stats on page load
+    async function loadOverviewStats() {
+        try {
+            const res = await fetch('/api/activity-logs?per_page=1');
+            const data = await res.json();
+            document.getElementById('overview-logs').textContent = data.total;
+        } catch (error) {
+            console.error('Error loading stats:', error);
+        }
+    }
+
+    // Initialize
+    loadOverviewStats();
+    switchAdminTab('overview');
+</script>
+{% endblock %}
