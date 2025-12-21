@@ -5,8 +5,10 @@ from flask_login import LoginManager, UserMixin, login_user, logout_user, login_
 from authlib.integrations.flask_client import OAuth
 from datetime import datetime, timedelta
 from functools import wraps
+from dotenv import load_dotenv
 
 app = Flask(__name__)
+load_dotenv()  # dev only
 app.secret_key = os.environ.get('SECRET_KEY', 'dev-secret-key-change-in-production')
 app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL', 'sqlite:///obs_overlay.db')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
