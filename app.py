@@ -1,14 +1,15 @@
 import os
-from flask import Flask, render_template, redirect, url_for, request, jsonify, session
+from flask import Flask, render_template, redirect, url_for, request, jsonify, session, make_response
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required, current_user
 from authlib.integrations.flask_client import OAuth
 from datetime import datetime, timedelta
 from functools import wraps
 from dotenv import load_dotenv
+import time
 
 app = Flask(__name__)
-load_dotenv()  # dev only
+load_dotenv()
 app.secret_key = os.environ.get('SECRET_KEY', 'dev-secret-key-change-in-production')
 app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL', 'sqlite:///obs_overlay.db')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
@@ -31,6 +32,20 @@ google = oauth.register(
     server_metadata_url='https://accounts.google.com/.well-known/openid-configuration',
     client_kwargs={'scope': 'openid email profile'}
 )
+
+
+# IMPROVED NO-CACHE DECORATOR
+def no_cache(view):
+    @wraps(view)
+    def no_cache_view(*args, **kwargs):
+        response = make_response(view(*args, **kwargs))
+        response.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate, post-check=0, pre-check=0, max-age=0'
+        response.headers['Pragma'] = 'no-cache'
+        response.headers['Expires'] = '0'
+        response.headers['Vary'] = '*'
+        return response
+
+    return no_cache_view
 
 
 # Models
@@ -99,14 +114,22 @@ class ActivityLog(db.Model):
         }
 
 
-# In-memory cache for current overlay state
+# IMPROVED OVERLAY STATE
 overlay_state = {
     'mode': 'hidden',
     'minister': None,
     'sermon': None,
     'church': None,
-    'animation': 'slide-up'
+    'animation': 'slide-up',
+    'timestamp': time.time(),
+    'version': 1
 }
+
+
+def update_overlay_timestamp():
+    """Helper to update timestamp and version"""
+    overlay_state['timestamp'] = time.time()
+    overlay_state['version'] = overlay_state.get('version', 0) + 1
 
 
 def log_activity(action, details=None):
@@ -204,15 +227,12 @@ def authorize():
     token = google.authorize_access_token()
     user_info = token.get('userinfo')
 
-    # Check if user exists in database
     user = User.query.filter_by(email=user_info['email']).first()
 
     if not user:
-        # User not in database - deny access and log
         log_activity('LOGIN_DENIED', f"Unauthorized login attempt: {user_info['email']}")
         return render_template('access_denied.html', email=user_info['email'], show_login=False)
 
-    # User exists - log them in
     login_user(user)
     log_activity('LOGIN', f"Successful login: {user.email}")
 
@@ -240,7 +260,6 @@ def admin():
     animations = Animation.query.all()
     all_users = User.query.order_by(User.created_at.desc()).all()
 
-    # Cleanup old logs on admin page load
     cleanup_old_logs()
 
     return render_template('admin.html',
@@ -273,8 +292,15 @@ def user_panel():
 
 
 @app.route('/display')
+@no_cache
 def display():
-    return render_template('display.html')
+    """Display page with aggressive no-cache headers"""
+    response = make_response(render_template('display.html'))
+    response.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate, post-check=0, pre-check=0, max-age=0'
+    response.headers['Pragma'] = 'no-cache'
+    response.headers['Expires'] = '0'
+    response.headers['Vary'] = '*'
+    return response
 
 
 # API Routes
@@ -288,8 +314,25 @@ def check_auth():
 
 
 @app.route('/api/overlay/state')
+@no_cache
 def get_overlay_state():
-    return jsonify(overlay_state)
+    """Return overlay state with fresh copy to prevent caching"""
+    # Create a fresh copy with current timestamp
+    state_copy = {
+        'mode': overlay_state['mode'],
+        'minister': overlay_state['minister'].copy() if overlay_state['minister'] else None,
+        'sermon': overlay_state['sermon'].copy() if overlay_state['sermon'] else None,
+        'church': overlay_state['church'].copy() if overlay_state['church'] else None,
+        'animation': overlay_state['animation'],
+        'timestamp': time.time(),  # Always use current time
+        'version': overlay_state.get('version', 1)
+    }
+
+    response = make_response(jsonify(state_copy))
+    response.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate, max-age=0'
+    response.headers['Pragma'] = 'no-cache'
+    response.headers['Expires'] = '0'
+    return response
 
 
 @app.route('/api/overlay/update', methods=['POST'])
@@ -299,6 +342,7 @@ def update_overlay():
     mode = data.get('mode', 'hidden')
 
     overlay_state['mode'] = mode
+    update_overlay_timestamp()
 
     if 'animation' in data:
         overlay_state['animation'] = data['animation']
@@ -325,6 +369,7 @@ def update_overlay():
                 'title': data.get('minister_title')
             }
             details = f"Displayed custom minister: {minister_name}"
+        overlay_state['sermon'] = None
 
     elif mode == 'sermon':
         sermon_id = data.get('sermon_id')
@@ -346,7 +391,11 @@ def update_overlay():
                 'bible_verse': data.get('bible_verse')
             }
             details = f"Displayed custom sermon: {sermon_title}"
+        overlay_state['minister'] = None
+
     elif mode == 'hidden':
+        overlay_state['minister'] = None
+        overlay_state['sermon'] = None
         details = "Overlay hidden"
 
     church = Church.query.first()
@@ -357,7 +406,11 @@ def update_overlay():
         }
 
     log_activity('OVERLAY_UPDATE', details)
-    return jsonify({'success': True, 'state': overlay_state})
+
+    response = make_response(jsonify({'success': True, 'state': overlay_state}))
+    response.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate, max-age=0'
+    response.headers['Pragma'] = 'no-cache'
+    return response
 
 
 @app.route('/api/church', methods=['GET', 'POST'])
@@ -373,6 +426,13 @@ def manage_church():
         church.name = data.get('name')
         church.description = data.get('description')
         db.session.commit()
+
+        # Update church in overlay state
+        overlay_state['church'] = {
+            'name': church.name,
+            'description': church.description
+        }
+        update_overlay_timestamp()
 
         log_activity('CHURCH_UPDATE', f"Updated church info: {church.name}")
         return jsonify({'success': True})
@@ -525,6 +585,8 @@ def select_animation():
 
     if animation != 'auto':
         overlay_state['animation'] = animation
+
+    update_overlay_timestamp()
 
     log_activity('ANIMATION_SELECT', f"Selected animation: {animation}")
     return jsonify({'success': True})
@@ -680,13 +742,18 @@ with app.app_context():
     if not Settings.query.filter_by(key='selected_animation').first():
         db.session.add(Settings(key='selected_animation', value='auto'))
 
-    # Remove old animations table data if exists
     Animation.query.delete()
-
     db.session.commit()
 
-    # Cleanup old logs on startup
     cleanup_old_logs()
+
+    # Initialize overlay state with church info if available
+    church = Church.query.first()
+    if church:
+        overlay_state['church'] = {
+            'name': church.name,
+            'description': church.description
+        }
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=5000)
