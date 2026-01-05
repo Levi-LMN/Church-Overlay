@@ -481,10 +481,14 @@
         const bibleVerse = document.getElementById('bible-verse');
 
         let currentState = null;
+        let currentVersion = -1;
         let currentAnimation = 'slide-up';
         let autoAnimationInterval = null;
         let autoAnimationTimeout = null;
         let typewriterTimeouts = [];
+        let useSSE = true;
+        let eventSource = null;
+        let fallbackPollInterval = null;
 
         // Animation class mapping
         const animationClasses = {
@@ -632,13 +636,20 @@
             clearTypewriterTimeouts();
         }
 
+        function shouldUpdate(newState) {
+            if (!currentState) return true;
+            if (newState.version !== undefined && newState.version > currentVersion) return true;
+
+            // Deep comparison for state changes
+            const oldJson = JSON.stringify(currentState);
+            const newJson = JSON.stringify(newState);
+            return oldJson !== newJson;
+        }
+
         function updateDisplay(state) {
             if (!state) return;
 
-            // Simple deep comparison to check if content actually changed
-            const stateChanged = JSON.stringify(currentState) !== JSON.stringify(state);
-
-            if (!stateChanged && currentState !== null) {
+            if (!shouldUpdate(state)) {
                 return; // No change, keep display as is
             }
 
@@ -646,6 +657,9 @@
             const previousMode = currentState ? currentState.mode : null;
 
             currentState = state;
+            if (state.version !== undefined) {
+                currentVersion = state.version;
+            }
 
             if (state.animation) {
                 currentAnimation = state.animation;
@@ -705,6 +719,39 @@
             }
         }
 
+        function initSSE() {
+            if (!useSSE || eventSource) return;
+
+            try {
+                eventSource = new EventSource('/api/overlay/stream');
+
+                eventSource.onmessage = function(event) {
+                    try {
+                        const data = JSON.parse(event.data);
+                        if (data.type === 'init' || data.type === 'update') {
+                            updateDisplay(data.state);
+                        }
+                    } catch (error) {
+                        console.error('SSE parse error:', error);
+                    }
+                };
+
+                eventSource.onerror = function(error) {
+                    console.log('SSE connection failed, falling back to polling');
+                    eventSource.close();
+                    eventSource = null;
+                    useSSE = false;
+                    startPolling();
+                };
+
+                console.log('SSE connection established');
+            } catch (error) {
+                console.error('SSE initialization failed:', error);
+                useSSE = false;
+                startPolling();
+            }
+        }
+
         async function fetchState() {
             try {
                 const cacheBuster = Date.now();
@@ -726,8 +773,31 @@
             }
         }
 
-        // Poll for updates
-        const pollInterval = setInterval(fetchState, 500);
+        function startPolling() {
+            if (fallbackPollInterval) return;
+
+            // Fast polling - every 200ms for near real-time updates
+            fallbackPollInterval = setInterval(fetchState, 200);
+            console.log('Started polling mode (200ms interval)');
+        }
+
+        function stopPolling() {
+            if (fallbackPollInterval) {
+                clearInterval(fallbackPollInterval);
+                fallbackPollInterval = null;
+            }
+        }
+
+        // Initialize connection
+        if (typeof(EventSource) !== "undefined") {
+            // Try SSE first
+            initSSE();
+        } else {
+            // Browser doesn't support SSE, use polling
+            console.log('EventSource not supported, using polling');
+            useSSE = false;
+            startPolling();
+        }
 
         // Initial fetch
         fetchState();
@@ -736,8 +806,25 @@
         document.addEventListener('visibilitychange', () => {
             if (!document.hidden) {
                 currentState = null;
+                currentVersion = -1;
                 fetchState();
             }
+        });
+
+        // Reconnect SSE on page focus
+        window.addEventListener('focus', () => {
+            if (useSSE && !eventSource) {
+                initSSE();
+            }
+        });
+
+        // Cleanup on unload
+        window.addEventListener('beforeunload', () => {
+            if (eventSource) {
+                eventSource.close();
+            }
+            stopPolling();
+            stopAutoAnimation();
         });
     </script>
 </body>

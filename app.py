@@ -1,5 +1,5 @@
 import os
-from flask import Flask, render_template, redirect, url_for, request, jsonify, session, make_response
+from flask import Flask, render_template, redirect, url_for, request, jsonify, session, make_response, Response
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required, current_user
 from authlib.integrations.flask_client import OAuth
@@ -7,6 +7,9 @@ from datetime import datetime, timedelta
 from functools import wraps
 from dotenv import load_dotenv
 import time
+import json
+import queue
+import threading
 
 app = Flask(__name__)
 load_dotenv()
@@ -42,6 +45,10 @@ google = oauth.register(
     server_metadata_url='https://accounts.google.com/.well-known/openid-configuration',
     client_kwargs={'scope': 'openid email profile'}
 )
+
+# SSE support
+state_update_queues = []
+state_lock = threading.Lock()
 
 
 def no_cache(view):
@@ -123,19 +130,34 @@ class ActivityLog(db.Model):
         }
 
 
-# Overlay state
+# Overlay state with version tracking
 overlay_state = {
     'mode': 'hidden',
     'minister': None,
     'sermon': None,
     'church': None,
-    'animation': 'slide-up'
+    'animation': 'slide-up',
+    'version': 0,  # Track state changes
+    'timestamp': time.time()
 }
 
 
-def update_overlay_timestamp():
-    """Helper to update timestamp - removed"""
-    pass
+def notify_state_change():
+    """Notify all SSE clients about state change"""
+    global state_update_queues
+    with state_lock:
+        overlay_state['version'] += 1
+        overlay_state['timestamp'] = time.time()
+
+        # Remove closed queues
+        active_queues = []
+        for q in state_update_queues:
+            try:
+                q.put_nowait({'type': 'update', 'state': overlay_state.copy()})
+                active_queues.append(q)
+            except:
+                pass
+        state_update_queues = active_queues
 
 
 def log_activity(action, details=None):
@@ -319,12 +341,43 @@ def check_auth():
 @app.route('/api/overlay/state')
 @no_cache
 def get_overlay_state():
-    """Return overlay state"""
-    response = make_response(jsonify(overlay_state))
+    """Return overlay state with version"""
+    with state_lock:
+        state = overlay_state.copy()
+
+    response = make_response(jsonify(state))
     response.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate, max-age=0'
     response.headers['Pragma'] = 'no-cache'
     response.headers['Expires'] = '0'
     return response
+
+
+@app.route('/api/overlay/stream')
+def stream_overlay():
+    """Server-Sent Events endpoint for real-time updates"""
+
+    def event_stream():
+        q = queue.Queue()
+        with state_lock:
+            state_update_queues.append(q)
+
+        # Send initial state
+        yield f"data: {json.dumps({'type': 'init', 'state': overlay_state.copy()})}\n\n"
+
+        try:
+            while True:
+                try:
+                    message = q.get(timeout=30)
+                    yield f"data: {json.dumps(message)}\n\n"
+                except queue.Empty:
+                    # Send keep-alive
+                    yield f"data: {json.dumps({'type': 'ping'})}\n\n"
+        except GeneratorExit:
+            with state_lock:
+                if q in state_update_queues:
+                    state_update_queues.remove(q)
+
+    return Response(event_stream(), mimetype='text/event-stream')
 
 
 @app.route('/api/overlay/update', methods=['POST'])
@@ -333,83 +386,87 @@ def update_overlay():
     data = request.json
     mode = data.get('mode', 'hidden')
 
-    overlay_state['mode'] = mode
+    with state_lock:
+        overlay_state['mode'] = mode
 
-    if 'animation' in data:
-        overlay_state['animation'] = data['animation']
+        if 'animation' in data:
+            overlay_state['animation'] = data['animation']
 
-    details = f"Mode: {mode}"
-
-    try:
-        if mode == 'minister':
-            minister_id = data.get('minister_id')
-            if minister_id:
-                minister = Minister.query.get(minister_id)
-                if minister:
-                    try:
-                        minister.last_used = datetime.utcnow()
-                        db.session.commit()
-                    except Exception:
-                        db.session.rollback()
-
-                    overlay_state['minister'] = {
-                        'id': minister.id,
-                        'name': minister.name,
-                        'title': minister.title
-                    }
-                    details = f"Displayed minister: {minister.name}"
-            else:
-                minister_name = data.get('minister_name')
-                overlay_state['minister'] = {
-                    'name': minister_name,
-                    'title': data.get('minister_title')
-                }
-                details = f"Displayed custom minister: {minister_name}"
-            overlay_state['sermon'] = None
-
-        elif mode == 'sermon':
-            sermon_id = data.get('sermon_id')
-            if sermon_id:
-                sermon = Sermon.query.get(sermon_id)
-                if sermon:
-                    overlay_state['sermon'] = {
-                        'id': sermon.id,
-                        'minister_name': sermon.minister_name,
-                        'title': sermon.title,
-                        'bible_verse': sermon.bible_verse
-                    }
-                    details = f"Displayed sermon: {sermon.title}"
-            else:
-                sermon_title = data.get('sermon_title')
-                overlay_state['sermon'] = {
-                    'minister_name': data.get('minister_name'),
-                    'title': sermon_title,
-                    'bible_verse': data.get('bible_verse')
-                }
-                details = f"Displayed custom sermon: {sermon_title}"
-            overlay_state['minister'] = None
-
-        elif mode == 'hidden':
-            overlay_state['minister'] = None
-            overlay_state['sermon'] = None
-            details = "Overlay hidden"
-
-        church = Church.query.first()
-        if church:
-            overlay_state['church'] = {
-                'name': church.name,
-                'description': church.description
-            }
+        details = f"Mode: {mode}"
 
         try:
-            log_activity('OVERLAY_UPDATE', details)
+            if mode == 'minister':
+                minister_id = data.get('minister_id')
+                if minister_id:
+                    minister = Minister.query.get(minister_id)
+                    if minister:
+                        try:
+                            minister.last_used = datetime.utcnow()
+                            db.session.commit()
+                        except Exception:
+                            db.session.rollback()
+
+                        overlay_state['minister'] = {
+                            'id': minister.id,
+                            'name': minister.name,
+                            'title': minister.title
+                        }
+                        details = f"Displayed minister: {minister.name}"
+                else:
+                    minister_name = data.get('minister_name')
+                    overlay_state['minister'] = {
+                        'name': minister_name,
+                        'title': data.get('minister_title')
+                    }
+                    details = f"Displayed custom minister: {minister_name}"
+                overlay_state['sermon'] = None
+
+            elif mode == 'sermon':
+                sermon_id = data.get('sermon_id')
+                if sermon_id:
+                    sermon = Sermon.query.get(sermon_id)
+                    if sermon:
+                        overlay_state['sermon'] = {
+                            'id': sermon.id,
+                            'minister_name': sermon.minister_name,
+                            'title': sermon.title,
+                            'bible_verse': sermon.bible_verse
+                        }
+                        details = f"Displayed sermon: {sermon.title}"
+                else:
+                    sermon_title = data.get('sermon_title')
+                    overlay_state['sermon'] = {
+                        'minister_name': data.get('minister_name'),
+                        'title': sermon_title,
+                        'bible_verse': data.get('bible_verse')
+                    }
+                    details = f"Displayed custom sermon: {sermon_title}"
+                overlay_state['minister'] = None
+
+            elif mode == 'hidden':
+                overlay_state['minister'] = None
+                overlay_state['sermon'] = None
+                details = "Overlay hidden"
+
+            church = Church.query.first()
+            if church:
+                overlay_state['church'] = {
+                    'name': church.name,
+                    'description': church.description
+                }
+
+            try:
+                log_activity('OVERLAY_UPDATE', details)
+            except Exception:
+                pass
+
         except Exception:
             pass
 
-    except Exception:
-        pass
+    # Notify all listeners
+    notify_state_change()
 
-    response = make_response(jsonify({'success': True, 'state': overlay_state}))
+    response = make_response(jsonify({'success': True, 'state': overlay_state.copy()}))
     response.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate, max-age=0'
     response.headers['Pragma'] = 'no-cache'
     return response
@@ -429,11 +486,13 @@ def manage_church():
         church.description = data.get('description')
         db.session.commit()
 
-        overlay_state['church'] = {
-            'name': church.name,
-            'description': church.description
-        }
+        with state_lock:
+            overlay_state['church'] = {
+                'name': church.name,
+                'description': church.description
+            }
 
+        notify_state_change()
         log_activity('CHURCH_UPDATE', f"Updated church info: {church.name}")
         return jsonify({'success': True})
 
@@ -583,9 +642,11 @@ def select_animation():
     setting.value = animation
     db.session.commit()
 
-    if animation != 'auto':
-        overlay_state['animation'] = animation
+    with state_lock:
+        if animation != 'auto':
+            overlay_state['animation'] = animation
 
+    notify_state_change()
     log_activity('ANIMATION_SELECT', f"Selected animation: {animation}")
     return jsonify({'success': True})
 
