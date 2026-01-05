@@ -485,8 +485,6 @@
         let autoAnimationInterval = null;
         let autoAnimationTimeout = null;
         let typewriterTimeouts = [];
-        let lastStateVersion = null;
-        let isOverlayVisible = false;
 
         // Animation class mapping
         const animationClasses = {
@@ -637,16 +635,16 @@
         function updateDisplay(state) {
             if (!state) return;
 
-            // Only check version for changes
-            if (lastStateVersion === state.version && lastStateVersion !== null) {
-                return; // No version change, keep display as is
+            // Simple deep comparison to check if content actually changed
+            const stateChanged = JSON.stringify(currentState) !== JSON.stringify(state);
+
+            if (!stateChanged && currentState !== null) {
+                return; // No change, keep display as is
             }
 
-            // Store previous state
+            const isFirstLoad = currentState === null;
             const previousMode = currentState ? currentState.mode : null;
-            const isFirstLoad = lastStateVersion === null;
 
-            lastStateVersion = state.version;
             currentState = state;
 
             if (state.animation) {
@@ -656,7 +654,6 @@
             // Handle hidden mode
             if (state.mode === 'hidden') {
                 lowerThird.classList.remove('visible');
-                isOverlayVisible = false;
                 stopAutoAnimation();
                 return;
             }
@@ -693,14 +690,13 @@
                 }
             }
 
-            // Apply animation only on real changes or first load
+            // Apply animation only on first load or mode change
             if (isFirstLoad || previousMode !== state.mode) {
                 applyAnimation(currentAnimation);
             }
 
             // Show overlay
             lowerThird.classList.add('visible');
-            isOverlayVisible = true;
 
             if (currentAnimation === 'auto') {
                 startAutoAnimation();
@@ -739,7 +735,7 @@
         // Force refresh when page becomes visible
         document.addEventListener('visibilitychange', () => {
             if (!document.hidden) {
-                lastStateVersion = null;
+                currentState = null;
                 fetchState();
             }
         });

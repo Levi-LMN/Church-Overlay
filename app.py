@@ -129,16 +129,13 @@ overlay_state = {
     'minister': None,
     'sermon': None,
     'church': None,
-    'animation': 'slide-up',
-    'timestamp': time.time(),
-    'version': 1
+    'animation': 'slide-up'
 }
 
 
 def update_overlay_timestamp():
-    """Helper to update timestamp and version"""
-    overlay_state['timestamp'] = time.time()
-    overlay_state['version'] = overlay_state.get('version', 0) + 1
+    """Helper to update timestamp - removed"""
+    pass
 
 
 def log_activity(action, details=None):
@@ -322,18 +319,8 @@ def check_auth():
 @app.route('/api/overlay/state')
 @no_cache
 def get_overlay_state():
-    """Return overlay state with fresh copy to prevent caching"""
-    state_copy = {
-        'mode': overlay_state['mode'],
-        'minister': overlay_state['minister'].copy() if overlay_state['minister'] else None,
-        'sermon': overlay_state['sermon'].copy() if overlay_state['sermon'] else None,
-        'church': overlay_state['church'].copy() if overlay_state['church'] else None,
-        'animation': overlay_state['animation'],
-        'timestamp': overlay_state['timestamp'],  # Use stored timestamp, not new one
-        'version': overlay_state.get('version', 1)
-    }
-
-    response = make_response(jsonify(state_copy))
+    """Return overlay state"""
+    response = make_response(jsonify(overlay_state))
     response.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate, max-age=0'
     response.headers['Pragma'] = 'no-cache'
     response.headers['Expires'] = '0'
@@ -347,7 +334,6 @@ def update_overlay():
     mode = data.get('mode', 'hidden')
 
     overlay_state['mode'] = mode
-    update_overlay_timestamp()
 
     if 'animation' in data:
         overlay_state['animation'] = data['animation']
@@ -447,7 +433,6 @@ def manage_church():
             'name': church.name,
             'description': church.description
         }
-        update_overlay_timestamp()
 
         log_activity('CHURCH_UPDATE', f"Updated church info: {church.name}")
         return jsonify({'success': True})
@@ -600,8 +585,6 @@ def select_animation():
 
     if animation != 'auto':
         overlay_state['animation'] = animation
-
-    update_overlay_timestamp()
 
     log_activity('ANIMATION_SELECT', f"Selected animation: {animation}")
     return jsonify({'success': True})
