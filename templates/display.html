@@ -637,10 +637,14 @@
         function updateDisplay(state) {
             if (!state) return;
 
-            // Check if state actually changed
+            // Check if state actually changed (timestamp AND version must be different)
             if (lastStateTimestamp === state.timestamp && lastStateVersion === state.version) {
-                return;
+                return; // No change, keep display as is
             }
+
+            // Store current display state to compare
+            const previousMode = currentState ? currentState.mode : null;
+            const previousVersion = lastStateVersion;
 
             lastStateTimestamp = state.timestamp;
             lastStateVersion = state.version;
@@ -650,53 +654,64 @@
                 currentAnimation = state.animation;
             }
 
+            // Handle hidden mode
             if (state.mode === 'hidden') {
                 lowerThird.classList.remove('visible');
                 stopAutoAnimation();
                 return;
             }
 
-            // Set church info
-            if (state.church) {
-                if (state.church.description && state.church.description.trim()) {
-                    churchInfo.textContent = `${state.church.name} • ${state.church.description}`;
+            // Only update content if version actually changed (real state change)
+            const isRealChange = previousVersion !== state.version;
+
+            if (isRealChange) {
+                // Set church info
+                if (state.church) {
+                    if (state.church.description && state.church.description.trim()) {
+                        churchInfo.textContent = `${state.church.name} • ${state.church.description}`;
+                    } else {
+                        churchInfo.textContent = state.church.name;
+                    }
+                    churchInfo.style.display = 'inline-block';
                 } else {
-                    churchInfo.textContent = state.church.name;
+                    churchInfo.style.display = 'none';
                 }
-                churchInfo.style.display = 'inline-block';
-            } else {
-                churchInfo.style.display = 'none';
-            }
 
-            if (state.mode === 'minister' && state.minister) {
-                mainTitle.textContent = state.minister.name;
-                subtitle.textContent = state.minister.title || '';
-                subtitle.style.display = state.minister.title ? 'block' : 'none';
-                bibleVerse.style.display = 'none';
-            }
-
-            if (state.mode === 'sermon' && state.sermon) {
-                mainTitle.textContent = state.sermon.title;
-                subtitle.textContent = state.sermon.minister_name || '';
-                subtitle.style.display = state.sermon.minister_name ? 'block' : 'none';
-
-                if (state.sermon.bible_verse) {
-                    bibleVerse.textContent = state.sermon.bible_verse;
-                    bibleVerse.style.display = 'block';
-                } else {
+                if (state.mode === 'minister' && state.minister) {
+                    mainTitle.textContent = state.minister.name;
+                    subtitle.textContent = state.minister.title || '';
+                    subtitle.style.display = state.minister.title ? 'block' : 'none';
                     bibleVerse.style.display = 'none';
                 }
-            }
 
-            // Apply animation and show
-            applyAnimation(currentAnimation);
-            lowerThird.classList.add('visible');
+                if (state.mode === 'sermon' && state.sermon) {
+                    mainTitle.textContent = state.sermon.title;
+                    subtitle.textContent = state.sermon.minister_name || '';
+                    subtitle.style.display = state.sermon.minister_name ? 'block' : 'none';
 
-            if (currentAnimation === 'auto') {
-                startAutoAnimation();
-            } else {
-                stopAutoAnimation();
+                    if (state.sermon.bible_verse) {
+                        bibleVerse.textContent = state.sermon.bible_verse;
+                        bibleVerse.style.display = 'block';
+                    } else {
+                        bibleVerse.style.display = 'none';
+                    }
+                }
+
+                // Only apply animation on actual content change
+                if (previousMode !== state.mode || previousVersion === null) {
+                    applyAnimation(currentAnimation);
+                }
+
+                // Show overlay
+                lowerThird.classList.add('visible');
+
+                if (currentAnimation === 'auto') {
+                    startAutoAnimation();
+                } else {
+                    stopAutoAnimation();
+                }
             }
+            // If not a real change, keep everything as is (sticky display)
         }
 
         async function fetchState() {
