@@ -22,54 +22,6 @@
             background: transparent;
         }
 
-        /* DEBUG PANEL - Toggle with 'D' key */
-        #debug-panel {
-            position: fixed;
-            top: 10px;
-            right: 10px;
-            background: rgba(0, 0, 0, 0.9);
-            color: #0f0;
-            padding: 15px;
-            border-radius: 8px;
-            font-family: monospace;
-            font-size: 12px;
-            max-width: 400px;
-            z-index: 99999;
-            display: none;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
-        }
-
-        #debug-panel.visible {
-            display: block;
-        }
-
-        #debug-panel h3 {
-            color: #ff0;
-            margin-bottom: 8px;
-            border-bottom: 1px solid #444;
-            padding-bottom: 5px;
-        }
-
-        #debug-panel .debug-item {
-            margin: 5px 0;
-            display: flex;
-            gap: 10px;
-        }
-
-        #debug-panel .debug-label {
-            color: #0ff;
-            min-width: 120px;
-        }
-
-        #debug-panel .debug-value {
-            color: #fff;
-            word-break: break-all;
-        }
-
-        .error-indicator {
-            color: #f00 !important;
-        }
-
         /* Lower Third Container */
         .lower-third {
             position: absolute;
@@ -502,43 +454,6 @@
     </style>
 </head>
 <body>
-    <!-- Debug Panel -->
-    <div id="debug-panel">
-        <h3>🔧 Debug Info (Press D to toggle)</h3>
-        <div class="debug-item">
-            <span class="debug-label">Status:</span>
-            <span class="debug-value" id="debug-status">Initializing...</span>
-        </div>
-        <div class="debug-item">
-            <span class="debug-label">Mode:</span>
-            <span class="debug-value" id="debug-mode">-</span>
-        </div>
-        <div class="debug-item">
-            <span class="debug-label">Animation:</span>
-            <span class="debug-value" id="debug-animation">-</span>
-        </div>
-        <div class="debug-item">
-            <span class="debug-label">Last Fetch:</span>
-            <span class="debug-value" id="debug-fetch">-</span>
-        </div>
-        <div class="debug-item">
-            <span class="debug-label">Fetch Count:</span>
-            <span class="debug-value" id="debug-count">0</span>
-        </div>
-        <div class="debug-item">
-            <span class="debug-label">Last Error:</span>
-            <span class="debug-value error-indicator" id="debug-error">None</span>
-        </div>
-        <div class="debug-item">
-            <span class="debug-label">Timestamp:</span>
-            <span class="debug-value" id="debug-timestamp">-</span>
-        </div>
-        <div class="debug-item">
-            <span class="debug-label">Version:</span>
-            <span class="debug-value" id="debug-version">-</span>
-        </div>
-    </div>
-
     <div id="lower-third" class="lower-third">
         <div class="background-shapes">
             <div class="shape-1"></div>
@@ -565,17 +480,6 @@
         const subtitle = document.getElementById('subtitle');
         const bibleVerse = document.getElementById('bible-verse');
 
-        // Debug elements
-        const debugPanel = document.getElementById('debug-panel');
-        const debugStatus = document.getElementById('debug-status');
-        const debugMode = document.getElementById('debug-mode');
-        const debugAnimation = document.getElementById('debug-animation');
-        const debugFetch = document.getElementById('debug-fetch');
-        const debugCount = document.getElementById('debug-count');
-        const debugError = document.getElementById('debug-error');
-        const debugTimestamp = document.getElementById('debug-timestamp');
-        const debugVersion = document.getElementById('debug-version');
-
         let currentState = null;
         let currentAnimation = 'slide-up';
         let autoAnimationInterval = null;
@@ -583,41 +487,6 @@
         let typewriterTimeouts = [];
         let lastStateTimestamp = null;
         let lastStateVersion = null;
-        let fetchCount = 0;
-        let isDebugMode = false;
-
-        // Toggle debug panel with 'D' key
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'd' || e.key === 'D') {
-                isDebugMode = !isDebugMode;
-                debugPanel.classList.toggle('visible', isDebugMode);
-                updateDebugInfo('Debug mode toggled', 'info');
-            }
-        });
-
-        function updateDebugInfo(status, type = 'info') {
-            if (!isDebugMode) return;
-
-            const now = new Date();
-            debugStatus.textContent = status;
-            debugStatus.className = `debug-value ${type === 'error' ? 'error-indicator' : ''}`;
-            debugFetch.textContent = now.toLocaleTimeString();
-            debugCount.textContent = fetchCount;
-
-            if (currentState) {
-                debugMode.textContent = currentState.mode || 'unknown';
-                debugAnimation.textContent = currentState.animation || 'unknown';
-                debugTimestamp.textContent = currentState.timestamp ? new Date(currentState.timestamp * 1000).toLocaleTimeString() : '-';
-                debugVersion.textContent = currentState.version || '-';
-            }
-        }
-
-        function logError(message, error) {
-            console.error(message, error);
-            if (isDebugMode) {
-                debugError.textContent = `${message}: ${error.message || error}`;
-            }
-        }
 
         // Animation class mapping
         const animationClasses = {
@@ -748,7 +617,6 @@
                         const animClass = animationClasses[randomAnim];
                         lowerThird.classList.add(animClass);
                         lowerThird.classList.add('visible');
-                        updateDebugInfo(`Auto animation: ${randomAnim}`, 'info');
                     }, 50);
                 }, 5000);
             }
@@ -767,21 +635,16 @@
         }
 
         function updateDisplay(state) {
-            if (!state) {
-                updateDebugInfo('No state received', 'error');
-                return;
-            }
+            if (!state) return;
 
             // Check if state actually changed
             if (lastStateTimestamp === state.timestamp && lastStateVersion === state.version) {
-                return; // No change
+                return;
             }
 
             lastStateTimestamp = state.timestamp;
             lastStateVersion = state.version;
             currentState = state;
-
-            updateDebugInfo(`State updated: ${state.mode}`, 'info');
 
             if (state.animation) {
                 currentAnimation = state.animation;
@@ -790,7 +653,6 @@
             if (state.mode === 'hidden') {
                 lowerThird.classList.remove('visible');
                 stopAutoAnimation();
-                updateDebugInfo('Overlay hidden', 'info');
                 return;
             }
 
@@ -811,7 +673,6 @@
                 subtitle.textContent = state.minister.title || '';
                 subtitle.style.display = state.minister.title ? 'block' : 'none';
                 bibleVerse.style.display = 'none';
-                updateDebugInfo(`Minister: ${state.minister.name}`, 'info');
             }
 
             if (state.mode === 'sermon' && state.sermon) {
@@ -825,7 +686,6 @@
                 } else {
                     bibleVerse.style.display = 'none';
                 }
-                updateDebugInfo(`Sermon: ${state.sermon.title}`, 'info');
             }
 
             // Apply animation and show
@@ -841,7 +701,6 @@
 
         async function fetchState() {
             try {
-                fetchCount++;
                 const cacheBuster = Date.now();
                 const response = await fetch(`/api/overlay/state?t=${cacheBuster}`, {
                     method: 'GET',
@@ -852,23 +711,16 @@
                     }
                 });
 
-                if (!response.ok) {
-                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-                }
+                if (!response.ok) return;
 
                 const state = await response.json();
                 updateDisplay(state);
-
-                if (isDebugMode && debugError.textContent !== 'None') {
-                    debugError.textContent = 'None';
-                }
             } catch (error) {
-                logError('Error fetching overlay state', error);
-                updateDebugInfo('Fetch error - retrying...', 'error');
+                // Silent fail
             }
         }
 
-        // Poll for updates - reduced to 500ms for better server performance
+        // Poll for updates
         const pollInterval = setInterval(fetchState, 500);
 
         // Initial fetch
@@ -880,14 +732,8 @@
                 lastStateTimestamp = null;
                 lastStateVersion = null;
                 fetchState();
-                updateDebugInfo('Page visible - refreshed', 'info');
             }
         });
-
-        // Show initial debug info after 1 second
-        setTimeout(() => {
-            updateDebugInfo('Display initialized', 'info');
-        }, 1000);
     </script>
 </body>
 </html>

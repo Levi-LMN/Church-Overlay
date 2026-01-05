@@ -28,7 +28,7 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['GOOGLE_CLIENT_ID'] = os.environ.get('GOOGLE_CLIENT_ID')
 app.config['GOOGLE_CLIENT_SECRET'] = os.environ.get('GOOGLE_CLIENT_SECRET')
 
-ADMIN_EMAIL = 'mukuhalevi@gmail.com'
+ADMIN_EMAIL = 'admin@zearom.com'
 
 db = SQLAlchemy(app)
 login_manager = LoginManager(app)
@@ -123,7 +123,7 @@ class ActivityLog(db.Model):
         }
 
 
-# IMPROVED OVERLAY STATE
+# Overlay state
 overlay_state = {
     'mode': 'hidden',
     'minister': None,
@@ -155,7 +155,6 @@ def log_activity(action, details=None):
         db.session.add(log)
         db.session.commit()
     except Exception as e:
-        print(f"Error logging activity: {e}")
         db.session.rollback()
 
 
@@ -166,9 +165,7 @@ def cleanup_old_logs():
         deleted = ActivityLog.query.filter(ActivityLog.timestamp < cutoff_date).delete()
         if deleted > 0:
             db.session.commit()
-            print(f"Cleaned up {deleted} old activity logs")
     except Exception as e:
-        print(f"Error cleaning up logs: {e}")
         db.session.rollback()
 
 
@@ -366,8 +363,7 @@ def update_overlay():
                     try:
                         minister.last_used = datetime.utcnow()
                         db.session.commit()
-                    except Exception as db_error:
-                        print(f"Database error updating minister last_used: {db_error}")
+                    except Exception:
                         db.session.rollback()
 
                     overlay_state['minister'] = {
@@ -421,11 +417,11 @@ def update_overlay():
 
         try:
             log_activity('OVERLAY_UPDATE', details)
-        except Exception as log_error:
-            print(f"Could not log activity: {log_error}")
+        except Exception:
+            pass
 
-    except Exception as e:
-        print(f"Error in update_overlay: {e}")
+    except Exception:
+        pass
 
     response = make_response(jsonify({'success': True, 'state': overlay_state}))
     response.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate, max-age=0'
@@ -755,43 +751,41 @@ def mass_delete_logs():
 with app.app_context():
     try:
         db.create_all()
-        print(f"[OK] Database initialized at: {database_path}")
 
-        if os.path.exists(database_path):
-            if os.access(database_path, os.W_OK):
-                print("[OK] Database is writable")
-            else:
-                print("[WARNING] Database exists but is NOT writable!")
-                print(f"   Run: chmod 644 {database_path}")
-
-        if os.access(instance_path, os.W_OK):
-            print("[OK] Instance directory is writable")
-        else:
-            print("[WARNING] Instance directory is NOT writable!")
-            print(f"   Run: chmod 755 {instance_path}")
-
+        # Create default settings
         if not Settings.query.filter_by(key='require_auth').first():
             db.session.add(Settings(key='require_auth', value='false'))
 
         if not Settings.query.filter_by(key='selected_animation').first():
             db.session.add(Settings(key='selected_animation', value='auto'))
 
+        # Seed admin user if doesn't exist
+        admin_user = User.query.filter_by(email=ADMIN_EMAIL).first()
+        if not admin_user:
+            admin_user = User(
+                email=ADMIN_EMAIL,
+                name='Admin',
+                is_admin=True
+            )
+            db.session.add(admin_user)
+            db.session.commit()
+
+        # Clear old animations
         Animation.query.delete()
         db.session.commit()
 
         cleanup_old_logs()
 
+        # Load church info into overlay state
         church = Church.query.first()
         if church:
             overlay_state['church'] = {
                 'name': church.name,
                 'description': church.description
             }
-            print(f"[OK] Loaded church: {church.name}")
 
     except Exception as e:
-        print(f"[ERROR] Database initialization error: {e}")
-        print("   This may be a permissions issue.")
+        db.session.rollback()
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=5000)
