@@ -12,7 +12,7 @@ app = Flask(__name__)
 load_dotenv()
 app.secret_key = os.environ.get('SECRET_KEY', 'dev-secret-key-change-in-production')
 
-# FIX: Use absolute path for database and ensure instance folder exists
+# Use absolute path for database and ensure instance folder exists
 basedir = os.path.abspath(os.path.dirname(__file__))
 instance_path = os.path.join(basedir, 'instance')
 
@@ -44,7 +44,6 @@ google = oauth.register(
 )
 
 
-# IMPROVED NO-CACHE DECORATOR
 def no_cache(view):
     @wraps(view)
     def no_cache_view(*args, **kwargs):
@@ -358,7 +357,6 @@ def update_overlay():
 
     details = f"Mode: {mode}"
 
-    # FIX: Don't try to update database for custom overlays or if minister_id doesn't need tracking
     try:
         if mode == 'minister':
             minister_id = data.get('minister_id')
@@ -371,7 +369,6 @@ def update_overlay():
                     except Exception as db_error:
                         print(f"Database error updating minister last_used: {db_error}")
                         db.session.rollback()
-                        # Continue anyway - don't let DB error stop overlay update
 
                     overlay_state['minister'] = {
                         'id': minister.id,
@@ -422,7 +419,6 @@ def update_overlay():
                 'description': church.description
             }
 
-        # Try to log activity, but don't fail if DB is readonly
         try:
             log_activity('OVERLAY_UPDATE', details)
         except Exception as log_error:
@@ -430,7 +426,6 @@ def update_overlay():
 
     except Exception as e:
         print(f"Error in update_overlay: {e}")
-        # Don't return error - overlay state was still updated in memory
 
     response = make_response(jsonify({'success': True, 'state': overlay_state}))
     response.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate, max-age=0'
@@ -760,21 +755,19 @@ def mass_delete_logs():
 with app.app_context():
     try:
         db.create_all()
-        print(f"✅ Database initialized at: {database_path}")
+        print(f"[OK] Database initialized at: {database_path}")
 
-        # Check if database file exists and is writable
         if os.path.exists(database_path):
             if os.access(database_path, os.W_OK):
-                print("✅ Database is writable")
+                print("[OK] Database is writable")
             else:
-                print("⚠️ WARNING: Database exists but is NOT writable!")
+                print("[WARNING] Database exists but is NOT writable!")
                 print(f"   Run: chmod 644 {database_path}")
 
-        # Check if instance directory is writable
         if os.access(instance_path, os.W_OK):
-            print("✅ Instance directory is writable")
+            print("[OK] Instance directory is writable")
         else:
-            print("⚠️ WARNING: Instance directory is NOT writable!")
+            print("[WARNING] Instance directory is NOT writable!")
             print(f"   Run: chmod 755 {instance_path}")
 
         if not Settings.query.filter_by(key='require_auth').first():
@@ -788,17 +781,16 @@ with app.app_context():
 
         cleanup_old_logs()
 
-        # Initialize overlay state with church info if available
         church = Church.query.first()
         if church:
             overlay_state['church'] = {
                 'name': church.name,
                 'description': church.description
             }
-            print(f"✅ Loaded church: {church.name}")
+            print(f"[OK] Loaded church: {church.name}")
 
     except Exception as e:
-        print(f"❌ Database initialization error: {e}")
+        print(f"[ERROR] Database initialization error: {e}")
         print("   This may be a permissions issue.")
 
 if __name__ == '__main__':
