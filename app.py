@@ -11,7 +11,17 @@ import time
 app = Flask(__name__)
 load_dotenv()
 app.secret_key = os.environ.get('SECRET_KEY', 'dev-secret-key-change-in-production')
-app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL', 'sqlite:///obs_overlay.db')
+
+# FIX: Use absolute path for database and ensure instance folder exists
+basedir = os.path.abspath(os.path.dirname(__file__))
+instance_path = os.path.join(basedir, 'instance')
+
+# Create instance directory if it doesn't exist
+os.makedirs(instance_path, exist_ok=True)
+
+# Set proper database URI with absolute path
+database_path = os.path.join(instance_path, 'obs_overlay.db')
+app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL', f'sqlite:///{database_path}')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 # Google OAuth Configuration
@@ -317,14 +327,13 @@ def check_auth():
 @no_cache
 def get_overlay_state():
     """Return overlay state with fresh copy to prevent caching"""
-    # Create a fresh copy with current timestamp
     state_copy = {
         'mode': overlay_state['mode'],
         'minister': overlay_state['minister'].copy() if overlay_state['minister'] else None,
         'sermon': overlay_state['sermon'].copy() if overlay_state['sermon'] else None,
         'church': overlay_state['church'].copy() if overlay_state['church'] else None,
         'animation': overlay_state['animation'],
-        'timestamp': time.time(),  # Always use current time
+        'timestamp': time.time(),
         'version': overlay_state.get('version', 1)
     }
 
@@ -349,63 +358,79 @@ def update_overlay():
 
     details = f"Mode: {mode}"
 
-    if mode == 'minister':
-        minister_id = data.get('minister_id')
-        if minister_id:
-            minister = Minister.query.get(minister_id)
-            if minister:
-                minister.last_used = datetime.utcnow()
-                db.session.commit()
+    # FIX: Don't try to update database for custom overlays or if minister_id doesn't need tracking
+    try:
+        if mode == 'minister':
+            minister_id = data.get('minister_id')
+            if minister_id:
+                minister = Minister.query.get(minister_id)
+                if minister:
+                    try:
+                        minister.last_used = datetime.utcnow()
+                        db.session.commit()
+                    except Exception as db_error:
+                        print(f"Database error updating minister last_used: {db_error}")
+                        db.session.rollback()
+                        # Continue anyway - don't let DB error stop overlay update
+
+                    overlay_state['minister'] = {
+                        'id': minister.id,
+                        'name': minister.name,
+                        'title': minister.title
+                    }
+                    details = f"Displayed minister: {minister.name}"
+            else:
+                minister_name = data.get('minister_name')
                 overlay_state['minister'] = {
-                    'id': minister.id,
-                    'name': minister.name,
-                    'title': minister.title
+                    'name': minister_name,
+                    'title': data.get('minister_title')
                 }
-                details = f"Displayed minister: {minister.name}"
-        else:
-            minister_name = data.get('minister_name')
-            overlay_state['minister'] = {
-                'name': minister_name,
-                'title': data.get('minister_title')
-            }
-            details = f"Displayed custom minister: {minister_name}"
-        overlay_state['sermon'] = None
+                details = f"Displayed custom minister: {minister_name}"
+            overlay_state['sermon'] = None
 
-    elif mode == 'sermon':
-        sermon_id = data.get('sermon_id')
-        if sermon_id:
-            sermon = Sermon.query.get(sermon_id)
-            if sermon:
+        elif mode == 'sermon':
+            sermon_id = data.get('sermon_id')
+            if sermon_id:
+                sermon = Sermon.query.get(sermon_id)
+                if sermon:
+                    overlay_state['sermon'] = {
+                        'id': sermon.id,
+                        'minister_name': sermon.minister_name,
+                        'title': sermon.title,
+                        'bible_verse': sermon.bible_verse
+                    }
+                    details = f"Displayed sermon: {sermon.title}"
+            else:
+                sermon_title = data.get('sermon_title')
                 overlay_state['sermon'] = {
-                    'id': sermon.id,
-                    'minister_name': sermon.minister_name,
-                    'title': sermon.title,
-                    'bible_verse': sermon.bible_verse
+                    'minister_name': data.get('minister_name'),
+                    'title': sermon_title,
+                    'bible_verse': data.get('bible_verse')
                 }
-                details = f"Displayed sermon: {sermon.title}"
-        else:
-            sermon_title = data.get('sermon_title')
-            overlay_state['sermon'] = {
-                'minister_name': data.get('minister_name'),
-                'title': sermon_title,
-                'bible_verse': data.get('bible_verse')
+                details = f"Displayed custom sermon: {sermon_title}"
+            overlay_state['minister'] = None
+
+        elif mode == 'hidden':
+            overlay_state['minister'] = None
+            overlay_state['sermon'] = None
+            details = "Overlay hidden"
+
+        church = Church.query.first()
+        if church:
+            overlay_state['church'] = {
+                'name': church.name,
+                'description': church.description
             }
-            details = f"Displayed custom sermon: {sermon_title}"
-        overlay_state['minister'] = None
 
-    elif mode == 'hidden':
-        overlay_state['minister'] = None
-        overlay_state['sermon'] = None
-        details = "Overlay hidden"
+        # Try to log activity, but don't fail if DB is readonly
+        try:
+            log_activity('OVERLAY_UPDATE', details)
+        except Exception as log_error:
+            print(f"Could not log activity: {log_error}")
 
-    church = Church.query.first()
-    if church:
-        overlay_state['church'] = {
-            'name': church.name,
-            'description': church.description
-        }
-
-    log_activity('OVERLAY_UPDATE', details)
+    except Exception as e:
+        print(f"Error in update_overlay: {e}")
+        # Don't return error - overlay state was still updated in memory
 
     response = make_response(jsonify({'success': True, 'state': overlay_state}))
     response.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate, max-age=0'
@@ -427,7 +452,6 @@ def manage_church():
         church.description = data.get('description')
         db.session.commit()
 
-        # Update church in overlay state
         overlay_state['church'] = {
             'name': church.name,
             'description': church.description
@@ -734,26 +758,48 @@ def mass_delete_logs():
 
 # Initialize database
 with app.app_context():
-    db.create_all()
+    try:
+        db.create_all()
+        print(f"✅ Database initialized at: {database_path}")
 
-    if not Settings.query.filter_by(key='require_auth').first():
-        db.session.add(Settings(key='require_auth', value='false'))
+        # Check if database file exists and is writable
+        if os.path.exists(database_path):
+            if os.access(database_path, os.W_OK):
+                print("✅ Database is writable")
+            else:
+                print("⚠️ WARNING: Database exists but is NOT writable!")
+                print(f"   Run: chmod 644 {database_path}")
 
-    if not Settings.query.filter_by(key='selected_animation').first():
-        db.session.add(Settings(key='selected_animation', value='auto'))
+        # Check if instance directory is writable
+        if os.access(instance_path, os.W_OK):
+            print("✅ Instance directory is writable")
+        else:
+            print("⚠️ WARNING: Instance directory is NOT writable!")
+            print(f"   Run: chmod 755 {instance_path}")
 
-    Animation.query.delete()
-    db.session.commit()
+        if not Settings.query.filter_by(key='require_auth').first():
+            db.session.add(Settings(key='require_auth', value='false'))
 
-    cleanup_old_logs()
+        if not Settings.query.filter_by(key='selected_animation').first():
+            db.session.add(Settings(key='selected_animation', value='auto'))
 
-    # Initialize overlay state with church info if available
-    church = Church.query.first()
-    if church:
-        overlay_state['church'] = {
-            'name': church.name,
-            'description': church.description
-        }
+        Animation.query.delete()
+        db.session.commit()
+
+        cleanup_old_logs()
+
+        # Initialize overlay state with church info if available
+        church = Church.query.first()
+        if church:
+            overlay_state['church'] = {
+                'name': church.name,
+                'description': church.description
+            }
+            print(f"✅ Loaded church: {church.name}")
+
+    except Exception as e:
+        print(f"❌ Database initialization error: {e}")
+        print("   This may be a permissions issue.")
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=5000)
