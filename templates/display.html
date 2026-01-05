@@ -485,8 +485,8 @@
         let autoAnimationInterval = null;
         let autoAnimationTimeout = null;
         let typewriterTimeouts = [];
-        let lastStateTimestamp = null;
         let lastStateVersion = null;
+        let isOverlayVisible = false;
 
         // Animation class mapping
         const animationClasses = {
@@ -637,16 +637,15 @@
         function updateDisplay(state) {
             if (!state) return;
 
-            // Check if state actually changed (timestamp AND version must be different)
-            if (lastStateTimestamp === state.timestamp && lastStateVersion === state.version) {
-                return; // No change, keep display as is
+            // Only check version for changes
+            if (lastStateVersion === state.version && lastStateVersion !== null) {
+                return; // No version change, keep display as is
             }
 
-            // Store current display state to compare
+            // Store previous state
             const previousMode = currentState ? currentState.mode : null;
-            const previousVersion = lastStateVersion;
+            const isFirstLoad = lastStateVersion === null;
 
-            lastStateTimestamp = state.timestamp;
             lastStateVersion = state.version;
             currentState = state;
 
@@ -657,61 +656,57 @@
             // Handle hidden mode
             if (state.mode === 'hidden') {
                 lowerThird.classList.remove('visible');
+                isOverlayVisible = false;
                 stopAutoAnimation();
                 return;
             }
 
-            // Only update content if version actually changed (real state change)
-            const isRealChange = previousVersion !== state.version;
-
-            if (isRealChange) {
-                // Set church info
-                if (state.church) {
-                    if (state.church.description && state.church.description.trim()) {
-                        churchInfo.textContent = `${state.church.name} • ${state.church.description}`;
-                    } else {
-                        churchInfo.textContent = state.church.name;
-                    }
-                    churchInfo.style.display = 'inline-block';
+            // Update content
+            if (state.church) {
+                if (state.church.description && state.church.description.trim()) {
+                    churchInfo.textContent = `${state.church.name} • ${state.church.description}`;
                 } else {
-                    churchInfo.style.display = 'none';
+                    churchInfo.textContent = state.church.name;
                 }
+                churchInfo.style.display = 'inline-block';
+            } else {
+                churchInfo.style.display = 'none';
+            }
 
-                if (state.mode === 'minister' && state.minister) {
-                    mainTitle.textContent = state.minister.name;
-                    subtitle.textContent = state.minister.title || '';
-                    subtitle.style.display = state.minister.title ? 'block' : 'none';
+            if (state.mode === 'minister' && state.minister) {
+                mainTitle.textContent = state.minister.name;
+                subtitle.textContent = state.minister.title || '';
+                subtitle.style.display = state.minister.title ? 'block' : 'none';
+                bibleVerse.style.display = 'none';
+            }
+
+            if (state.mode === 'sermon' && state.sermon) {
+                mainTitle.textContent = state.sermon.title;
+                subtitle.textContent = state.sermon.minister_name || '';
+                subtitle.style.display = state.sermon.minister_name ? 'block' : 'none';
+
+                if (state.sermon.bible_verse) {
+                    bibleVerse.textContent = state.sermon.bible_verse;
+                    bibleVerse.style.display = 'block';
+                } else {
                     bibleVerse.style.display = 'none';
                 }
-
-                if (state.mode === 'sermon' && state.sermon) {
-                    mainTitle.textContent = state.sermon.title;
-                    subtitle.textContent = state.sermon.minister_name || '';
-                    subtitle.style.display = state.sermon.minister_name ? 'block' : 'none';
-
-                    if (state.sermon.bible_verse) {
-                        bibleVerse.textContent = state.sermon.bible_verse;
-                        bibleVerse.style.display = 'block';
-                    } else {
-                        bibleVerse.style.display = 'none';
-                    }
-                }
-
-                // Only apply animation on actual content change
-                if (previousMode !== state.mode || previousVersion === null) {
-                    applyAnimation(currentAnimation);
-                }
-
-                // Show overlay
-                lowerThird.classList.add('visible');
-
-                if (currentAnimation === 'auto') {
-                    startAutoAnimation();
-                } else {
-                    stopAutoAnimation();
-                }
             }
-            // If not a real change, keep everything as is (sticky display)
+
+            // Apply animation only on real changes or first load
+            if (isFirstLoad || previousMode !== state.mode) {
+                applyAnimation(currentAnimation);
+            }
+
+            // Show overlay
+            lowerThird.classList.add('visible');
+            isOverlayVisible = true;
+
+            if (currentAnimation === 'auto') {
+                startAutoAnimation();
+            } else {
+                stopAutoAnimation();
+            }
         }
 
         async function fetchState() {
@@ -744,7 +739,6 @@
         // Force refresh when page becomes visible
         document.addEventListener('visibilitychange', () => {
             if (!document.hidden) {
-                lastStateTimestamp = null;
                 lastStateVersion = null;
                 fetchState();
             }

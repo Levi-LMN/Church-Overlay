@@ -329,7 +329,7 @@ def get_overlay_state():
         'sermon': overlay_state['sermon'].copy() if overlay_state['sermon'] else None,
         'church': overlay_state['church'].copy() if overlay_state['church'] else None,
         'animation': overlay_state['animation'],
-        'timestamp': time.time(),
+        'timestamp': overlay_state['timestamp'],  # Use stored timestamp, not new one
         'version': overlay_state.get('version', 1)
     }
 
