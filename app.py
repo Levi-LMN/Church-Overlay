@@ -28,7 +28,7 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['GOOGLE_CLIENT_ID'] = os.environ.get('GOOGLE_CLIENT_ID')
 app.config['GOOGLE_CLIENT_SECRET'] = os.environ.get('GOOGLE_CLIENT_SECRET')
 
-ADMIN_EMAIL = 'admin@zearom.com'
+ADMIN_EMAIL = 'mukuhalevi@gmail.com'
 
 db = SQLAlchemy(app)
 login_manager = LoginManager(app)
