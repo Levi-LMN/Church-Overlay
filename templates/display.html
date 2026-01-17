@@ -22,7 +22,6 @@
             background: transparent;
         }
 
-        /* Lower Third Container */
         .lower-third {
             position: absolute;
             bottom: 0;
@@ -37,7 +36,6 @@
             display: block;
         }
 
-        /* Modern Geometric Background */
         .background-shapes {
             position: absolute;
             bottom: 0;
@@ -69,7 +67,6 @@
             filter: blur(50px);
         }
 
-        /* Main Content Container */
         .overlay-content {
             position: absolute;
             bottom: 80px;
@@ -88,7 +85,6 @@
             width: fit-content;
         }
 
-        /* Accent Stripe */
         .accent-stripe {
             position: absolute;
             left: 0;
@@ -98,7 +94,6 @@
             background: linear-gradient(180deg, #10b981 0%, #059669 50%, #047857 100%);
         }
 
-        /* Content Wrapper */
         .content-wrapper {
             padding: 30px 40px 30px 60px;
             position: relative;
@@ -109,7 +104,6 @@
             justify-content: center;
         }
 
-        /* Church Label */
         .church-label {
             display: inline-block;
             font-size: clamp(10px, 0.8vw, 12px);
@@ -127,7 +121,6 @@
             max-width: 90%;
         }
 
-        /* Main Title */
         .main-title {
             font-size: clamp(28px, 3.5vw, 50px);
             font-weight: 800;
@@ -143,7 +136,6 @@
             flex-shrink: 1;
         }
 
-        /* Subtitle */
         .subtitle {
             font-size: clamp(18px, 2vw, 28px);
             color: rgba(255, 255, 255, 0.85);
@@ -157,7 +149,6 @@
             flex-shrink: 1;
         }
 
-        /* Bible Verse */
         .bible-verse {
             font-size: clamp(16px, 1.5vw, 22px);
             color: #10b981;
@@ -170,7 +161,6 @@
             flex-shrink: 0;
         }
 
-        /* Decorative Corner Element */
         .corner-decoration {
             position: absolute;
             top: -1px;
@@ -193,7 +183,6 @@
             border-radius: 0 8px 0 0;
         }
 
-        /* Bottom Glow Effect */
         .bottom-glow {
             position: absolute;
             bottom: 0;
@@ -209,251 +198,119 @@
             opacity: 0.6;
         }
 
-        /* ============== ANIMATIONS ============== */
+        /* Debug indicator */
+        #connection-status {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            padding: 5px 10px;
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            font-size: 10px;
+            border-radius: 4px;
+            z-index: 9999;
+            font-family: monospace;
+        }
 
-        /* Slide Up */
+        #connection-status.connected { background: rgba(16, 185, 129, 0.8); }
+        #connection-status.disconnected { background: rgba(239, 68, 68, 0.8); }
+        #connection-status.connecting { background: rgba(251, 191, 36, 0.8); }
+
+        /* ANIMATIONS */
         @keyframes slideUp {
-            from {
-                transform: translateY(150px);
-                opacity: 0;
-            }
-            to {
-                transform: translateY(0);
-                opacity: 1;
-            }
+            from { transform: translateY(150px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
         }
+        .anim-slide-up .overlay-content { animation: slideUp 1s cubic-bezier(0.16, 1, 0.3, 1); }
 
-        .anim-slide-up .overlay-content {
-            animation: slideUp 1s cubic-bezier(0.16, 1, 0.3, 1);
-        }
-
-        /* Fade In */
         @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: scale(0.95);
-            }
-            to {
-                opacity: 1;
-                transform: scale(1);
-            }
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
         }
+        .anim-fade-in .overlay-content { animation: fadeIn 1s cubic-bezier(0.16, 1, 0.3, 1); }
 
-        .anim-fade-in .overlay-content {
-            animation: fadeIn 1s cubic-bezier(0.16, 1, 0.3, 1);
-        }
-
-        /* Slide Left */
         @keyframes slideLeft {
-            from {
-                transform: translateX(-150px);
-                opacity: 0;
-            }
-            to {
-                transform: translateX(0);
-                opacity: 1;
-            }
+            from { transform: translateX(-150px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
         }
+        .anim-slide-left .overlay-content { animation: slideLeft 1s cubic-bezier(0.16, 1, 0.3, 1); }
 
-        .anim-slide-left .overlay-content {
-            animation: slideLeft 1s cubic-bezier(0.16, 1, 0.3, 1);
-        }
-
-        /* Slide Down */
         @keyframes slideDown {
-            from {
-                transform: translateY(-150px);
-                opacity: 0;
-            }
-            to {
-                transform: translateY(0);
-                opacity: 1;
-            }
+            from { transform: translateY(-150px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
         }
+        .anim-slide-down .overlay-content { animation: slideDown 1s cubic-bezier(0.16, 1, 0.3, 1); }
 
-        .anim-slide-down .overlay-content {
-            animation: slideDown 1s cubic-bezier(0.16, 1, 0.3, 1);
-        }
-
-        /* Zoom In */
         @keyframes zoomIn {
-            from {
-                transform: scale(0.8);
-                opacity: 0;
-            }
-            to {
-                transform: scale(1);
-                opacity: 1;
-            }
+            from { transform: scale(0.8); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
         }
+        .anim-zoom-in .overlay-content { animation: zoomIn 0.8s cubic-bezier(0.16, 1, 0.3, 1); }
 
-        .anim-zoom-in .overlay-content {
-            animation: zoomIn 0.8s cubic-bezier(0.16, 1, 0.3, 1);
-        }
-
-        /* Bounce In */
         @keyframes bounceIn {
-            0% {
-                transform: translateY(150px) scale(0.95);
-                opacity: 0;
-            }
-            60% {
-                transform: translateY(-15px) scale(1.02);
-                opacity: 1;
-            }
-            100% {
-                transform: translateY(0) scale(1);
-                opacity: 1;
-            }
+            0% { transform: translateY(150px) scale(0.95); opacity: 0; }
+            60% { transform: translateY(-15px) scale(1.02); opacity: 1; }
+            100% { transform: translateY(0) scale(1); opacity: 1; }
         }
+        .anim-bounce-in .overlay-content { animation: bounceIn 1.2s cubic-bezier(0.16, 1, 0.3, 1); }
 
-        .anim-bounce-in .overlay-content {
-            animation: bounceIn 1.2s cubic-bezier(0.16, 1, 0.3, 1);
-        }
-
-        /* Typewriter */
-        .anim-typewriter .church-label,
-        .anim-typewriter .main-title,
-        .anim-typewriter .subtitle,
-        .anim-typewriter .bible-verse {
-            opacity: 0;
-        }
-
-        .anim-typewriter .church-label.typing,
-        .anim-typewriter .main-title.typing,
-        .anim-typewriter .subtitle.typing,
-        .anim-typewriter .bible-verse.typing {
-            opacity: 1;
-        }
-
-        .anim-typewriter .church-label.typed,
-        .anim-typewriter .main-title.typed,
-        .anim-typewriter .subtitle.typed,
-        .anim-typewriter .bible-verse.typed {
-            opacity: 1;
-        }
-
-        .anim-typewriter .church-label.typing::after,
-        .anim-typewriter .main-title.typing::after,
-        .anim-typewriter .subtitle.typing::after,
-        .anim-typewriter .bible-verse.typing::after {
+        .anim-typewriter .church-label, .anim-typewriter .main-title,
+        .anim-typewriter .subtitle, .anim-typewriter .bible-verse { opacity: 0; }
+        .anim-typewriter .church-label.typing, .anim-typewriter .main-title.typing,
+        .anim-typewriter .subtitle.typing, .anim-typewriter .bible-verse.typing { opacity: 1; }
+        .anim-typewriter .church-label.typed, .anim-typewriter .main-title.typed,
+        .anim-typewriter .subtitle.typed, .anim-typewriter .bible-verse.typed { opacity: 1; }
+        .anim-typewriter .church-label.typing::after, .anim-typewriter .main-title.typing::after,
+        .anim-typewriter .subtitle.typing::after, .anim-typewriter .bible-verse.typing::after {
             content: '|';
             color: #10b981;
             animation: blink 0.7s step-end infinite;
             margin-left: 2px;
         }
+        @keyframes blink { 50% { opacity: 0; } }
 
-        @keyframes blink {
-            50% {
-                opacity: 0;
-            }
-        }
-
-        /* Wave In */
         @keyframes waveIn {
-            0% {
-                opacity: 0;
-                transform: translateX(-30px);
-            }
-            100% {
-                opacity: 1;
-                transform: translateX(0);
-            }
+            0% { opacity: 0; transform: translateX(-30px); }
+            100% { opacity: 1; transform: translateX(0); }
         }
+        .anim-wave-in .church-label { animation: waveIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) backwards; animation-delay: 0s; }
+        .anim-wave-in .main-title { animation: waveIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) backwards; animation-delay: 0.15s; }
+        .anim-wave-in .subtitle { animation: waveIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) backwards; animation-delay: 0.3s; }
+        .anim-wave-in .bible-verse { animation: waveIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) backwards; animation-delay: 0.45s; }
 
-        .anim-wave-in .church-label,
-        .anim-wave-in .main-title,
-        .anim-wave-in .subtitle,
-        .anim-wave-in .bible-verse {
-            animation: waveIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) backwards;
-        }
-
-        .anim-wave-in .church-label {
-            animation-delay: 0s;
-        }
-
-        .anim-wave-in .main-title {
-            animation-delay: 0.15s;
-        }
-
-        .anim-wave-in .subtitle {
-            animation-delay: 0.3s;
-        }
-
-        .anim-wave-in .bible-verse {
-            animation-delay: 0.45s;
-        }
-
-        /* Glitch */
         @keyframes glitch {
-            0%, 100% {
-                transform: translate(0);
-            }
-            20% {
-                transform: translate(-3px, 3px);
-            }
-            40% {
-                transform: translate(-3px, -3px);
-            }
-            60% {
-                transform: translate(3px, 3px);
-            }
-            80% {
-                transform: translate(3px, -3px);
-            }
+            0%, 100% { transform: translate(0); }
+            20% { transform: translate(-3px, 3px); }
+            40% { transform: translate(-3px, -3px); }
+            60% { transform: translate(3px, 3px); }
+            80% { transform: translate(3px, -3px); }
         }
-
         @keyframes glitchColor {
-            0%, 100% {
-                text-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
-            }
-            25% {
-                text-shadow: -3px 0 #10b981, 3px 0 #3b82f6, 0 4px 12px rgba(0, 0, 0, 0.4);
-            }
-            75% {
-                text-shadow: 3px 0 #10b981, -3px 0 #3b82f6, 0 4px 12px rgba(0, 0, 0, 0.4);
-            }
+            0%, 100% { text-shadow: 0 4px 12px rgba(0, 0, 0, 0.4); }
+            25% { text-shadow: -3px 0 #10b981, 3px 0 #3b82f6, 0 4px 12px rgba(0, 0, 0, 0.4); }
+            75% { text-shadow: 3px 0 #10b981, -3px 0 #3b82f6, 0 4px 12px rgba(0, 0, 0, 0.4); }
         }
+        .anim-glitch .main-title { animation: glitch 0.4s ease-in-out 3, glitchColor 0.4s ease-in-out 3; }
 
-        .anim-glitch .main-title {
-            animation: glitch 0.4s ease-in-out 3, glitchColor 0.4s ease-in-out 3;
-        }
-
-        /* Reveal */
         @keyframes reveal {
-            from {
-                clip-path: polygon(0 0, 0 0, 0 100%, 0 100%);
-            }
-            to {
-                clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
-            }
+            from { clip-path: polygon(0 0, 0 0, 0 100%, 0 100%); }
+            to { clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%); }
         }
+        .anim-reveal .overlay-content { animation: reveal 1.2s cubic-bezier(0.16, 1, 0.3, 1); }
 
-        .anim-reveal .overlay-content {
-            animation: reveal 1.2s cubic-bezier(0.16, 1, 0.3, 1);
-        }
+        .anim-none .overlay-content { animation: none; }
 
-        /* None - Static appearance */
-        .anim-none .overlay-content {
-            animation: none;
-        }
-
-        /* Glow Animation for Accent */
         @keyframes glowPulse {
-            0%, 100% {
-                box-shadow: 0 0 20px rgba(16, 185, 129, 0.3);
-            }
-            50% {
-                box-shadow: 0 0 40px rgba(16, 185, 129, 0.6);
-            }
+            0%, 100% { box-shadow: 0 0 20px rgba(16, 185, 129, 0.3); }
+            50% { box-shadow: 0 0 40px rgba(16, 185, 129, 0.6); }
         }
-
-        .accent-stripe {
-            animation: glowPulse 3s ease-in-out infinite;
-        }
+        .accent-stripe { animation: glowPulse 3s ease-in-out infinite; }
     </style>
 </head>
 <body>
+    <!-- Connection Status Debug -->
+    <div id="connection-status" class="connecting">Connecting...</div>
+
     <div id="lower-third" class="lower-third">
         <div class="background-shapes">
             <div class="shape-1"></div>
@@ -479,6 +336,7 @@
         const mainTitle = document.getElementById('main-title');
         const subtitle = document.getElementById('subtitle');
         const bibleVerse = document.getElementById('bible-verse');
+        const connectionStatus = document.getElementById('connection-status');
 
         let currentState = null;
         let currentVersion = -1;
@@ -486,11 +344,10 @@
         let autoAnimationInterval = null;
         let autoAnimationTimeout = null;
         let typewriterTimeouts = [];
-        let useSSE = true;
         let eventSource = null;
-        let fallbackPollInterval = null;
+        let reconnectTimeout = null;
+        let reconnectAttempts = 0;
 
-        // Animation class mapping
         const animationClasses = {
             'none': 'anim-none',
             'slide-up': 'anim-slide-up',
@@ -640,7 +497,6 @@
             if (!currentState) return true;
             if (newState.version !== undefined && newState.version > currentVersion) return true;
 
-            // Deep comparison for state changes
             const oldJson = JSON.stringify(currentState);
             const newJson = JSON.stringify(newState);
             return oldJson !== newJson;
@@ -650,8 +506,11 @@
             if (!state) return;
 
             if (!shouldUpdate(state)) {
-                return; // No change, keep display as is
+                console.log('⏭️ Skipping update - no changes');
+                return;
             }
+
+            console.log('🔄 Updating display:', state);
 
             const isFirstLoad = currentState === null;
             const previousMode = currentState ? currentState.mode : null;
@@ -665,8 +524,8 @@
                 currentAnimation = state.animation;
             }
 
-            // Handle hidden mode
             if (state.mode === 'hidden') {
+                console.log('👁️ Hiding overlay');
                 lowerThird.classList.remove('visible');
                 stopAutoAnimation();
                 return;
@@ -685,6 +544,7 @@
             }
 
             if (state.mode === 'minister' && state.minister) {
+                console.log('👨‍🏫 Showing minister:', state.minister.name);
                 mainTitle.textContent = state.minister.name;
                 subtitle.textContent = state.minister.title || '';
                 subtitle.style.display = state.minister.title ? 'block' : 'none';
@@ -692,6 +552,7 @@
             }
 
             if (state.mode === 'sermon' && state.sermon) {
+                console.log('📖 Showing sermon:', state.sermon.title);
                 mainTitle.textContent = state.sermon.title;
                 subtitle.textContent = state.sermon.minister_name || '';
                 subtitle.style.display = state.sermon.minister_name ? 'block' : 'none';
@@ -709,7 +570,6 @@
                 applyAnimation(currentAnimation);
             }
 
-            // Show overlay
             lowerThird.classList.add('visible');
 
             if (currentAnimation === 'auto') {
@@ -719,113 +579,112 @@
             }
         }
 
+        function updateConnectionStatus(status, message) {
+            connectionStatus.className = status;
+            connectionStatus.textContent = message;
+            console.log(`🔌 ${status.toUpperCase()}: ${message}`);
+        }
+
         function initSSE() {
-            if (!useSSE || eventSource) return;
+            if (eventSource) {
+                eventSource.close();
+                eventSource = null;
+            }
 
             try {
+                updateConnectionStatus('connecting', 'Connecting to server...');
                 eventSource = new EventSource('/api/overlay/stream');
+
+                eventSource.onopen = function() {
+                    reconnectAttempts = 0;
+                    updateConnectionStatus('connected', `Connected (v${currentVersion})`);
+                };
 
                 eventSource.onmessage = function(event) {
                     try {
                         const data = JSON.parse(event.data);
+
                         if (data.type === 'init' || data.type === 'update') {
+                            console.log(`📥 Received ${data.type}:`, data.state);
                             updateDisplay(data.state);
+                            updateConnectionStatus('connected', `Connected (v${data.state.version || currentVersion})`);
+                        } else if (data.type === 'ping') {
+                            // Keep-alive received
+                            updateConnectionStatus('connected', `Connected (v${currentVersion}) ❤️`);
                         }
                     } catch (error) {
-                        console.error('SSE parse error:', error);
+                        console.error('❌ SSE parse error:', error);
                     }
                 };
 
                 eventSource.onerror = function(error) {
-                    console.log('SSE connection failed, falling back to polling');
+                    console.error('❌ SSE error:', error);
+                    updateConnectionStatus('disconnected', 'Connection lost. Reconnecting...');
+
                     eventSource.close();
                     eventSource = null;
-                    useSSE = false;
-                    startPolling();
+
+                    // Exponential backoff for reconnection
+                    const delay = Math.min(1000 * Math.pow(2, reconnectAttempts), 30000);
+                    reconnectAttempts++;
+
+                    updateConnectionStatus('connecting', `Reconnecting in ${delay/1000}s... (attempt ${reconnectAttempts})`);
+
+                    if (reconnectTimeout) clearTimeout(reconnectTimeout);
+                    reconnectTimeout = setTimeout(initSSE, delay);
                 };
 
-                console.log('SSE connection established');
+                console.log('✅ SSE connection initiated');
             } catch (error) {
-                console.error('SSE initialization failed:', error);
-                useSSE = false;
-                startPolling();
-            }
-        }
+                console.error('❌ SSE initialization failed:', error);
+                updateConnectionStatus('disconnected', 'Failed to connect');
 
-        async function fetchState() {
-            try {
-                const cacheBuster = Date.now();
-                const response = await fetch(`/api/overlay/state?t=${cacheBuster}`, {
-                    method: 'GET',
-                    headers: {
-                        'Cache-Control': 'no-cache, no-store, must-revalidate',
-                        'Pragma': 'no-cache',
-                        'Expires': '0'
-                    }
-                });
-
-                if (!response.ok) return;
-
-                const state = await response.json();
-                updateDisplay(state);
-            } catch (error) {
-                // Silent fail
-            }
-        }
-
-        function startPolling() {
-            if (fallbackPollInterval) return;
-
-            // Fast polling - every 200ms for near real-time updates
-            fallbackPollInterval = setInterval(fetchState, 200);
-            console.log('Started polling mode (200ms interval)');
-        }
-
-        function stopPolling() {
-            if (fallbackPollInterval) {
-                clearInterval(fallbackPollInterval);
-                fallbackPollInterval = null;
+                // Retry after 5 seconds
+                if (reconnectTimeout) clearTimeout(reconnectTimeout);
+                reconnectTimeout = setTimeout(initSSE, 5000);
             }
         }
 
         // Initialize connection
-        if (typeof(EventSource) !== "undefined") {
-            // Try SSE first
-            initSSE();
-        } else {
-            // Browser doesn't support SSE, use polling
-            console.log('EventSource not supported, using polling');
-            useSSE = false;
-            startPolling();
-        }
+        console.log('🚀 Starting display client...');
+        initSSE();
 
-        // Initial fetch
-        fetchState();
-
-        // Force refresh when page becomes visible
+        // Handle page visibility changes
         document.addEventListener('visibilitychange', () => {
             if (!document.hidden) {
-                currentState = null;
-                currentVersion = -1;
-                fetchState();
+                console.log('👀 Page visible - checking connection');
+                if (!eventSource || eventSource.readyState !== EventSource.OPEN) {
+                    initSSE();
+                }
             }
         });
 
-        // Reconnect SSE on page focus
+        // Handle window focus
         window.addEventListener('focus', () => {
-            if (useSSE && !eventSource) {
+            console.log('🎯 Window focused - checking connection');
+            if (!eventSource || eventSource.readyState !== EventSource.OPEN) {
                 initSSE();
             }
         });
 
         // Cleanup on unload
         window.addEventListener('beforeunload', () => {
+            console.log('👋 Cleaning up...');
             if (eventSource) {
                 eventSource.close();
             }
-            stopPolling();
+            if (reconnectTimeout) {
+                clearTimeout(reconnectTimeout);
+            }
             stopAutoAnimation();
         });
+
+        // Hide connection status after 3 seconds if connected
+        setTimeout(() => {
+            if (connectionStatus.classList.contains('connected')) {
+                connectionStatus.style.display = 'none';
+            }
+        }, 3000);
     </script>
 </body>
 </html>

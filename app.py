@@ -15,14 +15,11 @@ app = Flask(__name__)
 load_dotenv()
 app.secret_key = os.environ.get('SECRET_KEY', 'dev-secret-key-change-in-production')
 
-# Use absolute path for database and ensure instance folder exists
+# Database configuration
 basedir = os.path.abspath(os.path.dirname(__file__))
 instance_path = os.path.join(basedir, 'instance')
-
-# Create instance directory if it doesn't exist
 os.makedirs(instance_path, exist_ok=True)
 
-# Set proper database URI with absolute path
 database_path = os.path.join(instance_path, 'obs_overlay.db')
 app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL', f'sqlite:///{database_path}')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
@@ -46,7 +43,7 @@ google = oauth.register(
     client_kwargs={'scope': 'openid email profile'}
 )
 
-# SSE support
+# SSE support with improved queue management
 state_update_queues = []
 state_lock = threading.Lock()
 
@@ -137,27 +134,37 @@ overlay_state = {
     'sermon': None,
     'church': None,
     'animation': 'slide-up',
-    'version': 0,  # Track state changes
+    'version': 0,
     'timestamp': time.time()
 }
 
 
 def notify_state_change():
-    """Notify all SSE clients about state change"""
+    """Notify all SSE clients about state change - IMPROVED"""
     global state_update_queues
     with state_lock:
         overlay_state['version'] += 1
         overlay_state['timestamp'] = time.time()
 
-        # Remove closed queues
+        # Create update message
+        update_msg = {'type': 'update', 'state': overlay_state.copy()}
+
+        # Remove closed queues and send updates
         active_queues = []
         for q in state_update_queues:
             try:
-                q.put_nowait({'type': 'update', 'state': overlay_state.copy()})
+                # Non-blocking put with immediate timeout
+                q.put_nowait(update_msg)
                 active_queues.append(q)
-            except:
+            except queue.Full:
+                # Queue is full, client might be slow - skip it
                 pass
+            except:
+                # Queue is closed or broken - remove it
+                pass
+
         state_update_queues = active_queues
+        print(f"📡 State update sent to {len(active_queues)} clients (version {overlay_state['version']})")
 
 
 def log_activity(action, details=None):
@@ -354,35 +361,46 @@ def get_overlay_state():
 
 @app.route('/api/overlay/stream')
 def stream_overlay():
-    """Server-Sent Events endpoint for real-time updates"""
+    """Server-Sent Events endpoint for real-time updates - IMPROVED"""
 
     def event_stream():
-        q = queue.Queue()
+        # Create queue with size limit
+        q = queue.Queue(maxsize=10)
+
         with state_lock:
             state_update_queues.append(q)
+            initial_state = overlay_state.copy()
 
-        # Send initial state
-        yield f"data: {json.dumps({'type': 'init', 'state': overlay_state.copy()})}\n\n"
+        # Send initial state immediately
+        yield f"data: {json.dumps({'type': 'init', 'state': initial_state})}\n\n"
+        print(f"📺 New display client connected (total: {len(state_update_queues)})")
 
         try:
             while True:
                 try:
-                    message = q.get(timeout=30)
+                    # Wait for message with timeout for keep-alive
+                    message = q.get(timeout=15)
                     yield f"data: {json.dumps(message)}\n\n"
                 except queue.Empty:
-                    # Send keep-alive
-                    yield f"data: {json.dumps({'type': 'ping'})}\n\n"
+                    # Send keep-alive ping
+                    yield f"data: {json.dumps({'type': 'ping', 'timestamp': time.time()})}\n\n"
         except GeneratorExit:
+            # Client disconnected
             with state_lock:
                 if q in state_update_queues:
                     state_update_queues.remove(q)
+            print(f"📺 Display client disconnected (remaining: {len(state_update_queues)})")
 
-    return Response(event_stream(), mimetype='text/event-stream')
+    response = Response(event_stream(), mimetype='text/event-stream')
+    response.headers['Cache-Control'] = 'no-cache'
+    response.headers['X-Accel-Buffering'] = 'no'  # Disable nginx buffering
+    return response
 
 
 @app.route('/api/overlay/update', methods=['POST'])
 @login_optional
 def update_overlay():
+    """Update overlay state and notify all clients - IMPROVED"""
     data = request.json
     mode = data.get('mode', 'hidden')
 
@@ -460,10 +478,10 @@ def update_overlay():
             except Exception:
                 pass
 
-        except Exception:
-            pass
+        except Exception as e:
+            print(f"Error updating overlay: {e}")
 
-    # Notify all listeners
+    # Notify all SSE clients immediately
     notify_state_change()
 
     response = make_response(jsonify({'success': True, 'state': overlay_state.copy()}))
@@ -830,6 +848,8 @@ with app.app_context():
 
     except Exception as e:
         db.session.rollback()
+        print(f"Database initialization error: {e}")
+
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=5000)
