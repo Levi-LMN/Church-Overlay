@@ -1,0 +1,167 @@
+{% extends 'admin/base_admin.html' %}
+{% block page_title %}Settings{% endblock %}
+{% block page_subtitle %}Church info, colours, animation and access control{% endblock %}
+
+{% block admin_content %}
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+    <!-- Church Info -->
+    <div class="card p-6">
+        <h2 class="text-base font-bold text-gray-900 mb-5">🏛️ Church Information</h2>
+        <div class="space-y-4">
+            <div>
+                <label class="block text-xs font-semibold text-gray-600 mb-1">Church Name *</label>
+                <input id="church-name" class="input-field" value="{{ church.name if church else '' }}" placeholder="Grace Community Church">
+            </div>
+            <div>
+                <label class="block text-xs font-semibold text-gray-600 mb-1">Tagline / Description</label>
+                <input id="church-desc" class="input-field" value="{{ church.description if church else '' }}" placeholder="Spreading grace and love">
+            </div>
+        </div>
+        <button onclick="saveChurch()" class="btn btn-primary mt-5">Save Church Info</button>
+    </div>
+
+    <!-- Colours -->
+    <div class="card p-6">
+        <h2 class="text-base font-bold text-gray-900 mb-5">🎨 Overlay Colours</h2>
+        <div class="grid grid-cols-2 gap-4">
+            {% set color_fields = [
+                ('church-label-color',  'Church Label',  church.church_label_color if church else '#10b981'),
+                ('accent-color',        'Accent',        church.accent_color if church else '#10b981'),
+                ('main-title-color',    'Main Title',    church.main_title_color if church else '#ffffff'),
+                ('subtitle-color',      'Subtitle',      church.subtitle_color if church else 'rgba(255,255,255,0.85)'),
+                ('verse-color',         'Verse',         church.verse_color if church else '#10b981'),
+            ] %}
+            {% for field_id, label, value in color_fields %}
+            <div>
+                <label class="block text-xs font-semibold text-gray-600 mb-1">{{ label }}</label>
+                <div class="flex gap-2 items-center">
+                    <input type="color" id="{{ field_id }}-picker"
+                           value="{{ value if value.startswith('#') else '#10b981' }}"
+                           class="w-10 h-9 rounded border border-gray-200 cursor-pointer p-0.5 flex-shrink-0"
+                           oninput="document.getElementById('{{ field_id }}').value=this.value">
+                    <input id="{{ field_id }}" class="input-field" value="{{ value }}"
+                           oninput="try{document.getElementById('{{ field_id }}-picker').value=this.value}catch(e){}">
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        <button onclick="saveColours()" class="btn btn-primary mt-5">Save Colours</button>
+    </div>
+
+    <!-- Animation -->
+    <div class="card p-6">
+        <h2 class="text-base font-bold text-gray-900 mb-5">🎬 Animation Settings</h2>
+        <div class="space-y-4">
+            <label class="flex items-center gap-3 cursor-pointer">
+                <input type="checkbox" id="auto-rotate"
+                       {% if animation_settings and animation_settings.auto_rotate %}checked{% endif %}
+                       class="w-4 h-4 accent-emerald-500">
+                <span class="text-sm font-medium text-gray-700">Auto-rotate animations</span>
+            </label>
+            <div>
+                <label class="block text-xs font-semibold text-gray-600 mb-1">Rotation Interval (seconds)</label>
+                <input type="number" id="rotation-interval" class="input-field" min="2" max="30"
+                       value="{{ animation_settings.rotation_interval if animation_settings else 5 }}">
+            </div>
+            <div>
+                <label class="block text-xs font-semibold text-gray-600 mb-2">Enabled Animations</label>
+                {% set all_anims = ['slide-up','fade-in','slide-left','slide-right','slide-down','zoom-in','bounce-in','rotate-in','wave-in','typewriter','glitch','reveal'] %}
+                {% set enabled   = (animation_settings.enabled_animations.split(',') if animation_settings else ['slide-up','fade-in','slide-left','zoom-in','wave-in']) %}
+                <div class="grid grid-cols-2 gap-2">
+                    {% for anim in all_anims %}
+                    <label class="flex items-center gap-2 cursor-pointer">
+                        <input type="checkbox" name="anim" value="{{ anim }}"
+                               {% if anim in enabled %}checked{% endif %}
+                               class="w-3.5 h-3.5 accent-emerald-500">
+                        <span class="text-xs text-gray-700">{{ anim }}</span>
+                    </label>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        <button onclick="saveAnimation()" class="btn btn-primary mt-5">Save Animation</button>
+    </div>
+
+    <!-- Access Control -->
+    <div class="card p-6">
+        <h2 class="text-base font-bold text-gray-900 mb-5">🔐 Access Control</h2>
+        <div class="space-y-4">
+            <label class="flex items-center gap-3 cursor-pointer">
+                <input type="checkbox" id="require-auth"
+                       {% if settings.get('require_auth') == 'true' %}checked{% endif %}
+                       class="w-4 h-4 accent-emerald-500">
+                <div>
+                    <p class="text-sm font-medium text-gray-700">Require Login for Control Panel</p>
+                    <p class="text-xs text-gray-400 mt-0.5">When enabled, only authorised Google accounts can access the panel</p>
+                </div>
+            </label>
+        </div>
+        <button onclick="saveAccess()" class="btn btn-primary mt-5">Save Access Settings</button>
+    </div>
+</div>
+{% endblock %}
+
+{% block admin_scripts %}
+<script>
+    async function saveChurch() {
+        const name = document.getElementById('church-name').value.trim();
+        const desc = document.getElementById('church-desc').value.trim();
+        if (!name) { showToast('Church name is required', 'warning'); return; }
+
+        const res = await apiFetch('/api/church', {
+            method: 'POST',
+            body: JSON.stringify({
+                name, description: desc,
+                accent_color:       document.getElementById('accent-color').value,
+                church_label_color: document.getElementById('church-label-color').value,
+                main_title_color:   document.getElementById('main-title-color').value,
+                subtitle_color:     document.getElementById('subtitle-color').value,
+                verse_color:        document.getElementById('verse-color').value,
+            })
+        });
+        if (res.ok) showToast('Church info saved', 'success');
+        else        showToast('Failed to save', 'error');
+    }
+
+    async function saveColours() {
+        const res = await apiFetch('/api/church', {
+            method: 'POST',
+            body: JSON.stringify({
+                name:               document.getElementById('church-name').value.trim(),
+                description:        document.getElementById('church-desc').value.trim(),
+                accent_color:       document.getElementById('accent-color').value,
+                church_label_color: document.getElementById('church-label-color').value,
+                main_title_color:   document.getElementById('main-title-color').value,
+                subtitle_color:     document.getElementById('subtitle-color').value,
+                verse_color:        document.getElementById('verse-color').value,
+            })
+        });
+        if (res.ok) showToast('Colours saved — overlay will update live', 'success');
+        else        showToast('Failed to save colours', 'error');
+    }
+
+    async function saveAnimation() {
+        const enabled = Array.from(document.querySelectorAll('input[name="anim"]:checked')).map(c => c.value);
+        const res = await apiFetch('/api/animation-settings', {
+            method: 'POST',
+            body: JSON.stringify({
+                auto_rotate:        document.getElementById('auto-rotate').checked,
+                rotation_interval:  parseInt(document.getElementById('rotation-interval').value),
+                enabled_animations: enabled.join(',')
+            })
+        });
+        if (res.ok) showToast('Animation settings saved', 'success');
+        else        showToast('Failed to save', 'error');
+    }
+
+    async function saveAccess() {
+        const require_auth = document.getElementById('require-auth').checked ? 'true' : 'false';
+        const res = await apiFetch('/api/settings', {
+            method: 'POST', body: JSON.stringify({ require_auth })
+        });
+        if (res.ok) showToast('Access settings saved', 'success');
+        else        showToast('Failed to save', 'error');
+    }
+</script>
+{% endblock %}

@@ -1,0 +1,297 @@
+{% extends 'base.html' %}
+
+{% block extra_head %}
+<style>
+    /* ── Shared admin styles ─────────────────────────────────────── */
+    .admin-sidebar {
+        width: 240px;
+        flex-shrink: 0;
+        background: white;
+        border-right: 1px solid #e5e7eb;
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+    }
+    .admin-nav-link {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 10px 16px;
+        border-radius: 8px;
+        font-size: 14px;
+        font-weight: 500;
+        color: #374151;
+        text-decoration: none;
+        transition: all 0.15s;
+        margin-bottom: 2px;
+    }
+    .admin-nav-link:hover  { background: #f0fdf4; color: #059669; }
+    .admin-nav-link.active { background: #d1fae5; color: #065f46; font-weight: 600; }
+    .admin-nav-link svg    { flex-shrink: 0; }
+
+    .card {
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    }
+    .btn {
+        padding: 9px 18px;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 13px;
+        cursor: pointer;
+        border: none;
+        transition: all 0.18s;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+    }
+    .btn:hover { opacity: 0.88; transform: translateY(-1px); }
+    .btn:active { transform: translateY(0); }
+    .btn-primary  { background: linear-gradient(135deg, #10b981, #059669); color: white; }
+    .btn-danger   { background: linear-gradient(135deg, #ef4444, #dc2626); color: white; }
+    .btn-warning  { background: linear-gradient(135deg, #f59e0b, #d97706); color: white; }
+    .btn-ghost    { background: transparent; border: 1.5px solid #d1d5db; color: #374151; }
+    .btn-ghost:hover { border-color: #9ca3af; background: #f9fafb; }
+    .btn-sm { padding: 6px 12px; font-size: 12px; }
+
+    .input-field {
+        width: 100%;
+        padding: 10px 14px;
+        border: 1.5px solid #e5e7eb;
+        border-radius: 8px;
+        font-size: 13px;
+        outline: none;
+        transition: border-color 0.15s, box-shadow 0.15s;
+        background: white;
+    }
+    .input-field:focus {
+        border-color: #10b981;
+        box-shadow: 0 0 0 3px rgba(16,185,129,0.1);
+    }
+
+    .badge {
+        display: inline-flex;
+        align-items: center;
+        padding: 3px 10px;
+        border-radius: 999px;
+        font-size: 11px;
+        font-weight: 600;
+    }
+    .badge-green  { background: #d1fae5; color: #065f46; }
+    .badge-red    { background: #fee2e2; color: #991b1b; }
+    .badge-yellow { background: #fef3c7; color: #92400e; }
+    .badge-gray   { background: #f3f4f6; color: #6b7280; }
+    .badge-blue   { background: #dbeafe; color: #1e40af; }
+
+    .toast-container {
+        position: fixed; top: 20px; right: 20px;
+        z-index: 9999; display: flex; flex-direction: column;
+        gap: 10px; max-width: 380px;
+    }
+    .toast {
+        padding: 14px 18px; border-radius: 10px;
+        box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+        display: flex; align-items: center; gap: 10px;
+        animation: slideInRight 0.25s ease-out;
+        font-size: 13px; font-weight: 500; color: white;
+    }
+    .toast.success { background: linear-gradient(135deg,#10b981,#059669); }
+    .toast.error   { background: linear-gradient(135deg,#ef4444,#dc2626); }
+    .toast.info    { background: linear-gradient(135deg,#3b82f6,#2563eb); }
+    .toast.warning { background: linear-gradient(135deg,#f59e0b,#d97706); }
+    @keyframes slideInRight {
+        from { transform: translateX(380px); opacity: 0; }
+        to   { transform: translateX(0);     opacity: 1; }
+    }
+    @keyframes fadeOut {
+        to { opacity: 0; transform: translateX(380px); }
+    }
+    .toast.fade-out { animation: fadeOut 0.25s ease-out forwards; }
+
+    /* Mobile nav */
+    @media (max-width: 768px) {
+        .admin-sidebar { display: none; }
+        .admin-sidebar.open { display: flex; position: fixed; top: 0; left: 0; bottom: 0; z-index: 50; box-shadow: 4px 0 20px rgba(0,0,0,0.15); }
+        .mobile-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 40; }
+        .mobile-overlay.active { display: block; }
+    }
+</style>
+{% block admin_extra_head %}{% endblock %}
+{% endblock %}
+
+{% block body %}
+<div class="flex h-screen overflow-hidden bg-gray-50">
+
+    <!-- Mobile overlay -->
+    <div id="mobileOverlay" class="mobile-overlay" onclick="closeMobileNav()"></div>
+
+    <!-- Sidebar -->
+    <aside id="adminSidebar" class="admin-sidebar flex-shrink-0 overflow-y-auto">
+        <!-- Logo -->
+        <div class="p-5 border-b border-gray-100">
+            <a href="{{ url_for('admin.dashboard') }}" class="flex items-center gap-3 no-underline">
+                <div class="w-8 h-8 bg-gradient-to-br from-emerald-400 to-emerald-600 rounded-lg flex items-center justify-center">
+                    <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                              d="M15 10l4.553-2.069A1 1 0 0121 8.882v6.236a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/>
+                    </svg>
+                </div>
+                <div>
+                    <p class="font-bold text-sm text-gray-900 leading-tight">OBS Overlay</p>
+                    <p class="text-xs text-gray-400">Admin Panel</p>
+                </div>
+            </a>
+        </div>
+
+        <!-- Nav links -->
+        <nav class="flex-1 px-3 py-4 space-y-1">
+            <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider px-3 mb-3">Navigation</p>
+
+            <a href="{{ url_for('admin.dashboard') }}"
+               class="admin-nav-link {% if request.endpoint == 'admin.dashboard' %}active{% endif %}">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
+                </svg>
+                Dashboard
+            </a>
+
+            <a href="{{ url_for('admin.content') }}"
+               class="admin-nav-link {% if request.endpoint == 'admin.content' %}active{% endif %}">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                </svg>
+                Content
+            </a>
+
+            <a href="{{ url_for('admin.users') }}"
+               class="admin-nav-link {% if request.endpoint == 'admin.users' %}active{% endif %}">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/>
+                </svg>
+                Users
+            </a>
+
+            <a href="{{ url_for('admin.settings') }}"
+               class="admin-nav-link {% if request.endpoint == 'admin.settings' %}active{% endif %}">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                </svg>
+                Settings
+            </a>
+
+            <a href="{{ url_for('admin.logs') }}"
+               class="admin-nav-link {% if request.endpoint == 'admin.logs' %}active{% endif %}">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+                </svg>
+                Activity Logs
+            </a>
+
+            <div class="pt-4 border-t border-gray-100 mt-4">
+                <a href="{{ url_for('user.panel') }}" class="admin-nav-link">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                              d="M15 19l-7-7 7-7"/>
+                    </svg>
+                    Control Panel
+                </a>
+                <a href="{{ url_for('display.show') }}" target="_blank" class="admin-nav-link">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                              d="M15 10l4.553-2.069A1 1 0 0121 8.882v6.236a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/>
+                    </svg>
+                    OBS Display ↗
+                </a>
+                <a href="{{ url_for('auth.logout') }}" class="admin-nav-link text-red-500 hover:bg-red-50 hover:text-red-700">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                              d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
+                    </svg>
+                    Logout
+                </a>
+            </div>
+        </nav>
+    </aside>
+
+    <!-- Main content -->
+    <div class="flex-1 flex flex-col overflow-hidden">
+        <!-- Top bar -->
+        <header class="bg-white border-b border-gray-200 px-6 py-4 flex items-center gap-4 flex-shrink-0">
+            <!-- Mobile menu button -->
+            <button onclick="toggleMobileNav()"
+                    class="md:hidden p-2 rounded-lg hover:bg-gray-100 transition text-gray-600">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+                </svg>
+            </button>
+
+            <div class="flex-1">
+                <h1 class="text-lg font-bold text-gray-900">{% block page_title %}Admin{% endblock %}</h1>
+                <p class="text-xs text-gray-400 mt-0.5">{% block page_subtitle %}OBS Overlay System{% endblock %}</p>
+            </div>
+
+            <div class="flex items-center gap-3">
+                <span class="text-xs text-gray-500 hidden md:block">{{ current_user.email }}</span>
+                <div class="w-8 h-8 bg-gradient-to-br from-emerald-400 to-emerald-600 rounded-full flex items-center justify-center">
+                    <span class="text-white font-bold text-xs">
+                        {{ current_user.name[0] if current_user.name else current_user.email[0] }}
+                    </span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Toast container -->
+        <div id="toast-container" class="toast-container"></div>
+
+        <!-- Page content -->
+        <main class="flex-1 overflow-y-auto p-6">
+            {% block admin_content %}{% endblock %}
+        </main>
+    </div>
+</div>
+
+<script>
+    function showToast(message, type = 'info') {
+        const container = document.getElementById('toast-container');
+        const toast = document.createElement('div');
+        toast.className = `toast ${type}`;
+        const icons = { success: '✓', error: '✗', warning: '⚠', info: 'ℹ' };
+        toast.innerHTML = `<span style="font-size:16px">${icons[type] || 'ℹ'}</span><span>${escHtml(message)}</span>`;
+        container.appendChild(toast);
+        setTimeout(() => {
+            toast.classList.add('fade-out');
+            setTimeout(() => toast.remove(), 260);
+        }, 3800);
+    }
+
+    function escHtml(t) {
+        return String(t ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    }
+
+    const CSRF = document.querySelector('meta[name="csrf-token"]')?.content || '';
+
+    function apiFetch(url, opts = {}) {
+        return fetch(url, {
+            headers: { 'Content-Type': 'application/json', ...opts.headers },
+            ...opts
+        });
+    }
+
+    function toggleMobileNav() {
+        document.getElementById('adminSidebar').classList.toggle('open');
+        document.getElementById('mobileOverlay').classList.toggle('active');
+    }
+    function closeMobileNav() {
+        document.getElementById('adminSidebar').classList.remove('open');
+        document.getElementById('mobileOverlay').classList.remove('active');
+    }
+</script>
+{% block admin_scripts %}{% endblock %}
+{% endblock %}

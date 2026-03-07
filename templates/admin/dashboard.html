@@ -1,0 +1,234 @@
+{% extends 'admin/base_admin.html' %}
+{% block page_title %}Dashboard{% endblock %}
+{% block page_subtitle %}Live overview of your OBS overlay{% endblock %}
+
+{% block admin_content %}
+
+<!-- ── Live Status + Toggle ──────────────────────────────────────── -->
+<div class="card p-5 mb-6 border-l-4 transition-all duration-300" id="status-card">
+    <div class="flex items-center justify-between flex-wrap gap-4">
+        <div class="flex items-center gap-4">
+            <div class="w-12 h-12 rounded-xl flex items-center justify-center transition-colors duration-300" id="status-icon-bg">
+                <svg id="status-icon" class="w-6 h-6 transition-colors duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M15 10l4.553-2.069A1 1 0 0121 8.882v6.236a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/>
+                </svg>
+            </div>
+            <div>
+                <p class="font-bold text-gray-900" id="status-title">Loading…</p>
+                <p class="text-sm text-gray-500" id="status-detail">—</p>
+            </div>
+        </div>
+
+        <div class="flex items-center gap-3">
+            <!-- Live indicator dot -->
+            <span id="live-dot" class="hidden items-center gap-1.5 text-xs font-semibold text-emerald-600">
+                <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                LIVE
+            </span>
+
+            <!-- THE BIG TOGGLE BUTTON -->
+            <button id="toggle-btn" hidden onclick="toggleDisplay()"
+                    class="flex items-center gap-2 px-5 py-2.5 rounded-xl font-bold text-sm transition-all duration-200 focus:outline-none focus:ring-4">
+                <svg class="w-4 h-4" id="toggle-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"></svg>
+                <span id="toggle-label">…</span>
+            </button>
+
+            <a href="{{ url_for('display.show') }}" target="_blank"
+               class="btn btn-ghost btn-sm">Preview ↗</a>
+        </div>
+    </div>
+</div>
+
+<!-- ── Stats ──────────────────────────────────────────────────────── -->
+<div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+    <div class="card p-5">
+        <p class="text-xs text-gray-500 font-medium uppercase tracking-wide">Ministers</p>
+        <p class="text-3xl font-bold text-gray-900 mt-1">{{ ministers_count }}</p>
+    </div>
+    <div class="card p-5">
+        <p class="text-xs text-gray-500 font-medium uppercase tracking-wide">Sermons</p>
+        <p class="text-3xl font-bold text-gray-900 mt-1">{{ sermons_count }}</p>
+    </div>
+    <div class="card p-5">
+        <p class="text-xs text-gray-500 font-medium uppercase tracking-wide">Users</p>
+        <p class="text-3xl font-bold text-gray-900 mt-1">{{ users_count }}</p>
+    </div>
+    <div class="card p-5">
+        <p class="text-xs text-gray-500 font-medium uppercase tracking-wide">Live Viewers</p>
+        <p class="text-3xl font-bold text-gray-900 mt-1" id="sse-count">{{ sse_clients }}</p>
+    </div>
+</div>
+
+<!-- ── Two columns ─────────────────────────────────────────────── -->
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+    <!-- Quick Actions -->
+    <div class="card p-6">
+        <h2 class="text-base font-bold text-gray-900 mb-4">Quick Actions</h2>
+        <div class="space-y-2">
+            <a href="{{ url_for('admin.content') }}"
+               class="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 transition no-underline group">
+                <div class="w-9 h-9 bg-emerald-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                    <svg class="w-4 h-4 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                    </svg>
+                </div>
+                <div>
+                    <p class="text-sm font-semibold text-gray-800">Add Minister / Sermon</p>
+                    <p class="text-xs text-gray-500">Manage content library</p>
+                </div>
+            </a>
+            <a href="{{ url_for('admin.settings') }}"
+               class="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 transition no-underline">
+                <div class="w-9 h-9 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                    <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                              d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                    </svg>
+                </div>
+                <div>
+                    <p class="text-sm font-semibold text-gray-800">Church Settings</p>
+                    <p class="text-xs text-gray-500">Colours, animation, auth</p>
+                </div>
+            </a>
+            <a href="{{ url_for('admin.users') }}"
+               class="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 transition no-underline">
+                <div class="w-9 h-9 bg-purple-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                    <svg class="w-4 h-4 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                              d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"/>
+                    </svg>
+                </div>
+                <div>
+                    <p class="text-sm font-semibold text-gray-800">Manage Users</p>
+                    <p class="text-xs text-gray-500">Add or remove access</p>
+                </div>
+            </a>
+        </div>
+    </div>
+
+    <!-- Recent Logs -->
+    <div class="card p-6">
+        <div class="flex items-center justify-between mb-4">
+            <h2 class="text-base font-bold text-gray-900">Recent Activity</h2>
+            <a href="{{ url_for('admin.logs') }}" class="text-xs text-emerald-600 hover:underline font-medium">View all →</a>
+        </div>
+        {% if recent_logs %}
+        <div class="space-y-3">
+            {% for log in recent_logs %}
+            <div class="flex items-start gap-3">
+                <div class="w-2 h-2 rounded-full bg-emerald-400 mt-1.5 flex-shrink-0"></div>
+                <div class="flex-1 min-w-0">
+                    <p class="text-xs font-semibold text-gray-800 truncate">{{ log.action }}</p>
+                    <p class="text-xs text-gray-500 truncate">{{ log.details or '—' }}</p>
+                </div>
+                <p class="text-xs text-gray-400 flex-shrink-0">{{ log.timestamp.strftime('%H:%M') }}</p>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <p class="text-sm text-gray-400">No recent activity yet</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block admin_scripts %}
+<script>
+    // Seed initial state from server render so the UI is correct before first poll
+    let currentState = {{ current_state | tojson }};
+    let busy = false;
+
+    const HIDE_ICON  = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"/>';
+    const SHOW_ICON  = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>';
+
+    function applyState(state) {
+        currentState = state;
+        const isLive    = state.mode !== 'hidden';
+        const card      = document.getElementById('status-card');
+        const iconBg    = document.getElementById('status-icon-bg');
+        const icon      = document.getElementById('status-icon');
+        const title     = document.getElementById('status-title');
+        const detail    = document.getElementById('status-detail');
+        const dot       = document.getElementById('live-dot');
+        const btn       = document.getElementById('toggle-btn');
+        const btnIcon   = document.getElementById('toggle-icon');
+        const btnLabel  = document.getElementById('toggle-label');
+
+        if (isLive) {
+            card.classList.replace('border-gray-300', 'border-emerald-500');
+            card.style.borderLeftColor = '#10b981';
+            iconBg.className  = 'w-12 h-12 rounded-xl flex items-center justify-center bg-emerald-100 transition-colors duration-300';
+            icon.className    = 'w-6 h-6 text-emerald-600 transition-colors duration-300';
+            dot.classList.replace('hidden', 'flex');
+
+            // button: red "Hide Display"
+            btn.classList.remove('hidden');
+            btn.className = 'flex items-center gap-2 px-5 py-2.5 rounded-xl font-bold text-sm transition-all duration-200 focus:outline-none bg-red-500 hover:bg-red-600 text-white shadow-md active:scale-95';
+            btnIcon.innerHTML = HIDE_ICON;
+            btnLabel.textContent = 'Hide Display';
+
+            if (state.mode === 'minister' && state.minister) {
+                title.textContent  = state.minister.name;
+                detail.textContent = state.minister.title || '👨‍🏫 Minister live';
+            } else if (state.mode === 'sermon' && state.sermon) {
+                title.textContent  = state.sermon.title;
+                detail.textContent = state.sermon.minister_name || '📖 Sermon live';
+            }
+        } else {
+            card.style.borderLeftColor = '#d1d5db';
+            iconBg.className  = 'w-12 h-12 rounded-xl flex items-center justify-center bg-gray-100 transition-colors duration-300';
+            icon.className    = 'w-6 h-6 text-gray-400 transition-colors duration-300';
+            dot.classList.replace('flex', 'hidden');
+
+            btn.classList.add('hidden');
+            title.textContent  = 'Overlay Hidden';
+            detail.textContent = 'Nothing is being displayed';
+            title.textContent  = 'Overlay Hidden';
+            detail.textContent = 'Nothing is being displayed';
+        }
+    }
+
+    async function toggleDisplay() {
+        if (busy) return;
+        busy = true;
+
+        const btn = document.getElementById('toggle-btn');
+        btn.disabled = true;
+        btn.classList.add('opacity-60', 'cursor-wait');
+
+        try {
+            if (currentState.mode !== 'hidden') {
+                // Hide immediately
+                const res = await apiFetch('/api/overlay/update', {
+                    method: 'POST', body: JSON.stringify({ mode: 'hidden' })
+                });
+                const data = await res.json();
+                if (res.ok) { applyState(data.state); showToast('Overlay hidden', 'info'); }
+                else showToast('Failed to hide overlay', 'error');
+            } else {
+                showToast('Use the Control Panel to select content to display', 'info');
+            }
+        } finally {
+            busy = false;
+            btn.disabled = false;
+            btn.classList.remove('opacity-60', 'cursor-wait');
+        }
+    }
+
+    // Poll state every 3 s so dashboard stays in sync with control panel
+    async function pollState() {
+        try {
+            const res   = await fetch('/api/overlay/state');
+            const state = await res.json();
+            applyState(state);
+        } catch(e) {}
+    }
+
+    // Init immediately then poll
+    applyState(currentState);
+    setInterval(pollState, 3000);
+</script>
+{% endblock %}

@@ -8,11 +8,7 @@
     <meta http-equiv="Expires" content="0">
     <title>OBS Overlay Display</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
 
         body {
             width: 1920px;
@@ -32,9 +28,7 @@
             pointer-events: none;
         }
 
-        .lower-third.visible {
-            display: block;
-        }
+        .lower-third.visible { display: block; }
 
         .background-shapes {
             position: absolute;
@@ -51,7 +45,6 @@
             left: -100px;
             width: 600px;
             height: 600px;
-            background: linear-gradient(135deg, rgba(16, 185, 129, 0.15) 0%, rgba(5, 150, 105, 0.08) 100%);
             border-radius: 50%;
             filter: blur(60px);
         }
@@ -62,7 +55,6 @@
             left: 400px;
             width: 400px;
             height: 400px;
-            background: linear-gradient(135deg, rgba(59, 130, 246, 0.12) 0%, rgba(37, 99, 235, 0.06) 100%);
             border-radius: 50%;
             filter: blur(50px);
         }
@@ -77,10 +69,7 @@
             backdrop-filter: blur(20px) saturate(180%);
             padding: 0;
             border-radius: 24px;
-            box-shadow:
-                0 25px 50px rgba(0, 0, 0, 0.5),
-                0 0 0 1px rgba(255, 255, 255, 0.1),
-                inset 0 1px 0 rgba(255, 255, 255, 0.05);
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.05);
             overflow: hidden;
             width: fit-content;
         }
@@ -91,7 +80,6 @@
             top: 0;
             width: 8px;
             height: 100%;
-            background: linear-gradient(180deg, #10b981 0%, #059669 50%, #047857 100%);
         }
 
         .content-wrapper {
@@ -110,12 +98,9 @@
             font-weight: 700;
             letter-spacing: 1.5px;
             text-transform: uppercase;
-            color: #10b981;
             margin-bottom: 10px;
             padding: 6px 12px;
-            background: rgba(16, 185, 129, 0.1);
             border-radius: 6px;
-            border: 1px solid rgba(16, 185, 129, 0.2);
             flex-shrink: 0;
             width: fit-content;
             max-width: 90%;
@@ -124,7 +109,6 @@
         .main-title {
             font-size: clamp(28px, 3.5vw, 50px);
             font-weight: 800;
-            color: #ffffff;
             margin-bottom: 8px;
             line-height: 1.1;
             letter-spacing: -1px;
@@ -138,7 +122,6 @@
 
         .subtitle {
             font-size: clamp(18px, 2vw, 28px);
-            color: rgba(255, 255, 255, 0.85);
             font-weight: 500;
             line-height: 1.2;
             letter-spacing: -0.5px;
@@ -151,7 +134,6 @@
 
         .bible-verse {
             font-size: clamp(16px, 1.5vw, 22px);
-            color: #10b981;
             margin-top: 8px;
             font-weight: 600;
             letter-spacing: 0.3px;
@@ -167,7 +149,6 @@
             right: -1px;
             width: 120px;
             height: 120px;
-            background: linear-gradient(135deg, rgba(16, 185, 129, 0.15) 0%, transparent 60%);
             border-radius: 0 24px 0 0;
         }
 
@@ -178,8 +159,6 @@
             right: 20px;
             width: 40px;
             height: 40px;
-            border-top: 3px solid rgba(16, 185, 129, 0.4);
-            border-right: 3px solid rgba(16, 185, 129, 0.4);
             border-radius: 0 8px 0 0;
         }
 
@@ -189,16 +168,9 @@
             left: 0;
             right: 0;
             height: 2px;
-            background: linear-gradient(90deg,
-                transparent 0%,
-                #10b981 20%,
-                #059669 50%,
-                #10b981 80%,
-                transparent 100%);
             opacity: 0.6;
         }
 
-        /* Debug indicator */
         #connection-status {
             position: fixed;
             top: 10px;
@@ -212,103 +184,121 @@
             font-family: monospace;
         }
 
-        #connection-status.connected { background: rgba(16, 185, 129, 0.8); }
+        #connection-status.connected    { background: rgba(16, 185, 129, 0.8); }
         #connection-status.disconnected { background: rgba(239, 68, 68, 0.8); }
-        #connection-status.connecting { background: rgba(251, 191, 36, 0.8); }
+        #connection-status.connecting   { background: rgba(251, 191, 36, 0.8); }
 
-        /* ANIMATIONS */
+        /* ── Animations ─────────────────────────────────────────────────── */
         @keyframes slideUp {
-            from { transform: translateY(150px); opacity: 0; }
-            to { transform: translateY(0); opacity: 1; }
+            from { transform: translateY(120px); opacity: 0; }
+            to   { transform: translateY(0);     opacity: 1; }
         }
-        .anim-slide-up .overlay-content { animation: slideUp 1s cubic-bezier(0.16, 1, 0.3, 1); }
+        .anim-slide-up .overlay-content { animation: slideUp 2s cubic-bezier(0.16, 1, 0.3, 1); }
 
         @keyframes fadeIn {
             from { opacity: 0; transform: scale(0.95); }
-            to { opacity: 1; transform: scale(1); }
+            to   { opacity: 1; transform: scale(1);    }
         }
-        .anim-fade-in .overlay-content { animation: fadeIn 1s cubic-bezier(0.16, 1, 0.3, 1); }
+        .anim-fade-in .overlay-content { animation: fadeIn 2s cubic-bezier(0.16, 1, 0.3, 1); }
 
         @keyframes slideLeft {
             from { transform: translateX(-150px); opacity: 0; }
-            to { transform: translateX(0); opacity: 1; }
+            to   { transform: translateX(0);      opacity: 1; }
         }
-        .anim-slide-left .overlay-content { animation: slideLeft 1s cubic-bezier(0.16, 1, 0.3, 1); }
+        .anim-slide-left .overlay-content { animation: slideLeft 2s cubic-bezier(0.16, 1, 0.3, 1); }
 
         @keyframes slideDown {
             from { transform: translateY(-150px); opacity: 0; }
-            to { transform: translateY(0); opacity: 1; }
+            to   { transform: translateY(0);      opacity: 1; }
         }
-        .anim-slide-down .overlay-content { animation: slideDown 1s cubic-bezier(0.16, 1, 0.3, 1); }
+        .anim-slide-down .overlay-content { animation: slideDown 2s cubic-bezier(0.16, 1, 0.3, 1); }
 
         @keyframes zoomIn {
             from { transform: scale(0.8); opacity: 0; }
-            to { transform: scale(1); opacity: 1; }
+            to   { transform: scale(1);   opacity: 1; }
         }
-        .anim-zoom-in .overlay-content { animation: zoomIn 0.8s cubic-bezier(0.16, 1, 0.3, 1); }
+        .anim-zoom-in .overlay-content { animation: zoomIn 1.8s cubic-bezier(0.16, 1, 0.3, 1); }
 
         @keyframes bounceIn {
-            0% { transform: translateY(150px) scale(0.95); opacity: 0; }
-            60% { transform: translateY(-15px) scale(1.02); opacity: 1; }
-            100% { transform: translateY(0) scale(1); opacity: 1; }
+            0%   { transform: translateY(150px) scale(0.95); opacity: 0; }
+            60%  { transform: translateY(-15px)  scale(1.02); opacity: 1; }
+            100% { transform: translateY(0)      scale(1);    opacity: 1; }
         }
-        .anim-bounce-in .overlay-content { animation: bounceIn 1.2s cubic-bezier(0.16, 1, 0.3, 1); }
+        .anim-bounce-in .overlay-content { animation: bounceIn 2.4s cubic-bezier(0.16, 1, 0.3, 1); }
 
-        .anim-typewriter .church-label, .anim-typewriter .main-title,
-        .anim-typewriter .subtitle, .anim-typewriter .bible-verse { opacity: 0; }
-        .anim-typewriter .church-label.typing, .anim-typewriter .main-title.typing,
-        .anim-typewriter .subtitle.typing, .anim-typewriter .bible-verse.typing { opacity: 1; }
-        .anim-typewriter .church-label.typed, .anim-typewriter .main-title.typed,
-        .anim-typewriter .subtitle.typed, .anim-typewriter .bible-verse.typed { opacity: 1; }
-        .anim-typewriter .church-label.typing::after, .anim-typewriter .main-title.typing::after,
-        .anim-typewriter .subtitle.typing::after, .anim-typewriter .bible-verse.typing::after {
+        .anim-typewriter .church-label,
+        .anim-typewriter .main-title,
+        .anim-typewriter .subtitle,
+        .anim-typewriter .bible-verse { opacity: 0; }
+        .anim-typewriter .church-label.typing,
+        .anim-typewriter .main-title.typing,
+        .anim-typewriter .subtitle.typing,
+        .anim-typewriter .bible-verse.typing { opacity: 1; }
+        .anim-typewriter .church-label.typed,
+        .anim-typewriter .main-title.typed,
+        .anim-typewriter .subtitle.typed,
+        .anim-typewriter .bible-verse.typed { opacity: 1; }
+        .anim-typewriter .church-label.typing::after,
+        .anim-typewriter .main-title.typing::after,
+        .anim-typewriter .subtitle.typing::after,
+        .anim-typewriter .bible-verse.typing::after {
             content: '|';
-            color: #10b981;
             animation: blink 0.7s step-end infinite;
             margin-left: 2px;
         }
         @keyframes blink { 50% { opacity: 0; } }
 
         @keyframes waveIn {
-            0% { opacity: 0; transform: translateX(-30px); }
-            100% { opacity: 1; transform: translateX(0); }
+            0%   { opacity: 0; transform: translateX(-30px); }
+            100% { opacity: 1; transform: translateX(0);     }
         }
-        .anim-wave-in .church-label { animation: waveIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) backwards; animation-delay: 0s; }
-        .anim-wave-in .main-title { animation: waveIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) backwards; animation-delay: 0.15s; }
-        .anim-wave-in .subtitle { animation: waveIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) backwards; animation-delay: 0.3s; }
-        .anim-wave-in .bible-verse { animation: waveIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) backwards; animation-delay: 0.45s; }
+        .anim-wave-in .church-label { animation: waveIn 1.6s cubic-bezier(0.16,1,0.3,1) backwards; animation-delay: 0s;    }
+        .anim-wave-in .main-title   { animation: waveIn 1.6s cubic-bezier(0.16,1,0.3,1) backwards; animation-delay: 0.35s; }
+        .anim-wave-in .subtitle     { animation: waveIn 1.6s cubic-bezier(0.16,1,0.3,1) backwards; animation-delay: 0.7s;  }
+        .anim-wave-in .bible-verse  { animation: waveIn 1.6s cubic-bezier(0.16,1,0.3,1) backwards; animation-delay: 1.0s;  }
 
         @keyframes glitch {
-            0%, 100% { transform: translate(0); }
-            20% { transform: translate(-3px, 3px); }
-            40% { transform: translate(-3px, -3px); }
-            60% { transform: translate(3px, 3px); }
-            80% { transform: translate(3px, -3px); }
+            0%,100% { transform: translate(0); }
+            20%     { transform: translate(-3px, 3px); }
+            40%     { transform: translate(-3px,-3px); }
+            60%     { transform: translate( 3px, 3px); }
+            80%     { transform: translate( 3px,-3px); }
         }
         @keyframes glitchColor {
-            0%, 100% { text-shadow: 0 4px 12px rgba(0, 0, 0, 0.4); }
-            25% { text-shadow: -3px 0 #10b981, 3px 0 #3b82f6, 0 4px 12px rgba(0, 0, 0, 0.4); }
-            75% { text-shadow: 3px 0 #10b981, -3px 0 #3b82f6, 0 4px 12px rgba(0, 0, 0, 0.4); }
+            0%,100% { text-shadow: 0 4px 12px rgba(0,0,0,0.4); }
+            25%     { text-shadow: -3px 0 var(--accent-color), 3px 0 #3b82f6, 0 4px 12px rgba(0,0,0,0.4); }
+            75%     { text-shadow:  3px 0 var(--accent-color),-3px 0 #3b82f6, 0 4px 12px rgba(0,0,0,0.4); }
         }
         .anim-glitch .main-title { animation: glitch 0.4s ease-in-out 3, glitchColor 0.4s ease-in-out 3; }
 
         @keyframes reveal {
             from { clip-path: polygon(0 0, 0 0, 0 100%, 0 100%); }
-            to { clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%); }
+            to   { clip-path: polygon(0 0,100% 0,100% 100%, 0 100%); }
         }
-        .anim-reveal .overlay-content { animation: reveal 1.2s cubic-bezier(0.16, 1, 0.3, 1); }
+        .anim-reveal .overlay-content { animation: reveal 2.2s cubic-bezier(0.16, 1, 0.3, 1); }
+
+        @keyframes slideRight {
+            from { transform: translateX(150px); opacity: 0; }
+            to   { transform: translateX(0);     opacity: 1; }
+        }
+        .anim-slide-right .overlay-content { animation: slideRight 2s cubic-bezier(0.16, 1, 0.3, 1); }
+
+        @keyframes rotateIn {
+            from { transform: rotate(-180deg) scale(0); opacity: 0; }
+            to   { transform: rotate(0)       scale(1); opacity: 1; }
+        }
+        .anim-rotate-in .overlay-content { animation: rotateIn 2.2s cubic-bezier(0.16, 1, 0.3, 1); }
 
         .anim-none .overlay-content { animation: none; }
 
         @keyframes glowPulse {
-            0%, 100% { box-shadow: 0 0 20px rgba(16, 185, 129, 0.3); }
-            50% { box-shadow: 0 0 40px rgba(16, 185, 129, 0.6); }
+            0%,100% { box-shadow: 0 0 20px rgba(var(--accent-rgb),0.3); }
+            50%     { box-shadow: 0 0 40px rgba(var(--accent-rgb),0.6); }
         }
         .accent-stripe { animation: glowPulse 3s ease-in-out infinite; }
     </style>
 </head>
 <body>
-    <!-- Connection Status Debug -->
     <div id="connection-status" class="connecting">Connecting...</div>
 
     <div id="lower-third" class="lower-third">
@@ -316,89 +306,172 @@
             <div class="shape-1"></div>
             <div class="shape-2"></div>
         </div>
-
         <div class="overlay-content">
             <div class="accent-stripe"></div>
             <div class="corner-decoration"></div>
             <div class="content-wrapper">
                 <div class="church-label" id="church-info"></div>
-                <div class="main-title" id="main-title"></div>
-                <div class="subtitle" id="subtitle"></div>
-                <div class="bible-verse" id="bible-verse"></div>
+                <div class="main-title"   id="main-title"></div>
+                <div class="subtitle"     id="subtitle"></div>
+                <div class="bible-verse"  id="bible-verse"></div>
             </div>
             <div class="bottom-glow"></div>
         </div>
     </div>
 
     <script>
-        const lowerThird = document.getElementById('lower-third');
-        const churchInfo = document.getElementById('church-info');
-        const mainTitle = document.getElementById('main-title');
-        const subtitle = document.getElementById('subtitle');
-        const bibleVerse = document.getElementById('bible-verse');
+        // ── DOM refs ──────────────────────────────────────────────────────
+        const lowerThird       = document.getElementById('lower-third');
+        const churchInfo       = document.getElementById('church-info');
+        const mainTitle        = document.getElementById('main-title');
+        const subtitle         = document.getElementById('subtitle');
+        const bibleVerse       = document.getElementById('bible-verse');
         const connectionStatus = document.getElementById('connection-status');
 
-        let currentState = null;
-        let currentVersion = -1;
-        let currentAnimation = 'slide-up';
-        let autoAnimationInterval = null;
-        let autoAnimationTimeout = null;
+        // ── Runtime state ─────────────────────────────────────────────────
+        let currentState       = null;   // last applied full state object
+        let currentVersion     = -1;
+        let autoInterval       = null;   // setInterval handle for auto-rotation
+        let autoTimeout        = null;   // spare setTimeout for auto tick
         let typewriterTimeouts = [];
-        let eventSource = null;
-        let reconnectTimeout = null;
-        let reconnectAttempts = 0;
+        let eventSource        = null;
+        let reconnectTimeout   = null;
+        let reconnectAttempts  = 0;
+        let sceneActive        = false;  // true while sceneSwitch is mid-transition
 
+        // ── Animation class map ───────────────────────────────────────────
         const animationClasses = {
-            'none': 'anim-none',
-            'slide-up': 'anim-slide-up',
-            'fade-in': 'anim-fade-in',
-            'slide-left': 'anim-slide-left',
-            'slide-down': 'anim-slide-down',
-            'zoom-in': 'anim-zoom-in',
-            'bounce-in': 'anim-bounce-in',
-            'typewriter': 'anim-typewriter',
-            'wave-in': 'anim-wave-in',
-            'glitch': 'anim-glitch',
-            'reveal': 'anim-reveal'
+            'none':        'anim-none',
+            'slide-up':    'anim-slide-up',
+            'fade-in':     'anim-fade-in',
+            'slide-left':  'anim-slide-left',
+            'slide-right': 'anim-slide-right',
+            'slide-down':  'anim-slide-down',
+            'zoom-in':     'anim-zoom-in',
+            'bounce-in':   'anim-bounce-in',
+            'rotate-in':   'anim-rotate-in',
+            'typewriter':  'anim-typewriter',
+            'wave-in':     'anim-wave-in',
+            'glitch':      'anim-glitch',
+            'reveal':      'anim-reveal'
         };
 
-        const allAnimations = [
-            'slide-up', 'fade-in', 'slide-left', 'slide-down',
-            'zoom-in', 'bounce-in', 'wave-in', 'reveal',
-            'typewriter', 'glitch'
+        const DEFAULT_ANIMATIONS = [
+            'slide-up','fade-in','slide-left','slide-right','slide-down',
+            'zoom-in','bounce-in','rotate-in','wave-in','reveal','typewriter','glitch'
         ];
 
-        function getRandomAnimation() {
-            return allAnimations[Math.floor(Math.random() * allAnimations.length)];
+        // ── Helpers ───────────────────────────────────────────────────────
+
+        function hexToRgb(hex) {
+            const r = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+            return r ? `${parseInt(r[1],16)}, ${parseInt(r[2],16)}, ${parseInt(r[3],16)}` : '16, 185, 129';
         }
 
-        function clearAnimations() {
-            Object.values(animationClasses).forEach(cls => {
-                lowerThird.classList.remove(cls);
+        function applyColors(colors) {
+            if (!colors) return;
+            const ac  = colors.accent || '#10b981';
+            const rgb = hexToRgb(ac);
+            document.documentElement.style.setProperty('--accent-color', ac);
+            document.documentElement.style.setProperty('--accent-rgb', rgb);
+            const stripe = document.querySelector('.accent-stripe');
+            if (stripe) stripe.style.background =
+                `linear-gradient(180deg, ${ac} 0%, ${ac}dd 50%, ${ac}bb 100%)`;
+            document.querySelectorAll('.shape-1, .shape-2').forEach((s, i) => {
+                const op = i === 0 ? ['0.15','0.08'] : ['0.12','0.06'];
+                s.style.background =
+                    `linear-gradient(135deg, rgba(${rgb},${op[0]}) 0%, rgba(${rgb},${op[1]}) 100%)`;
             });
+            if (churchInfo) {
+                churchInfo.style.color       = colors.church_label || '#10b981';
+                churchInfo.style.background  = `rgba(${rgb}, 0.1)`;
+                churchInfo.style.borderColor = `rgba(${rgb}, 0.2)`;
+            }
+            if (mainTitle)  mainTitle.style.color  = colors.main_title || '#ffffff';
+            if (subtitle)   subtitle.style.color   = colors.subtitle   || 'rgba(255,255,255,0.85)';
+            if (bibleVerse) bibleVerse.style.color  = colors.verse      || '#10b981';
+            const cd = document.querySelector('.corner-decoration');
+            if (cd) cd.style.background =
+                `linear-gradient(135deg, rgba(${rgb},0.15) 0%, transparent 60%)`;
+            try {
+                document.styleSheets[0].insertRule(
+                    `.corner-decoration::before { border-top-color: rgba(${rgb},0.4) !important; border-right-color: rgba(${rgb},0.4) !important; }`, 0);
+                document.styleSheets[0].insertRule(
+                    `.anim-typewriter .church-label.typing::after,
+                     .anim-typewriter .main-title.typing::after,
+                     .anim-typewriter .subtitle.typing::after,
+                     .anim-typewriter .bible-verse.typing::after { color: ${ac} !important; }`, 0);
+            } catch(e) {}
+            const bg = document.querySelector('.bottom-glow');
+            if (bg) bg.style.background =
+                `linear-gradient(90deg, transparent 0%, ${ac} 20%, ${ac}dd 50%, ${ac} 80%, transparent 100%)`;
         }
+
+        // Write DOM content from state — always resets all fields first
+        function applyContent(state) {
+            mainTitle.textContent    = '';
+            subtitle.textContent     = '';
+            subtitle.style.display   = 'none';
+            bibleVerse.textContent   = '';
+            bibleVerse.style.display = 'none';
+
+            if (state.church) {
+                churchInfo.textContent  = (state.church.description && state.church.description.trim())
+                    ? state.church.name + ' \u2022 ' + state.church.description
+                    : state.church.name;
+                churchInfo.style.display = 'inline-block';
+            } else {
+                churchInfo.style.display = 'none';
+            }
+
+            if (state.mode === 'minister' && state.minister) {
+                mainTitle.textContent  = state.minister.name;
+                subtitle.textContent   = state.minister.title || '';
+                subtitle.style.display = state.minister.title ? 'block' : 'none';
+            } else if (state.mode === 'sermon' && state.sermon) {
+                mainTitle.textContent  = state.sermon.title;
+                subtitle.textContent   = state.sermon.minister_name || '';
+                subtitle.style.display = state.sermon.minister_name ? 'block' : 'none';
+                if (state.sermon.bible_verse) {
+                    bibleVerse.textContent   = state.sermon.bible_verse;
+                    bibleVerse.style.display = 'block';
+                }
+            }
+        }
+
+        // Remove all animation CSS classes from lowerThird
+        function clearAnimClasses() {
+            Object.values(animationClasses).forEach(cls => lowerThird.classList.remove(cls));
+        }
+
+        // Remove inline transition/transform/opacity set by sceneSwitch
+        function clearInlineStyles() {
+            const oc = document.querySelector('.overlay-content');
+            oc.style.transition = '';
+            oc.style.transform  = '';
+            oc.style.opacity    = '';
+        }
+
+        // ── Typewriter effect ─────────────────────────────────────────────
 
         function clearTypewriterTimeouts() {
-            typewriterTimeouts.forEach(timeout => clearTimeout(timeout));
+            typewriterTimeouts.forEach(t => clearTimeout(t));
             typewriterTimeouts = [];
         }
 
-        function typewriterEffect(element, text, speed = 50) {
-            return new Promise((resolve) => {
-                element.textContent = '';
-                element.classList.add('typing');
-                element.classList.remove('typed');
+        function typewriterEffect(el, text, speed) {
+            return new Promise(resolve => {
+                el.textContent = '';
+                el.classList.add('typing');
+                el.classList.remove('typed');
                 let i = 0;
-
                 function type() {
                     if (i < text.length) {
-                        element.textContent += text.charAt(i);
-                        i++;
-                        const timeout = setTimeout(type, speed);
-                        typewriterTimeouts.push(timeout);
+                        el.textContent += text.charAt(i++);
+                        typewriterTimeouts.push(setTimeout(type, speed));
                     } else {
-                        element.classList.remove('typing');
-                        element.classList.add('typed');
+                        el.classList.remove('typing');
+                        el.classList.add('typed');
                         resolve();
                     }
                 }
@@ -406,284 +479,354 @@
             });
         }
 
-        async function applyTypewriter() {
+        async function runTypewriter() {
             clearTypewriterTimeouts();
-
-            churchInfo.classList.remove('typing', 'typed');
-            mainTitle.classList.remove('typing', 'typed');
-            subtitle.classList.remove('typing', 'typed');
-            bibleVerse.classList.remove('typing', 'typed');
-
-            const elements = [];
-
-            if (churchInfo.style.display !== 'none' && churchInfo.textContent) {
-                elements.push({ element: churchInfo, text: churchInfo.textContent, speed: 30 });
-            }
-
-            if (mainTitle.textContent) {
-                elements.push({ element: mainTitle, text: mainTitle.textContent, speed: 40 });
-            }
-
-            if (subtitle.style.display !== 'none' && subtitle.textContent) {
-                elements.push({ element: subtitle, text: subtitle.textContent, speed: 35 });
-            }
-
-            if (bibleVerse.style.display !== 'none' && bibleVerse.textContent) {
-                elements.push({ element: bibleVerse, text: bibleVerse.textContent, speed: 30 });
-            }
-
-            for (const item of elements) {
-                await typewriterEffect(item.element, item.text, item.speed);
+            [churchInfo, mainTitle, subtitle, bibleVerse].forEach(el => el.classList.remove('typing','typed'));
+            const items = [];
+            if (churchInfo.style.display !== 'none' && churchInfo.textContent)
+                items.push({ el: churchInfo, speed: 55 });
+            if (mainTitle.textContent)
+                items.push({ el: mainTitle,  speed: 70 });
+            if (subtitle.style.display !== 'none' && subtitle.textContent)
+                items.push({ el: subtitle,   speed: 60 });
+            if (bibleVerse.style.display !== 'none' && bibleVerse.textContent)
+                items.push({ el: bibleVerse, speed: 55 });
+            for (const { el, speed } of items) {
+                await typewriterEffect(el, el.textContent, speed);
             }
         }
 
-        function applyAnimation(animation) {
-            clearAnimations();
+        // ── Build a clean animation pool from settings ────────────────────
+        // Filters out empty strings and names that have no CSS class defined.
+        function buildPool(animSettings) {
+            if (!animSettings) return DEFAULT_ANIMATIONS;
+            const raw = animSettings.enabled_animations;
+            if (!raw || raw.length === 0) return DEFAULT_ANIMATIONS;
+            // raw may be an array (from Python .split(',')) or a comma-string
+            const list = Array.isArray(raw) ? raw : raw.split(',');
+            const clean = list.map(s => s.trim()).filter(s => s && animationClasses[s]);
+            return clean.length > 0 ? clean : DEFAULT_ANIMATIONS;
+        }
+
+        function pickRandom(pool) {
+            return pool[Math.floor(Math.random() * pool.length)];
+        }
+
+        // ── Apply one named animation to lowerThird ───────────────────────
+        // Hides overlay, then shows it with the chosen animation class.
+        // Does NOT touch autoInterval — caller manages that.
+        function playAnimation(name) {
+            clearAnimClasses();
             clearTypewriterTimeouts();
+            clearInlineStyles();
+            lowerThird.classList.remove('visible');
 
-            if (animation === 'auto') {
-                animation = getRandomAnimation();
-            }
-
-            const animClass = animationClasses[animation] || animationClasses['slide-up'];
-            lowerThird.classList.add(animClass);
-
-            if (animation === 'typewriter') {
-                setTimeout(() => applyTypewriter(), 100);
-            }
+            setTimeout(() => {
+                const cls = animationClasses[name];
+                if (cls) lowerThird.classList.add(cls);
+                lowerThird.classList.add('visible');
+                if (name === 'typewriter') setTimeout(runTypewriter, 100);
+            }, 50);
         }
 
-        function startAutoAnimation() {
-            stopAutoAnimation();
-
-            if (currentAnimation === 'auto' && currentState && currentState.mode !== 'hidden') {
-                autoAnimationInterval = setInterval(() => {
-                    if (currentAnimation !== 'auto' || !currentState || currentState.mode === 'hidden') {
-                        stopAutoAnimation();
-                        return;
-                    }
-
-                    lowerThird.classList.remove('visible');
-                    clearAnimations();
-
-                    autoAnimationTimeout = setTimeout(() => {
-                        if (currentAnimation !== 'auto' || !currentState || currentState.mode === 'hidden') {
-                            stopAutoAnimation();
-                            return;
-                        }
-
-                        const randomAnim = getRandomAnimation();
-                        const animClass = animationClasses[randomAnim];
-                        lowerThird.classList.add(animClass);
-                        lowerThird.classList.add('visible');
-                    }, 50);
-                }, 5000);
-            }
+        // ── Stop auto-rotation ────────────────────────────────────────────
+        function stopAuto() {
+            if (autoInterval) { clearInterval(autoInterval);  autoInterval = null; }
+            if (autoTimeout)  { clearTimeout(autoTimeout);    autoTimeout  = null; }
         }
 
-        function stopAutoAnimation() {
-            if (autoAnimationInterval) {
-                clearInterval(autoAnimationInterval);
-                autoAnimationInterval = null;
+        // ── Start (or restart) auto-rotation ─────────────────────────────
+        //
+        // This is the ONLY function that manages autoInterval.
+        // It always cancels the existing timer first, then:
+        //
+        //   playNow=true  → play one animation immediately, then set interval
+        //   playNow=false → just set a new interval (don't disturb current display)
+        //
+        // Use playNow=false when only the interval/pool changed while the overlay
+        // was already showing — avoids a flicker/re-entrance animation mid-display.
+        //
+        function startAuto(animSettings, playNow) {
+            stopAuto();
+
+            // Nothing to do if auto_rotate is off
+            if (!animSettings || !animSettings.auto_rotate) return;
+
+            // Nothing to do if overlay is hidden
+            if (!currentState || currentState.mode === 'hidden') return;
+
+            const pool     = buildPool(animSettings);
+            const interval = Math.max((animSettings.rotation_interval || 5), 1) * 1000;
+
+            if (playNow) {
+                playAnimation(pickRandom(pool));
             }
-            if (autoAnimationTimeout) {
-                clearTimeout(autoAnimationTimeout);
-                autoAnimationTimeout = null;
-            }
-            clearTypewriterTimeouts();
+
+            autoInterval = setInterval(() => {
+                if (!currentState || currentState.mode === 'hidden') {
+                    stopAuto();
+                    return;
+                }
+                playAnimation(pickRandom(pool));
+            }, interval);
         }
 
-        function shouldUpdate(newState) {
+        // ── Snapshot key for detecting animation_settings changes ─────────
+        function settingsKey(animSettings) {
+            if (!animSettings) return '';
+            const pool = buildPool(animSettings);
+            return `${animSettings.auto_rotate}|${animSettings.rotation_interval}|${pool.join(',')}`;
+        }
+
+        // ── Scene switch: slide out old, swap content, slide in new ───────
+        function sceneSwitch(newState, onComplete) {
+            if (sceneActive) {
+                // Already mid-transition — snap to new state immediately
+                clearInlineStyles();
+                applyContent(newState);
+                sceneActive = false;
+                if (onComplete) onComplete();
+                return;
+            }
+            sceneActive = true;
+            const oc = document.querySelector('.overlay-content');
+            clearInlineStyles();
+            oc.getBoundingClientRect(); // force reflow
+
+            oc.style.transition = 'transform 0.38s cubic-bezier(0.4,0,1,1), opacity 0.38s ease';
+            oc.style.transform  = 'translateY(32px)';
+            oc.style.opacity    = '0';
+
+            setTimeout(() => {
+                applyContent(newState);
+                oc.style.transition = 'none';
+                oc.style.transform  = 'translateY(-24px)';
+                oc.style.opacity    = '0';
+                oc.getBoundingClientRect(); // force reflow
+                oc.style.transition = 'transform 0.5s cubic-bezier(0.16,1,0.3,1), opacity 0.45s cubic-bezier(0.16,1,0.3,1)';
+                oc.style.transform  = 'translateY(0)';
+                oc.style.opacity    = '1';
+                setTimeout(() => {
+                    clearInlineStyles();
+                    sceneActive = false;
+                    if (onComplete) onComplete();
+                }, 510);
+            }, 400);
+        }
+
+        // ── shouldUpdate guard ────────────────────────────────────────────
+        function shouldUpdate(s) {
             if (!currentState) return true;
-            if (newState.version !== undefined && newState.version > currentVersion) return true;
-
-            const oldJson = JSON.stringify(currentState);
-            const newJson = JSON.stringify(newState);
-            return oldJson !== newJson;
+            if (s.version !== undefined && s.version > currentVersion) return true;
+            return JSON.stringify(currentState) !== JSON.stringify(s);
         }
 
+        // ═══════════════════════════════════════════════════════════════════
+        // MAIN UPDATE FUNCTION
+        //
+        // Called on every SSE event (init / update).
+        //
+        // Decision tree:
+        //   A. mode === 'hidden'              → hide everything, stop auto
+        //   B. First show / from hidden       → write content, start animation mode
+        //   C. Content changed while live     → sceneSwitch, then resume animation mode
+        //   D. Only animation field changed   → replay explicit OR restart auto (playNow)
+        //   E. Only animation_settings changed→ if auto mode: restart interval (no flicker)
+        //                                       if explicit mode: no visible change needed
+        //   F. Color/church-only update       → recolor, no animation restart
+        // ═══════════════════════════════════════════════════════════════════
         function updateDisplay(state) {
             if (!state) return;
+            if (!shouldUpdate(state)) return;
 
-            if (!shouldUpdate(state)) {
-                console.log('⏭️ Skipping update - no changes');
-                return;
-            }
+            const isFirstLoad = (currentState === null);
+            const wasHidden   = !currentState || currentState.mode === 'hidden';
 
-            console.log('🔄 Updating display:', state);
+            // ── Compute diffs BEFORE committing new state ─────────────────
+            const prevAnim     = currentState ? (currentState.animation || 'auto') : 'auto';
+            const prevSettings = currentState ? settingsKey(currentState.animation_settings) : '';
 
-            const isFirstLoad = currentState === null;
-            const previousMode = currentState ? currentState.mode : null;
+            const prevContentKey = currentState
+                ? JSON.stringify({ mode: currentState.mode, m: currentState.minister, s: currentState.sermon })
+                : null;
+            const newContentKey = JSON.stringify({ mode: state.mode, m: state.minister, s: state.sermon });
 
+            const contentChanged  = prevContentKey !== newContentKey;
+            const newAnim         = state.animation || 'auto';
+            const animChanged     = prevAnim !== newAnim;
+            const newSettings     = settingsKey(state.animation_settings);
+            const settingsChanged = prevSettings !== newSettings;
+
+            // ── Commit state ──────────────────────────────────────────────
             currentState = state;
-            if (state.version !== undefined) {
-                currentVersion = state.version;
-            }
+            if (state.version !== undefined) currentVersion = state.version;
+            if (state.colors) applyColors(state.colors);
 
-            if (state.animation) {
-                currentAnimation = state.animation;
-            }
+            // Resolved animation mode:
+            //   'auto'     → auto-rotation using animation_settings
+            //   'none'     → show with no animation
+            //   anything else → play that specific animation once, no interval
+            const isExplicit = (newAnim !== 'auto' && newAnim !== 'none');
+            const animSettings = state.animation_settings || null;
 
+            // ── A. Hidden ─────────────────────────────────────────────────
             if (state.mode === 'hidden') {
-                console.log('👁️ Hiding overlay');
                 lowerThird.classList.remove('visible');
-                stopAutoAnimation();
+                stopAuto();
+                clearAnimClasses();
+                clearInlineStyles();
                 return;
             }
 
-            // Update content
-            if (state.church) {
-                if (state.church.description && state.church.description.trim()) {
-                    churchInfo.textContent = `${state.church.name} • ${state.church.description}`;
+            // Helper called after any transition to settle into the correct mode
+            function settle() {
+                if (isExplicit) {
+                    stopAuto();
+                    playAnimation(newAnim);
+                } else if (newAnim === 'none') {
+                    stopAuto();
+                    clearAnimClasses();
+                    clearInlineStyles();
+                    lowerThird.classList.add('visible');
                 } else {
-                    churchInfo.textContent = state.church.name;
-                }
-                churchInfo.style.display = 'inline-block';
-            } else {
-                churchInfo.style.display = 'none';
-            }
-
-            if (state.mode === 'minister' && state.minister) {
-                console.log('👨‍🏫 Showing minister:', state.minister.name);
-                mainTitle.textContent = state.minister.name;
-                subtitle.textContent = state.minister.title || '';
-                subtitle.style.display = state.minister.title ? 'block' : 'none';
-                bibleVerse.style.display = 'none';
-            }
-
-            if (state.mode === 'sermon' && state.sermon) {
-                console.log('📖 Showing sermon:', state.sermon.title);
-                mainTitle.textContent = state.sermon.title;
-                subtitle.textContent = state.sermon.minister_name || '';
-                subtitle.style.display = state.sermon.minister_name ? 'block' : 'none';
-
-                if (state.sermon.bible_verse) {
-                    bibleVerse.textContent = state.sermon.bible_verse;
-                    bibleVerse.style.display = 'block';
-                } else {
-                    bibleVerse.style.display = 'none';
+                    // auto — play immediately and start interval
+                    startAuto(animSettings, true);
                 }
             }
 
-            // Apply animation only on first load or mode change
-            if (isFirstLoad || previousMode !== state.mode) {
-                applyAnimation(currentAnimation);
+            // ── B. First show / coming out of hidden ──────────────────────
+            if (isFirstLoad || wasHidden) {
+                applyContent(state);
+                settle();
+                return;
             }
 
-            lowerThird.classList.add('visible');
-
-            if (currentAnimation === 'auto') {
-                startAutoAnimation();
-            } else {
-                stopAutoAnimation();
+            // ── C. Content changed while live ─────────────────────────────
+            if (contentChanged) {
+                stopAuto();
+                sceneSwitch(state, () => settle());
+                return;
             }
+
+            // ── D. Animation field changed (same content) ─────────────────
+            // e.g. user switched from 'slide-up' → 'auto', or 'auto' → 'fade-in'
+            if (animChanged) {
+                stopAuto();
+                clearAnimClasses();
+                clearInlineStyles();
+                if (isExplicit) {
+                    playAnimation(newAnim);
+                } else if (newAnim === 'none') {
+                    lowerThird.classList.add('visible');
+                } else {
+                    // Switching into auto — play one immediately and start interval
+                    startAuto(animSettings, true);
+                }
+                return;
+            }
+
+            // ── E. animation_settings changed (admin saved settings) ──────
+            //
+            // This is the previously broken case. We now handle it explicitly.
+            //
+            // Two sub-cases:
+            //   E1. auto_rotate just turned OFF → stop interval, keep overlay visible
+            //   E2. In auto mode and settings changed → restart with new interval/pool
+            //       Use playNow=false to avoid a hide-show flicker since the overlay
+            //       is already visible with a valid animation showing.
+            //   E3. In explicit mode → settings don't affect current display;
+            //       new settings will take effect next time auto mode is entered.
+            //
+            if (settingsChanged) {
+                if (!isExplicit && newAnim !== 'none') {
+                    // We are in auto mode
+                    if (!animSettings || !animSettings.auto_rotate) {
+                        // E1: auto_rotate was just turned off — stop the interval,
+                        //     but leave the overlay exactly as it is (no flicker).
+                        stopAuto();
+                    } else {
+                        // E2: interval or pool changed — restart with new values.
+                        //     playNow=false: don't replay the animation, just reset the timer.
+                        startAuto(animSettings, false);
+                    }
+                }
+                // E3: explicit mode — nothing to do, already handled above.
+                return;
+            }
+
+            // ── F. Color / church / other metadata only ───────────────────
+            // applyColors already ran above. No animation restart needed.
+            // (auto interval keeps ticking unchanged)
         }
 
+        // ── Connection status helpers ─────────────────────────────────────
         function updateConnectionStatus(status, message) {
-            connectionStatus.className = status;
+            connectionStatus.className   = status;
             connectionStatus.textContent = message;
-            console.log(`🔌 ${status.toUpperCase()}: ${message}`);
         }
 
+        // ── SSE ───────────────────────────────────────────────────────────
         function initSSE() {
-            if (eventSource) {
-                eventSource.close();
-                eventSource = null;
-            }
-
+            if (eventSource) { eventSource.close(); eventSource = null; }
             try {
-                updateConnectionStatus('connecting', 'Connecting to server...');
+                updateConnectionStatus('connecting', 'Connecting...');
                 eventSource = new EventSource('/api/overlay/stream');
 
-                eventSource.onopen = function() {
+                eventSource.onopen = () => {
                     reconnectAttempts = 0;
                     updateConnectionStatus('connected', `Connected (v${currentVersion})`);
                 };
 
-                eventSource.onmessage = function(event) {
+                eventSource.onmessage = (event) => {
                     try {
                         const data = JSON.parse(event.data);
-
                         if (data.type === 'init' || data.type === 'update') {
-                            console.log(`📥 Received ${data.type}:`, data.state);
                             updateDisplay(data.state);
-                            updateConnectionStatus('connected', `Connected (v${data.state.version || currentVersion})`);
+                            updateConnectionStatus('connected',
+                                `Connected (v${data.state.version || currentVersion})`);
                         } else if (data.type === 'ping') {
-                            // Keep-alive received
-                            updateConnectionStatus('connected', `Connected (v${currentVersion}) ❤️`);
+                            updateConnectionStatus('connected',
+                                `Connected (v${currentVersion}) \u2665`);
                         }
-                    } catch (error) {
-                        console.error('❌ SSE parse error:', error);
-                    }
+                    } catch(e) { console.error('SSE parse error:', e); }
                 };
 
-                eventSource.onerror = function(error) {
-                    console.error('❌ SSE error:', error);
+                eventSource.onerror = () => {
                     updateConnectionStatus('disconnected', 'Connection lost. Reconnecting...');
-
                     eventSource.close();
                     eventSource = null;
-
-                    // Exponential backoff for reconnection
                     const delay = Math.min(1000 * Math.pow(2, reconnectAttempts), 30000);
                     reconnectAttempts++;
-
-                    updateConnectionStatus('connecting', `Reconnecting in ${delay/1000}s... (attempt ${reconnectAttempts})`);
-
+                    updateConnectionStatus('connecting', `Reconnecting in ${delay / 1000}s...`);
                     if (reconnectTimeout) clearTimeout(reconnectTimeout);
                     reconnectTimeout = setTimeout(initSSE, delay);
                 };
-
-                console.log('✅ SSE connection initiated');
-            } catch (error) {
-                console.error('❌ SSE initialization failed:', error);
+            } catch(e) {
                 updateConnectionStatus('disconnected', 'Failed to connect');
-
-                // Retry after 5 seconds
                 if (reconnectTimeout) clearTimeout(reconnectTimeout);
                 reconnectTimeout = setTimeout(initSSE, 5000);
             }
         }
 
-        // Initialize connection
-        console.log('🚀 Starting display client...');
         initSSE();
 
-        // Handle page visibility changes
         document.addEventListener('visibilitychange', () => {
-            if (!document.hidden) {
-                console.log('👀 Page visible - checking connection');
-                if (!eventSource || eventSource.readyState !== EventSource.OPEN) {
-                    initSSE();
-                }
-            }
-        });
-
-        // Handle window focus
-        window.addEventListener('focus', () => {
-            console.log('🎯 Window focused - checking connection');
-            if (!eventSource || eventSource.readyState !== EventSource.OPEN) {
+            if (!document.hidden && (!eventSource || eventSource.readyState !== EventSource.OPEN))
                 initSSE();
-            }
         });
-
-        // Cleanup on unload
+        window.addEventListener('focus', () => {
+            if (!eventSource || eventSource.readyState !== EventSource.OPEN) initSSE();
+        });
         window.addEventListener('beforeunload', () => {
-            console.log('👋 Cleaning up...');
-            if (eventSource) {
-                eventSource.close();
-            }
-            if (reconnectTimeout) {
-                clearTimeout(reconnectTimeout);
-            }
-            stopAutoAnimation();
+            if (eventSource) eventSource.close();
+            if (reconnectTimeout) clearTimeout(reconnectTimeout);
+            stopAuto();
         });
 
-        // Hide connection status after 3 seconds if connected
+        // Hide the connection status indicator after 3 s once connected
         setTimeout(() => {
-            if (connectionStatus.classList.contains('connected')) {
+            if (connectionStatus.classList.contains('connected'))
                 connectionStatus.style.display = 'none';
-            }
         }, 3000);
     </script>
 </body>

@@ -1,0 +1,146 @@
+{% extends 'admin/base_admin.html' %}
+{% block page_title %}Users{% endblock %}
+{% block page_subtitle %}Manage who can access the control panel{% endblock %}
+
+{% block admin_content %}
+<div class="flex justify-between items-center mb-6">
+    <p class="text-sm text-gray-500">{{ users|length }} user{{ 's' if users|length != 1 }}</p>
+    <button onclick="openAddUser()" class="btn btn-primary">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+        Add User
+    </button>
+</div>
+
+<div class="card overflow-hidden">
+    <table class="w-full text-sm">
+        <thead class="bg-gray-50 border-b border-gray-100">
+            <tr>
+                <th class="text-left py-3 px-4 text-xs font-semibold text-gray-500 uppercase">User</th>
+                <th class="text-left py-3 px-4 text-xs font-semibold text-gray-500 uppercase">Role</th>
+                <th class="text-left py-3 px-4 text-xs font-semibold text-gray-500 uppercase">Added</th>
+                <th class="text-right py-3 px-4 text-xs font-semibold text-gray-500 uppercase">Actions</th>
+            </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-50">
+            {% for u in users %}
+            <tr id="user-row-{{ u.id }}" class="hover:bg-gray-50 transition">
+                <td class="py-3 px-4">
+                    <div class="flex items-center gap-3">
+                        <div class="w-8 h-8 rounded-full bg-gradient-to-br from-emerald-400 to-emerald-600 flex items-center justify-center flex-shrink-0">
+                            <span class="text-white text-xs font-bold">{{ u.name[0] if u.name else u.email[0] }}</span>
+                        </div>
+                        <div>
+                            <p class="font-medium text-gray-900">{{ u.name or '—' }}</p>
+                            <p class="text-xs text-gray-500">{{ u.email }}</p>
+                        </div>
+                    </div>
+                </td>
+                <td class="py-3 px-4">
+                    {% if u.is_admin %}
+                    <span class="badge badge-green">Admin</span>
+                    {% else %}
+                    <span class="badge badge-gray">User</span>
+                    {% endif %}
+                    {% if u.email == admin_email %}
+                    <span class="badge badge-blue ml-1">Primary</span>
+                    {% endif %}
+                </td>
+                <td class="py-3 px-4 text-xs text-gray-400">{{ u.created_at.strftime('%d %b %Y') }}</td>
+                <td class="py-3 px-4 text-right">
+                    {% if u.email != admin_email %}
+                    <button onclick="toggleAdmin({{ u.id }}, {{ u.is_admin|tojson }})"
+                            class="btn btn-ghost btn-sm mr-1">
+                        {{ 'Remove Admin' if u.is_admin else 'Make Admin' }}
+                    </button>
+                    <button onclick="deleteUser({{ u.id }}, {{ u.email|tojson }})"
+                            class="btn btn-danger btn-sm">Delete</button>
+                    {% else %}
+                    <span class="text-xs text-gray-400">Protected</span>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<!-- Add User Modal -->
+<div id="user-modal" class="fixed inset-0 z-50 hidden items-center justify-center p-4" style="background:rgba(0,0,0,0.4)">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6">
+        <h3 class="text-lg font-bold text-gray-900 mb-5">Add User</h3>
+        <div class="space-y-4">
+            <div>
+                <label class="block text-xs font-semibold text-gray-600 mb-1">Email (Google account) *</label>
+                <input id="new-user-email" class="input-field" type="email" placeholder="user@gmail.com">
+            </div>
+            <div>
+                <label class="block text-xs font-semibold text-gray-600 mb-1">Display Name</label>
+                <input id="new-user-name" class="input-field" placeholder="John Doe">
+            </div>
+            <label class="flex items-center gap-3 cursor-pointer">
+                <input id="new-user-admin" type="checkbox" class="w-4 h-4 accent-emerald-500">
+                <span class="text-sm text-gray-700 font-medium">Grant admin access</span>
+            </label>
+        </div>
+        <div class="flex gap-3 mt-6">
+            <button onclick="addUser()" class="btn btn-primary flex-1">Add User</button>
+            <button onclick="closeModal('user-modal')" class="btn btn-ghost flex-1">Cancel</button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block admin_scripts %}
+<script>
+    function openAddUser() {
+        document.getElementById('new-user-email').value = '';
+        document.getElementById('new-user-name').value  = '';
+        document.getElementById('new-user-admin').checked = false;
+        const m = document.getElementById('user-modal');
+        m.classList.remove('hidden'); m.classList.add('flex');
+    }
+    function closeModal(id) {
+        const m = document.getElementById(id);
+        m.classList.add('hidden'); m.classList.remove('flex');
+    }
+    document.getElementById('user-modal').addEventListener('click', e => {
+        if (e.target === e.currentTarget) closeModal('user-modal');
+    });
+
+    async function addUser() {
+        const email    = document.getElementById('new-user-email').value.trim();
+        const name     = document.getElementById('new-user-name').value.trim();
+        const is_admin = document.getElementById('new-user-admin').checked;
+        if (!email) { showToast('Email is required', 'warning'); return; }
+
+        const res = await apiFetch('/api/users', {
+            method: 'POST', body: JSON.stringify({ email, name, is_admin })
+        });
+        const data = await res.json();
+        if (res.ok) {
+            showToast('User added. They can now log in with Google.', 'success');
+            closeModal('user-modal');
+            setTimeout(() => location.reload(), 700);
+        } else { showToast(data.error || 'Failed to add user', 'error'); }
+    }
+
+    async function toggleAdmin(id, isAdmin) {
+        const res = await apiFetch(`/api/users/${id}`, {
+            method: 'PUT', body: JSON.stringify({ is_admin: !isAdmin })
+        });
+        if (res.ok) {
+            showToast(isAdmin ? 'Admin removed' : 'Admin granted', 'success');
+            setTimeout(() => location.reload(), 600);
+        } else { showToast('Failed to update user', 'error'); }
+    }
+
+    async function deleteUser(id, email) {
+        if (!confirm(`Delete user "${email}"? They will lose all access.`)) return;
+        const res = await apiFetch(`/api/users/${id}`, { method: 'DELETE' });
+        if (res.ok) {
+            document.getElementById('user-row-' + id)?.remove();
+            showToast('User deleted', 'success');
+        } else { showToast('Failed to delete user', 'error'); }
+    }
+</script>
+{% endblock %}
