@@ -1,7 +1,7 @@
 from flask import Blueprint, render_template, request
 from flask_login import login_required
 
-from extensions import overlay_state, ADMIN_EMAIL, state_update_queues
+from extensions import overlay_state, ADMIN_EMAIL
 from utils.helpers import admin_required, cleanup_old_logs
 
 admin_bp = Blueprint('admin', __name__)
@@ -29,7 +29,7 @@ def dashboard():
                            ministers_count=Minister.query.count(),
                            sermons_count=Sermon.query.count(),
                            users_count=User.query.count(),
-                           sse_clients=len(state_update_queues),
+                           sse_clients=0,
                            recent_logs=recent_logs)
 
 
@@ -39,7 +39,7 @@ def dashboard():
 def content():
     from models import Minister, Sermon
 
-    ministers = Minister.query.order_by(Minister.last_used.desc().nullslast()).all()
+    ministers = Minister.query.order_by(Minister.last_used.desc().nulls_last()).all()
     sermons   = Sermon.query.order_by(Sermon.date.desc()).limit(50).all()
 
     return render_template('admin/content.html',

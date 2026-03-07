@@ -43,4 +43,3 @@ overlay_state = {
 }
 
 state_lock = threading.Lock()
-state_update_queues: list = []

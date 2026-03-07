@@ -4,7 +4,7 @@ from functools import wraps
 from flask import make_response, redirect, request, url_for, jsonify
 from flask_login import current_user
 
-from extensions import db, overlay_state, state_lock, state_update_queues
+from extensions import db, overlay_state, state_lock
 
 
 # ---------------------------------------------------------------------------
@@ -116,20 +116,8 @@ def cleanup_temporary_content():
 # ---------------------------------------------------------------------------
 
 def notify_state_change():
-    """Bump overlay version and push the new state to all SSE clients."""
+    """Bump overlay version so polling clients detect the change."""
     import time
     with state_lock:
         overlay_state['version'] += 1
         overlay_state['timestamp'] = time.time()
-        update_msg = {'type': 'update', 'state': overlay_state.copy()}
-
-        alive = []
-        for q in state_update_queues:
-            try:
-                q.put_nowait(update_msg)
-                alive.append(q)
-            except Exception:
-                pass
-
-        state_update_queues[:] = alive
-        print(f"[SSE] State update -> {len(alive)} clients (v{overlay_state['version']})")

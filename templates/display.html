@@ -334,9 +334,6 @@
         let autoInterval       = null;   // setInterval handle for auto-rotation
         let autoTimeout        = null;   // spare setTimeout for auto tick
         let typewriterTimeouts = [];
-        let eventSource        = null;
-        let reconnectTimeout   = null;
-        let reconnectAttempts  = 0;
         let sceneActive        = false;  // true while sceneSwitch is mid-transition
 
         // ── Animation class map ───────────────────────────────────────────
@@ -759,67 +756,44 @@
             // (auto interval keeps ticking unchanged)
         }
 
-        // ── Connection status helpers ─────────────────────────────────────
+        // ── Polling (replaces SSE -- shared hosting incompatible with streaming) ──
+        let pollTimer    = null;
+        let pollFailures = 0;
+
         function updateConnectionStatus(status, message) {
             connectionStatus.className   = status;
             connectionStatus.textContent = message;
         }
 
-        // ── SSE ───────────────────────────────────────────────────────────
-        function initSSE() {
-            if (eventSource) { eventSource.close(); eventSource = null; }
+        async function poll() {
             try {
-                updateConnectionStatus('connecting', 'Connecting...');
-                eventSource = new EventSource('/api/overlay/stream');
-
-                eventSource.onopen = () => {
-                    reconnectAttempts = 0;
-                    updateConnectionStatus('connected', `Connected (v${currentVersion})`);
-                };
-
-                eventSource.onmessage = (event) => {
-                    try {
-                        const data = JSON.parse(event.data);
-                        if (data.type === 'init' || data.type === 'update') {
-                            updateDisplay(data.state);
-                            updateConnectionStatus('connected',
-                                `Connected (v${data.state.version || currentVersion})`);
-                        } else if (data.type === 'ping') {
-                            updateConnectionStatus('connected',
-                                `Connected (v${currentVersion}) \u2665`);
-                        }
-                    } catch(e) { console.error('SSE parse error:', e); }
-                };
-
-                eventSource.onerror = () => {
-                    updateConnectionStatus('disconnected', 'Connection lost. Reconnecting...');
-                    eventSource.close();
-                    eventSource = null;
-                    const delay = Math.min(1000 * Math.pow(2, reconnectAttempts), 30000);
-                    reconnectAttempts++;
-                    updateConnectionStatus('connecting', `Reconnecting in ${delay / 1000}s...`);
-                    if (reconnectTimeout) clearTimeout(reconnectTimeout);
-                    reconnectTimeout = setTimeout(initSSE, delay);
-                };
-            } catch(e) {
-                updateConnectionStatus('disconnected', 'Failed to connect');
-                if (reconnectTimeout) clearTimeout(reconnectTimeout);
-                reconnectTimeout = setTimeout(initSSE, 5000);
+                const res   = await fetch('/api/overlay/state');
+                if (!res.ok) throw new Error('HTTP ' + res.status);
+                const state = await res.json();
+                pollFailures = 0;
+                updateConnectionStatus('connected', 'Connected (v' + (state.version || currentVersion) + ')');
+                updateDisplay(state);
+            } catch (e) {
+                pollFailures++;
+                const msg = pollFailures > 3 ? 'Connection lost. Retrying...' : 'Connecting...';
+                updateConnectionStatus(pollFailures > 3 ? 'disconnected' : 'connecting', msg);
             }
         }
 
-        initSSE();
+        function startPolling() {
+            if (pollTimer) clearInterval(pollTimer);
+            poll();                              // immediate first fetch
+            pollTimer = setInterval(poll, 1500); // then every 1.5 s
+        }
+
+        startPolling();
 
         document.addEventListener('visibilitychange', () => {
-            if (!document.hidden && (!eventSource || eventSource.readyState !== EventSource.OPEN))
-                initSSE();
+            if (!document.hidden) { poll(); }
         });
-        window.addEventListener('focus', () => {
-            if (!eventSource || eventSource.readyState !== EventSource.OPEN) initSSE();
-        });
+
         window.addEventListener('beforeunload', () => {
-            if (eventSource) eventSource.close();
-            if (reconnectTimeout) clearTimeout(reconnectTimeout);
+            if (pollTimer) clearInterval(pollTimer);
             stopAuto();
         });
 

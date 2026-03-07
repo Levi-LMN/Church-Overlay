@@ -1,13 +1,11 @@
 import json
-import queue
 import time
 from datetime import datetime, timedelta
 
 from flask import Blueprint, Response, jsonify, make_response, request
 from flask_login import current_user
 
-from extensions import (ADMIN_EMAIL, db, overlay_state, state_lock,   # <- extensions
-                        state_update_queues)
+from extensions import (ADMIN_EMAIL, db, overlay_state, state_lock)
 from utils.helpers import (admin_required, auth_required as check_auth_required,
                            log_activity, login_optional, no_cache,
                            notify_state_change)
@@ -43,36 +41,9 @@ def get_overlay_state():
     return response
 
 
-@api_bp.route('/overlay/stream')
-def stream_overlay():
-    """Server-Sent Events endpoint -- DO NOT MODIFY."""
 
-    def event_stream():
-        q = queue.Queue(maxsize=10)
-        with state_lock:
-            state_update_queues.append(q)
-            initial_state = overlay_state.copy()
-
-        yield f"data: {json.dumps({'type': 'init', 'state': initial_state})}\n\n"
-        print(f"[SSE] New display client connected (total: {len(state_update_queues)})")
-
-        try:
-            while True:
-                try:
-                    message = q.get(timeout=15)
-                    yield f"data: {json.dumps(message)}\n\n"
-                except queue.Empty:
-                    yield f"data: {json.dumps({'type': 'ping', 'timestamp': time.time()})}\n\n"
-        except GeneratorExit:
-            with state_lock:
-                if q in state_update_queues:
-                    state_update_queues.remove(q)
-            print(f"[SSE] Display client disconnected (remaining: {len(state_update_queues)})")
-
-    response = Response(event_stream(), mimetype='text/event-stream')
-    response.headers['Cache-Control'] = 'no-cache'
-    response.headers['X-Accel-Buffering'] = 'no'
-    return response
+# SSE streaming removed -- not compatible with shared hosting (causes SIGTERM).
+# The display page uses polling (/api/overlay/state) instead.
 
 
 @api_bp.route('/overlay/update', methods=['POST'])
