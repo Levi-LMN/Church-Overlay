@@ -28,7 +28,7 @@ def create_app():
     app.config['GOOGLE_CLIENT_ID']     = os.environ.get('GOOGLE_CLIENT_ID')
     app.config['GOOGLE_CLIENT_SECRET'] = os.environ.get('GOOGLE_CLIENT_SECRET')
 
-    # WTF CSRF — exempt the SSE stream and JSON API routes
+    # WTF CSRF -- exempt the SSE stream and JSON API routes
     app.config['WTF_CSRF_CHECK_DEFAULT'] = False  # manual exemptions below
 
     # ------------------------------------------------------------------
@@ -55,7 +55,7 @@ def create_app():
 
     @login_manager.user_loader
     def load_user(user_id):
-        return User.query.get(int(user_id))
+        return db.session.get(User, int(user_id))
 
     # ------------------------------------------------------------------
     # Register blueprints
@@ -136,10 +136,10 @@ def create_app():
                     'enabled_animations': anim.enabled_animations.split(',')
                 }
 
-            print("✅ Database initialised successfully")
+            print("[OK] Database initialised successfully")
 
         except Exception as e:
             db.session.rollback()
-            print(f"❌ Database initialisation error: {e}")
+            print(f"[ERROR] Database initialisation error: {e}")
 
     return app

@@ -91,7 +91,7 @@ def cleanup_old_logs():
         deleted = ActivityLog.query.filter(ActivityLog.timestamp < cutoff).delete()
         if deleted:
             db.session.commit()
-            print(f"🗑️  Cleaned up {deleted} old activity logs")
+            print(f"[CLEANUP] Removed {deleted} old activity logs")
     except Exception as e:
         db.session.rollback()
         print(f"Error cleaning up logs: {e}")
@@ -105,7 +105,7 @@ def cleanup_temporary_content():
         deleted = TemporaryContent.query.filter(TemporaryContent.created_at < cutoff).delete()
         if deleted:
             db.session.commit()
-            print(f"🗑️  Cleaned up {deleted} temporary content items")
+            print(f"[CLEANUP] Removed {deleted} temporary content items")
     except Exception as e:
         db.session.rollback()
         print(f"Error cleaning up temporary content: {e}")
@@ -132,4 +132,4 @@ def notify_state_change():
                 pass
 
         state_update_queues[:] = alive
-        print(f"📡 State update → {len(alive)} clients (v{overlay_state['version']})")
+        print(f"[SSE] State update -> {len(alive)} clients (v{overlay_state['version']})")

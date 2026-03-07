@@ -1,10 +1,10 @@
 """
-extensions.py — Single source of truth for all shared Flask extension instances.
+extensions.py -- Single source of truth for all shared Flask extension instances.
 
 WHY THIS FILE EXISTS:
   When running `python app.py`, Python registers that module as `__main__`.
   If any blueprint then does `from app import oauth`, Python re-imports app.py
-  as a *second*, separate module — creating brand-new, uninitialised instances.
+  as a *second*, separate module -- creating brand-new, uninitialised instances.
   By moving every singleton here, both app.py and every blueprint always import
   from the same stable module.
 """
@@ -35,7 +35,7 @@ overlay_state = {
     'minister': None,
     'sermon': None,
     'church': None,
-    'animation': 'slide-up',
+    'animation': 'auto',
     'animation_settings': {},
     'colors': {},
     'version': 0,

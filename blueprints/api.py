@@ -6,7 +6,7 @@ from datetime import datetime, timedelta
 from flask import Blueprint, Response, jsonify, make_response, request
 from flask_login import current_user
 
-from extensions import (ADMIN_EMAIL, db, overlay_state, state_lock,   # ← extensions
+from extensions import (ADMIN_EMAIL, db, overlay_state, state_lock,   # <- extensions
                         state_update_queues)
 from utils.helpers import (admin_required, auth_required as check_auth_required,
                            log_activity, login_optional, no_cache,
@@ -45,7 +45,7 @@ def get_overlay_state():
 
 @api_bp.route('/overlay/stream')
 def stream_overlay():
-    """Server-Sent Events endpoint — DO NOT MODIFY."""
+    """Server-Sent Events endpoint -- DO NOT MODIFY."""
 
     def event_stream():
         q = queue.Queue(maxsize=10)
@@ -54,7 +54,7 @@ def stream_overlay():
             initial_state = overlay_state.copy()
 
         yield f"data: {json.dumps({'type': 'init', 'state': initial_state})}\n\n"
-        print(f"📺 New display client connected (total: {len(state_update_queues)})")
+        print(f"[SSE] New display client connected (total: {len(state_update_queues)})")
 
         try:
             while True:
@@ -67,7 +67,7 @@ def stream_overlay():
             with state_lock:
                 if q in state_update_queues:
                     state_update_queues.remove(q)
-            print(f"📺 Display client disconnected (remaining: {len(state_update_queues)})")
+            print(f"[SSE] Display client disconnected (remaining: {len(state_update_queues)})")
 
     response = Response(event_stream(), mimetype='text/event-stream')
     response.headers['Cache-Control'] = 'no-cache'
@@ -86,7 +86,7 @@ def update_overlay():
     with state_lock:
         overlay_state['mode'] = mode
         if 'animation' in data:
-            # Store whatever was sent, including 'auto' — the display page needs
+            # Store whatever was sent, including 'auto' -- the display page needs
             # to receive 'auto' explicitly to cancel any previously locked animation
             overlay_state['animation'] = data['animation']
         details = f"Mode: {mode}"
@@ -97,7 +97,7 @@ def update_overlay():
                 temp_id = data.get('temp_minister_id')
 
                 if minister_id:
-                    minister = Minister.query.get(minister_id)
+                    minister = db.session.get(Minister, minister_id)
                     if minister:
                         minister.last_used = datetime.utcnow()
                         db.session.commit()
@@ -106,7 +106,7 @@ def update_overlay():
                         }
                         details = f"Displayed minister: {minister.name}"
                 elif temp_id:
-                    temp = TemporaryContent.query.get(temp_id)
+                    temp = db.session.get(TemporaryContent, temp_id)
                     if temp:
                         temp.last_used = datetime.utcnow()
                         db.session.commit()
@@ -134,7 +134,7 @@ def update_overlay():
                 temp_id   = data.get('temp_sermon_id')
 
                 if sermon_id:
-                    sermon = Sermon.query.get(sermon_id)
+                    sermon = db.session.get(Sermon, sermon_id)
                     if sermon:
                         overlay_state['sermon'] = {
                             'id': sermon.id, 'minister_name': sermon.minister_name,
@@ -142,7 +142,7 @@ def update_overlay():
                         }
                         details = f"Displayed sermon: {sermon.title}"
                 elif temp_id:
-                    temp = TemporaryContent.query.get(temp_id)
+                    temp = db.session.get(TemporaryContent, temp_id)
                     if temp:
                         temp.last_used = datetime.utcnow()
                         db.session.commit()
@@ -264,7 +264,7 @@ def manage_ministers():
         log_activity('MINISTER_ADD', f"Added minister: {minister.name}")
         return jsonify({'success': True, 'id': minister.id})
 
-    ministers = Minister.query.order_by(Minister.last_used.desc().nullslast()).all()
+    ministers = Minister.query.order_by(Minister.last_used.desc().nulls_last()).all()
     return jsonify([{'id': m.id, 'name': m.name, 'title': m.title} for m in ministers])
 
 
@@ -287,7 +287,7 @@ def modify_minister(id):
     minister.name  = data.get('name', minister.name)
     minister.title = data.get('title', minister.title)
     db.session.commit()
-    log_activity('MINISTER_UPDATE', f"Updated minister: {old_name} → {minister.name}")
+    log_activity('MINISTER_UPDATE', f"Updated minister: {old_name} -> {minister.name}")
     return jsonify({'success': True})
 
 
@@ -339,7 +339,7 @@ def modify_sermon(id):
     sermon.minister_name = data.get('minister_name', sermon.minister_name)
     sermon.bible_verse  = data.get('bible_verse', sermon.bible_verse)
     db.session.commit()
-    log_activity('SERMON_UPDATE', f"Updated sermon: {old_title} → {sermon.title}")
+    log_activity('SERMON_UPDATE', f"Updated sermon: {old_title} -> {sermon.title}")
     return jsonify({'success': True})
 
 
@@ -349,17 +349,17 @@ def modify_sermon(id):
 
 @api_bp.route('/temporary-content', methods=['GET'])
 def get_temporary_content():
-    """Return recent temporary content — shared across all users."""
+    """Return recent temporary content -- shared across all users."""
     from models import TemporaryContent
 
     temp_ministers = (TemporaryContent.query
                       .filter_by(content_type='minister')
-                      .order_by(TemporaryContent.last_used.desc().nullslast())
+                      .order_by(TemporaryContent.last_used.desc().nulls_last())
                       .limit(10).all())
 
     temp_sermons = (TemporaryContent.query
                     .filter_by(content_type='sermon')
-                    .order_by(TemporaryContent.last_used.desc().nullslast())
+                    .order_by(TemporaryContent.last_used.desc().nulls_last())
                     .limit(10).all())
 
     return jsonify({
@@ -435,7 +435,7 @@ def save_custom_content():
             setting.value = data[key]
             saved.append(key)
 
-    # 2. Minister save → also write a TemporaryContent row
+    # 2. Minister save -> also write a TemporaryContent row
     if data.get('custom_minister_name'):
         temp = TemporaryContent(
             content_type='minister',
@@ -446,7 +446,7 @@ def save_custom_content():
         )
         db.session.add(temp)
 
-    # 3. Sermon save → also write a TemporaryContent row
+    # 3. Sermon save -> also write a TemporaryContent row
     if data.get('custom_sermon_title'):
         temp = TemporaryContent(
             content_type='sermon',
