@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Lower Third Banners</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #d9d9d9;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 55px;
+    font-family: Arial, sans-serif;
+  }
+
+  .wrapper {
+    position: relative;
+    width: 680px;
+    height: 90px;
+  }
+
+  /* Circle badge */
+  .circle {
+    position: absolute;
+    left: 4px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 94px;
+    height: 94px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 38% 35%, #2e2e2e, #060606);
+    border: 5px solid #ffffff;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.55), 0 2px 6px rgba(0,0,0,0.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 30;
+    color: #fff;
+    font-family: 'Arial Black', Arial, sans-serif;
+    font-size: 12.5px;
+    font-weight: 900;
+    text-align: center;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    line-height: 1.45;
+  }
+
+  /* Main label */
+  .label {
+    position: absolute;
+    left: 138px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #fff;
+    font-size: 20px;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+    white-space: nowrap;
+    z-index: 20;
+    text-shadow: 0 1px 3px rgba(0,0,0,0.3);
+  }
+
+  /* Decorative right lines */
+  .rlines {
+    position: absolute;
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .rlines span { display: block; height: 2px; border-radius: 2px; opacity: 0.8; }
+
+  /* Decorative left-bottom lines */
+  .llines {
+    position: absolute;
+    left: 110px;
+    bottom: -8px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .llines span { display: block; height: 2px; border-radius: 2px; opacity: 0.75; }
+</style>
+</head>
+<body>
+
+<!-- ===== RED BANNER ===== -->
+<div class="wrapper">
+
+  <svg style="position:absolute;left:55px;top:0" width="615" height="90" viewBox="0 0 615 90" overflow="visible">
+    <defs>
+
+      <!-- Red outer gradient: dark left, bright center-right, dark right -->
+      <linearGradient id="rOuter" x1="0%" y1="0%" x2="100%" y2="0%">
+        <stop offset="0%"   stop-color="#b80000"/>
+        <stop offset="40%"  stop-color="#e60000"/>
+        <stop offset="65%"  stop-color="#ff3333"/>
+        <stop offset="100%" stop-color="#c00000"/>
+      </linearGradient>
+
+      <!-- Top-lit gloss -->
+      <linearGradient id="rGloss" x1="0%" y1="0%" x2="0%" y2="100%">
+        <stop offset="0%"   stop-color="rgba(255,255,255,0.32)"/>
+        <stop offset="45%"  stop-color="rgba(255,255,255,0.0)"/>
+        <stop offset="100%" stop-color="rgba(0,0,0,0.22)"/>
+      </linearGradient>
+
+      <!-- Diagonal light streak on colored area -->
+      <linearGradient id="rStreak" x1="10%" y1="80%" x2="80%" y2="0%">
+        <stop offset="0%"   stop-color="rgba(255,255,255,0)"/>
+        <stop offset="35%"  stop-color="rgba(255,255,255,0)"/>
+        <stop offset="52%"  stop-color="rgba(255,220,180,0.35)"/>
+        <stop offset="62%"  stop-color="rgba(255,255,255,0.55)"/>
+        <stop offset="72%"  stop-color="rgba(255,220,180,0.3)"/>
+        <stop offset="100%" stop-color="rgba(255,255,255,0)"/>
+      </linearGradient>
+
+      <!-- Dark bar fill -->
+      <linearGradient id="rDark" x1="0%" y1="0%" x2="100%" y2="0%">
+        <stop offset="0%"   stop-color="#101010"/>
+        <stop offset="50%"  stop-color="#1a1a1a"/>
+        <stop offset="100%" stop-color="#060606"/>
+      </linearGradient>
+
+      <!-- Horizontal glow inside dark bar (light from below-center) -->
+      <radialGradient id="rGlow" cx="55%" cy="100%" r="55%" gradientUnits="objectBoundingBox">
+        <stop offset="0%"   stop-color="rgba(200,50,0,0.65)"/>
+        <stop offset="60%"  stop-color="rgba(150,20,0,0.2)"/>
+        <stop offset="100%" stop-color="rgba(0,0,0,0)"/>
+      </radialGradient>
+
+      <!-- Horizontal bright streak inside dark bar -->
+      <linearGradient id="rBarStreak" x1="0%" y1="0%" x2="100%" y2="0%">
+        <stop offset="0%"   stop-color="rgba(255,255,255,0)"/>
+        <stop offset="30%"  stop-color="rgba(255,255,255,0)"/>
+        <stop offset="50%"  stop-color="rgba(255,180,120,0.18)"/>
+        <stop offset="65%"  stop-color="rgba(255,255,255,0.28)"/>
+        <stop offset="80%"  stop-color="rgba(255,180,120,0.12)"/>
+        <stop offset="100%" stop-color="rgba(255,255,255,0)"/>
+      </linearGradient>
+
+      <filter id="shadow" x="-5%" y="-30%" width="115%" height="170%">
+        <feDropShadow dx="0" dy="8" stdDeviation="10" flood-color="rgba(0,0,0,0.38)"/>
+      </filter>
+    </defs>
+
+    <!--
+      SHAPE: flat top + flat bottom + small left rounded corners
+             right side: top-right curves DOWN to tip, bottom-right curves UP to same tip
+             Cubic bezier keeps edges flat long before curving at the very end
+    -->
+
+    <!-- Outer colored shape -->
+    <g filter="url(#shadow)">
+      <path d="
+        M 14,0
+        L 510,0
+        C 575,0   600,22  600,45
+        C 600,68  575,90  510,90
+        L 14,90
+        Q 0,90  0,76
+        L 0,14
+        Q 0,0   14,0
+        Z"
+        fill="url(#rOuter)"
+      />
+    </g>
+
+    <!-- Gloss overlay -->
+    <path d="M 14,0 L 510,0 C 575,0 600,22 600,45 C 600,68 575,90 510,90 L 14,90 Q 0,90 0,76 L 0,14 Q 0,0 14,0 Z"
+      fill="url(#rGloss)" />
+
+    <!-- Diagonal streak -->
+    <path d="M 14,0 L 510,0 C 575,0 600,22 600,45 C 600,68 575,90 510,90 L 14,90 Q 0,90 0,76 L 0,14 Q 0,0 14,0 Z"
+      fill="url(#rStreak)" />
+
+    <!-- Inner dark bar -->
+    <path d="
+      M 14,11
+      L 492,11
+      C 547,11   568,28  568,45
+      C 568,62   547,79  492,79
+      L 14,79
+      Q 4,79  4,69
+      L 4,21
+      Q 4,11  14,11
+      Z"
+      fill="url(#rDark)"
+    />
+
+    <!-- Dark bar bottom glow -->
+    <path d="M 14,11 L 492,11 C 547,11 568,28 568,45 C 568,62 547,79 492,79 L 14,79 Q 4,79 4,69 L 4,21 Q 4,11 14,11 Z"
+      fill="url(#rGlow)" />
+
+    <!-- Dark bar horizontal streak -->
+    <path d="M 14,11 L 492,11 C 547,11 568,28 568,45 C 568,62 547,79 492,79 L 14,79 Q 4,79 4,69 L 4,21 Q 4,11 14,11 Z"
+      fill="url(#rBarStreak)" />
+
+  </svg>
+
+  <!-- Circle -->
+  <div class="circle">TEXT<br>SPACE</div>
+
+  <!-- Text -->
+  <div class="label">Lorem Ipsum Dolor Sit Amet</div>
+
+  <!-- Right decorative lines -->
+  <div class="rlines">
+    <span style="width:52px;background:#cc0000"></span>
+    <span style="width:34px;background:#cc0000"></span>
+    <span style="width:20px;background:#cc0000"></span>
+  </div>
+
+  <!-- Left-bottom decorative lines -->
+  <div class="llines">
+    <span style="width:38px;background:#cc0000"></span>
+    <span style="width:24px;background:#cc0000"></span>
+  </div>
+</div>
+
+
+<!-- ===== BLUE BANNER ===== -->
+<div class="wrapper">
+
+  <svg style="position:absolute;left:55px;top:0" width="615" height="90" viewBox="0 0 615 90" overflow="visible">
+    <defs>
+      <linearGradient id="bOuter" x1="0%" y1="0%" x2="100%" y2="0%">
+        <stop offset="0%"   stop-color="#0025b8"/>
+        <stop offset="40%"  stop-color="#0044e8"/>
+        <stop offset="65%"  stop-color="#2266ff"/>
+        <stop offset="100%" stop-color="#0033cc"/>
+      </linearGradient>
+
+      <linearGradient id="bGloss" x1="0%" y1="0%" x2="0%" y2="100%">
+        <stop offset="0%"   stop-color="rgba(255,255,255,0.32)"/>
+        <stop offset="45%"  stop-color="rgba(255,255,255,0.0)"/>
+        <stop offset="100%" stop-color="rgba(0,0,0,0.22)"/>
+      </linearGradient>
+
+      <linearGradient id="bStreak" x1="10%" y1="80%" x2="80%" y2="0%">
+        <stop offset="0%"   stop-color="rgba(255,255,255,0)"/>
+        <stop offset="35%"  stop-color="rgba(255,255,255,0)"/>
+        <stop offset="52%"  stop-color="rgba(180,210,255,0.30)"/>
+        <stop offset="62%"  stop-color="rgba(255,255,255,0.50)"/>
+        <stop offset="72%"  stop-color="rgba(180,210,255,0.25)"/>
+        <stop offset="100%" stop-color="rgba(255,255,255,0)"/>
+      </linearGradient>
+
+      <linearGradient id="bDark" x1="0%" y1="0%" x2="100%" y2="0%">
+        <stop offset="0%"   stop-color="#101010"/>
+        <stop offset="50%"  stop-color="#1a1a1a"/>
+        <stop offset="100%" stop-color="#060606"/>
+      </linearGradient>
+
+      <radialGradient id="bGlow" cx="55%" cy="100%" r="55%" gradientUnits="objectBoundingBox">
+        <stop offset="0%"   stop-color="rgba(20,80,220,0.65)"/>
+        <stop offset="60%"  stop-color="rgba(10,50,180,0.2)"/>
+        <stop offset="100%" stop-color="rgba(0,0,0,0)"/>
+      </radialGradient>
+
+      <linearGradient id="bBarStreak" x1="0%" y1="0%" x2="100%" y2="0%">
+        <stop offset="0%"   stop-color="rgba(255,255,255,0)"/>
+        <stop offset="30%"  stop-color="rgba(255,255,255,0)"/>
+        <stop offset="50%"  stop-color="rgba(150,190,255,0.18)"/>
+        <stop offset="65%"  stop-color="rgba(255,255,255,0.28)"/>
+        <stop offset="80%"  stop-color="rgba(150,190,255,0.12)"/>
+        <stop offset="100%" stop-color="rgba(255,255,255,0)"/>
+      </linearGradient>
+
+      <filter id="shadow2" x="-5%" y="-30%" width="115%" height="170%">
+        <feDropShadow dx="0" dy="8" stdDeviation="10" flood-color="rgba(0,0,0,0.38)"/>
+      </filter>
+    </defs>
+
+    <g filter="url(#shadow2)">
+      <path d="M 14,0 L 510,0 C 575,0 600,22 600,45 C 600,68 575,90 510,90 L 14,90 Q 0,90 0,76 L 0,14 Q 0,0 14,0 Z"
+        fill="url(#bOuter)" />
+    </g>
+    <path d="M 14,0 L 510,0 C 575,0 600,22 600,45 C 600,68 575,90 510,90 L 14,90 Q 0,90 0,76 L 0,14 Q 0,0 14,0 Z"
+      fill="url(#bGloss)" />
+    <path d="M 14,0 L 510,0 C 575,0 600,22 600,45 C 600,68 575,90 510,90 L 14,90 Q 0,90 0,76 L 0,14 Q 0,0 14,0 Z"
+      fill="url(#bStreak)" />
+
+    <path d="M 14,11 L 492,11 C 547,11 568,28 568,45 C 568,62 547,79 492,79 L 14,79 Q 4,79 4,69 L 4,21 Q 4,11 14,11 Z"
+      fill="url(#bDark)" />
+    <path d="M 14,11 L 492,11 C 547,11 568,28 568,45 C 568,62 547,79 492,79 L 14,79 Q 4,79 4,69 L 4,21 Q 4,11 14,11 Z"
+      fill="url(#bGlow)" />
+    <path d="M 14,11 L 492,11 C 547,11 568,28 568,45 C 568,62 547,79 492,79 L 14,79 Q 4,79 4,69 L 4,21 Q 4,11 14,11 Z"
+      fill="url(#bBarStreak)" />
+  </svg>
+
+  <div class="circle">TEXT<br>SPACE</div>
+  <div class="label">Lorem Ipsum Dolor Sit Amet</div>
+
+  <div class="rlines">
+    <span style="width:52px;background:#0033cc"></span>
+    <span style="width:34px;background:#0033cc"></span>
+    <span style="width:20px;background:#0033cc"></span>
+  </div>
+
+  <div class="llines">
+    <span style="width:38px;background:#0033cc"></span>
+    <span style="width:24px;background:#0033cc"></span>
+  </div>
+</div>
+
+</body>
+</html>

@@ -89,12 +89,20 @@ def update_overlay():
                     minister_name  = data.get('minister_name')
                     minister_title = data.get('minister_title')
                     if current_user.is_authenticated and minister_name:
-                        temp = TemporaryContent(
-                            content_type='minister', name=minister_name,
-                            title=minister_title, created_by=current_user.id,
-                            last_used=datetime.utcnow()
-                        )
-                        db.session.add(temp)
+                        temp = (TemporaryContent.query
+                                .filter_by(content_type='minister',
+                                           name=minister_name,
+                                           title=minister_title or '')
+                                .first())
+                        if temp:
+                            temp.last_used = datetime.utcnow()
+                        else:
+                            temp = TemporaryContent(
+                                content_type='minister', name=minister_name,
+                                title=minister_title, created_by=current_user.id,
+                                last_used=datetime.utcnow()
+                            )
+                            db.session.add(temp)
                         db.session.commit()
                     overlay_state['minister'] = {'name': minister_name, 'title': minister_title}
                     details = f"Displayed custom minister: {minister_name}"
@@ -127,12 +135,21 @@ def update_overlay():
                     minister_name  = data.get('minister_name')
                     bible_verse    = data.get('bible_verse')
                     if current_user.is_authenticated and sermon_title:
-                        temp = TemporaryContent(
-                            content_type='sermon', title=sermon_title,
-                            minister_name=minister_name, bible_verse=bible_verse,
-                            created_by=current_user.id, last_used=datetime.utcnow()
-                        )
-                        db.session.add(temp)
+                        temp = (TemporaryContent.query
+                                .filter_by(content_type='sermon',
+                                           title=sermon_title,
+                                           minister_name=minister_name or '',
+                                           bible_verse=bible_verse or '')
+                                .first())
+                        if temp:
+                            temp.last_used = datetime.utcnow()
+                        else:
+                            temp = TemporaryContent(
+                                content_type='sermon', title=sermon_title,
+                                minister_name=minister_name, bible_verse=bible_verse,
+                                created_by=current_user.id, last_used=datetime.utcnow()
+                            )
+                            db.session.add(temp)
                         db.session.commit()
                     overlay_state['sermon'] = {
                         'minister_name': minister_name,
@@ -406,28 +423,42 @@ def save_custom_content():
             setting.value = data[key]
             saved.append(key)
 
-    # 2. Minister save -> also write a TemporaryContent row
+    # 2. Minister save -> upsert TemporaryContent row (no duplicates)
     if data.get('custom_minister_name'):
-        temp = TemporaryContent(
-            content_type='minister',
-            name=data['custom_minister_name'],
-            title=data.get('custom_minister_title', ''),
-            created_by=current_user.id if current_user.is_authenticated else None,
-            last_used=datetime.utcnow()
-        )
-        db.session.add(temp)
+        name  = data['custom_minister_name']
+        title = data.get('custom_minister_title', '')
+        temp  = (TemporaryContent.query
+                 .filter_by(content_type='minister', name=name, title=title)
+                 .first())
+        if temp:
+            temp.last_used = datetime.utcnow()
+        else:
+            temp = TemporaryContent(
+                content_type='minister', name=name, title=title,
+                created_by=current_user.id if current_user.is_authenticated else None,
+                last_used=datetime.utcnow()
+            )
+            db.session.add(temp)
 
-    # 3. Sermon save -> also write a TemporaryContent row
+    # 3. Sermon save -> upsert TemporaryContent row (no duplicates)
     if data.get('custom_sermon_title'):
-        temp = TemporaryContent(
-            content_type='sermon',
-            title=data['custom_sermon_title'],
-            minister_name=data.get('custom_sermon_minister', ''),
-            bible_verse=data.get('custom_sermon_verse', ''),
-            created_by=current_user.id if current_user.is_authenticated else None,
-            last_used=datetime.utcnow()
-        )
-        db.session.add(temp)
+        title   = data['custom_sermon_title']
+        mname   = data.get('custom_sermon_minister', '')
+        verse   = data.get('custom_sermon_verse', '')
+        temp    = (TemporaryContent.query
+                   .filter_by(content_type='sermon', title=title,
+                               minister_name=mname, bible_verse=verse)
+                   .first())
+        if temp:
+            temp.last_used = datetime.utcnow()
+        else:
+            temp = TemporaryContent(
+                content_type='sermon', title=title,
+                minister_name=mname, bible_verse=verse,
+                created_by=current_user.id if current_user.is_authenticated else None,
+                last_used=datetime.utcnow()
+            )
+            db.session.add(temp)
 
     db.session.commit()
     log_activity('CUSTOM_CONTENT_SAVE', f"Saved: {', '.join(saved)}")

@@ -705,7 +705,7 @@
             p.animation=anim;
             const r=await fetch('/api/overlay/update',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(p)});
             const d=await r.json();
-            if(r.ok){applyServerState(d.state,true);showToast('✓ Live!','success');}else showToast('Failed','error');
+            if(r.ok){applyServerState(d.state,true);showToast('✓ Live!','success');await refreshDropdowns();}else showToast('Failed','error');
         } finally{busy=false;}
     }
 

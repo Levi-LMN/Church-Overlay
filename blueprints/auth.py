@@ -14,6 +14,14 @@ def login():
             return redirect(url_for('admin.dashboard'))
         return redirect(url_for('user.panel'))
 
+    from models import Church
+    church = Church.query.first()
+    return render_template('login.html', church=church)
+
+
+@auth_bp.route('/login/google')
+def login_google():
+    """Initiate the Google OAuth flow."""
     redirect_uri = url_for('auth.authorize', _external=True)
     return oauth.google.authorize_redirect(redirect_uri)
 
@@ -45,4 +53,4 @@ def authorize():
 def logout():
     log_activity('LOGOUT', f"User logged out: {current_user.email}")
     logout_user()
-    return redirect(url_for('index'))
+    return redirect(url_for('auth.login'))
