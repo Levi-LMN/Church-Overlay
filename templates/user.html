@@ -759,8 +759,32 @@
     }
 
     // ── Polling ──────────────────────────────────────────────────
+    const SESSION_AUTHED = {{ 'true' if current_user.is_authenticated else 'false' }};
+
+    async function checkAuthGate() {
+        try {
+            const r = await fetch('/api/auth/check');
+            if (!r.ok) return;
+            const d = await r.json();
+            if (d.auth_required && !d.authenticated) {
+                window.location.href = '/login?reason=auth_enabled';
+            }
+        } catch(e) {}
+    }
+
     function startPolling() {
-        setInterval(async()=>{if(busy)return;try{const r=await fetch('/api/overlay/state');const d=await r.json();applyServerState(d,false);}catch(e){}},3000);
+        setInterval(async()=>{
+            if(busy) return;
+            try {
+                const r=await fetch('/api/overlay/state');
+                const d=await r.json();
+                applyServerState(d,false);
+            } catch(e) {}
+        }, 3000);
+
+        if (!SESSION_AUTHED) {
+            setInterval(checkAuthGate, 5000);
+        }
     }
 
     function escHtml(t){return String(t??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}

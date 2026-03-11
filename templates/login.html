@@ -20,6 +20,11 @@
 
         <!-- Card body -->
         <div class="bg-white rounded-2xl shadow-2xl px-8 py-10 text-center">
+
+            <!-- Reason banner (shown when redirected with ?reason=) -->
+            <div id="reason-banner" style="display:none"
+                 class="mb-6 px-4 py-3 rounded-xl bg-amber-50 border border-amber-200 text-amber-800 text-xs font-medium leading-relaxed">
+            </div>
             {% if church %}
             <h1 class="text-2xl font-bold text-gray-900 mb-1">{{ church.name }}</h1>
             <p class="text-sm text-gray-500 mb-8">Sign in to access the OBS Overlay system</p>
@@ -59,4 +64,15 @@
         <p class="text-center text-white/60 text-xs mt-6">OBS Overlay System</p>
     </div>
 </div>
+<script>
+    const reasons = {
+        auth_enabled: '🔒 This system now requires you to sign in. Please log in with your approved Google account to continue.'
+    };
+    const param = new URLSearchParams(window.location.search).get('reason');
+    if (param && reasons[param]) {
+        const banner = document.getElementById('reason-banner');
+        banner.textContent = reasons[param];
+        banner.style.display = 'block';
+    }
+</script>
 {% endblock %}
