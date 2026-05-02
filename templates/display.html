@@ -27,236 +27,306 @@
             display: none;
             pointer-events: none;
         }
-
         .lower-third.visible { display: block; }
 
         .background-shapes {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            overflow: hidden;
+            position: absolute; bottom: 0; left: 0; width: 100%; height: 100%; overflow: hidden;
         }
-
         .shape-1 {
-            position: absolute;
-            bottom: -50px;
-            left: -100px;
-            width: 600px;
-            height: 600px;
-            border-radius: 50%;
-            filter: blur(60px);
+            position: absolute; bottom: -50px; left: -100px;
+            width: 600px; height: 600px; border-radius: 50%; filter: blur(60px);
         }
-
         .shape-2 {
-            position: absolute;
-            bottom: -80px;
-            left: 400px;
-            width: 400px;
-            height: 400px;
-            border-radius: 50%;
-            filter: blur(50px);
+            position: absolute; bottom: -80px; left: 400px;
+            width: 400px; height: 400px; border-radius: 50%; filter: blur(50px);
         }
 
         .overlay-content {
-            position: absolute;
-            bottom: 80px;
-            left: 100px;
-            max-width: 1600px;
-            max-height: 280px;
+            position: absolute; bottom: 80px; left: 100px;
+            max-width: 1600px; max-height: 280px;
             background: rgba(17, 24, 39, 0.92);
             backdrop-filter: blur(20px) saturate(180%);
-            padding: 0;
-            border-radius: 24px;
-            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.05);
-            overflow: hidden;
-            width: fit-content;
+            padding: 0; border-radius: 24px;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.1), inset 0 1px 0 rgba(255,255,255,0.05);
+            overflow: hidden; width: fit-content;
         }
 
         .accent-stripe {
-            position: absolute;
-            left: 0;
-            top: 0;
-            width: 8px;
-            height: 100%;
+            position: absolute; left: 0; top: 0; width: 8px; height: 100%;
+            animation: glowPulse 3s ease-in-out infinite;
         }
 
         .content-wrapper {
-            padding: 30px 40px 30px 60px;
-            position: relative;
-            max-height: 280px;
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
+            padding: 30px 40px 30px 60px; position: relative;
+            max-height: 280px; overflow: hidden;
+            display: flex; flex-direction: column; justify-content: center;
         }
 
         .church-label {
-            display: inline-block;
-            font-size: clamp(10px, 0.8vw, 12px);
-            font-weight: 700;
-            letter-spacing: 1.5px;
-            text-transform: uppercase;
-            margin-bottom: 10px;
-            padding: 6px 12px;
-            border-radius: 6px;
-            flex-shrink: 0;
-            width: fit-content;
-            max-width: 90%;
+            display: inline-block; font-size: clamp(10px, 0.8vw, 12px);
+            font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase;
+            margin-bottom: 10px; padding: 6px 12px; border-radius: 6px;
+            flex-shrink: 0; width: fit-content; max-width: 90%;
         }
-
         .main-title {
-            font-size: clamp(28px, 3.5vw, 50px);
-            font-weight: 800;
-            margin-bottom: 8px;
-            line-height: 1.1;
-            letter-spacing: -1px;
-            text-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
-            word-wrap: break-word;
-            overflow-wrap: break-word;
-            hyphens: auto;
-            max-width: 1400px;
-            flex-shrink: 1;
+            font-size: clamp(28px, 3.5vw, 50px); font-weight: 800;
+            margin-bottom: 8px; line-height: 1.1; letter-spacing: -1px;
+            text-shadow: 0 4px 12px rgba(0,0,0,0.4);
+            word-wrap: break-word; overflow-wrap: break-word; hyphens: auto;
+            max-width: 1400px; flex-shrink: 1;
         }
-
         .subtitle {
-            font-size: clamp(18px, 2vw, 28px);
-            font-weight: 500;
-            line-height: 1.2;
-            letter-spacing: -0.5px;
-            word-wrap: break-word;
-            overflow-wrap: break-word;
-            max-width: 1400px;
-            margin-bottom: 6px;
-            flex-shrink: 1;
+            font-size: clamp(18px, 2vw, 28px); font-weight: 500;
+            line-height: 1.2; letter-spacing: -0.5px;
+            word-wrap: break-word; overflow-wrap: break-word;
+            max-width: 1400px; margin-bottom: 6px; flex-shrink: 1;
         }
-
         .bible-verse {
-            font-size: clamp(16px, 1.5vw, 22px);
-            margin-top: 8px;
-            font-weight: 600;
-            letter-spacing: 0.3px;
-            word-wrap: break-word;
-            overflow-wrap: break-word;
-            max-width: 1400px;
-            flex-shrink: 0;
+            font-size: clamp(16px, 1.5vw, 22px); margin-top: 8px;
+            font-weight: 600; letter-spacing: 0.3px;
+            word-wrap: break-word; overflow-wrap: break-word;
+            max-width: 1400px; flex-shrink: 0;
         }
 
         .corner-decoration {
-            position: absolute;
-            top: -1px;
-            right: -1px;
-            width: 120px;
-            height: 120px;
+            position: absolute; top: -1px; right: -1px; width: 120px; height: 120px;
             border-radius: 0 24px 0 0;
         }
-
         .corner-decoration::before {
-            content: '';
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            width: 40px;
-            height: 40px;
-            border-radius: 0 8px 0 0;
+            content: ''; position: absolute; top: 20px; right: 20px;
+            width: 40px; height: 40px; border-radius: 0 8px 0 0;
         }
 
         .bottom-glow {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            height: 2px;
-            opacity: 0.6;
+            position: absolute; bottom: 0; left: 0; right: 0; height: 2px; opacity: 0.6;
         }
 
         #connection-status {
-            position: fixed;
-            top: 10px;
-            right: 10px;
-            padding: 5px 10px;
-            background: rgba(0, 0, 0, 0.7);
-            color: white;
-            font-size: 10px;
-            border-radius: 4px;
-            z-index: 9999;
-            font-family: monospace;
+            position: fixed; top: 10px; right: 10px;
+            padding: 5px 10px; background: rgba(0,0,0,0.7); color: white;
+            font-size: 10px; border-radius: 4px; z-index: 9999; font-family: monospace;
         }
+        #connection-status.connected    { background: rgba(16,185,129,0.8); }
+        #connection-status.disconnected { background: rgba(239,68,68,0.8); }
+        #connection-status.connecting   { background: rgba(251,191,36,0.8); }
 
-        #connection-status.connected    { background: rgba(16, 185, 129, 0.8); }
-        #connection-status.disconnected { background: rgba(239, 68, 68, 0.8); }
-        #connection-status.connecting   { background: rgba(251, 191, 36, 0.8); }
+        /* ═══════════════════════════════════════════════════════════
+           ENTRANCE ANIMATIONS — Container
+        ═══════════════════════════════════════════════════════════ */
 
-        /* ── Animations ─────────────────────────────────────────────────── */
         @keyframes slideUp {
             from { transform: translateY(120px); opacity: 0; }
             to   { transform: translateY(0);     opacity: 1; }
         }
-        .anim-slide-up .overlay-content { animation: slideUp 2s cubic-bezier(0.16, 1, 0.3, 1); }
+        .anim-slide-up .overlay-content {
+            animation: slideUp var(--anim-duration, 2s) cubic-bezier(0.16,1,0.3,1);
+        }
 
         @keyframes fadeIn {
             from { opacity: 0; transform: scale(0.95); }
             to   { opacity: 1; transform: scale(1);    }
         }
-        .anim-fade-in .overlay-content { animation: fadeIn 2s cubic-bezier(0.16, 1, 0.3, 1); }
+        .anim-fade-in .overlay-content {
+            animation: fadeIn var(--anim-duration, 2s) cubic-bezier(0.16,1,0.3,1);
+        }
 
         @keyframes slideLeft {
             from { transform: translateX(-150px); opacity: 0; }
             to   { transform: translateX(0);      opacity: 1; }
         }
-        .anim-slide-left .overlay-content { animation: slideLeft 2s cubic-bezier(0.16, 1, 0.3, 1); }
+        .anim-slide-left .overlay-content {
+            animation: slideLeft var(--anim-duration, 2s) cubic-bezier(0.16,1,0.3,1);
+        }
+
+        @keyframes slideRight {
+            from { transform: translateX(200px); opacity: 0; }
+            to   { transform: translateX(0);     opacity: 1; }
+        }
+        .anim-slide-right .overlay-content {
+            animation: slideRight var(--anim-duration, 2s) cubic-bezier(0.16,1,0.3,1);
+        }
 
         @keyframes slideDown {
             from { transform: translateY(-150px); opacity: 0; }
             to   { transform: translateY(0);      opacity: 1; }
         }
-        .anim-slide-down .overlay-content { animation: slideDown 2s cubic-bezier(0.16, 1, 0.3, 1); }
+        .anim-slide-down .overlay-content {
+            animation: slideDown var(--anim-duration, 2s) cubic-bezier(0.16,1,0.3,1);
+        }
 
         @keyframes zoomIn {
             from { transform: scale(0.8); opacity: 0; }
             to   { transform: scale(1);   opacity: 1; }
         }
-        .anim-zoom-in .overlay-content { animation: zoomIn 1.8s cubic-bezier(0.16, 1, 0.3, 1); }
+        .anim-zoom-in .overlay-content {
+            animation: zoomIn var(--anim-duration, 1.8s) cubic-bezier(0.16,1,0.3,1);
+        }
 
         @keyframes bounceIn {
             0%   { transform: translateY(150px) scale(0.95); opacity: 0; }
-            60%  { transform: translateY(-15px)  scale(1.02); opacity: 1; }
-            100% { transform: translateY(0)      scale(1);    opacity: 1; }
+            60%  { transform: translateY(-15px) scale(1.02);  opacity: 1; }
+            100% { transform: translateY(0)     scale(1);     opacity: 1; }
         }
-        .anim-bounce-in .overlay-content { animation: bounceIn 2.4s cubic-bezier(0.16, 1, 0.3, 1); }
+        .anim-bounce-in .overlay-content {
+            animation: bounceIn var(--anim-duration, 2.4s) cubic-bezier(0.16,1,0.3,1);
+        }
 
+        @keyframes rotateIn {
+            from { transform: rotate(-8deg) scale(0.9) translateY(60px); opacity: 0; }
+            to   { transform: rotate(0)    scale(1)   translateY(0);     opacity: 1; }
+        }
+        .anim-rotate-in .overlay-content {
+            animation: rotateIn var(--anim-duration, 2.2s) cubic-bezier(0.16,1,0.3,1);
+        }
+
+        @keyframes reveal {
+            from { clip-path: polygon(0 0, 0 0, 0 100%, 0 100%); }
+            to   { clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%); }
+        }
+        .anim-reveal .overlay-content {
+            animation: reveal var(--anim-duration, 2.2s) cubic-bezier(0.16,1,0.3,1);
+        }
+
+        /* NEW: flip-in — 3D perspective flip on X */
+        @keyframes flipIn {
+            from { transform: perspective(800px) rotateX(-80deg) translateY(60px); opacity: 0; }
+            to   { transform: perspective(800px) rotateX(0deg)   translateY(0);    opacity: 1; }
+        }
+        .anim-flip-in .overlay-content {
+            animation: flipIn var(--anim-duration, 1.6s) cubic-bezier(0.16,1,0.3,1);
+            transform-style: preserve-3d;
+        }
+
+        /* NEW: drop-in — falls with gravitational overshoot */
+        @keyframes dropIn {
+            0%   { transform: translateY(-200px) scaleY(0.85); opacity: 0; }
+            65%  { transform: translateY(18px)   scaleY(1.04); opacity: 1; }
+            82%  { transform: translateY(-8px)   scaleY(0.98); }
+            100% { transform: translateY(0)      scaleY(1);    opacity: 1; }
+        }
+        .anim-drop-in .overlay-content {
+            animation: dropIn var(--anim-duration, 1.8s) cubic-bezier(0.22,1,0.36,1);
+        }
+
+        /* NEW: split-in — clip-path opens from center */
+        @keyframes splitIn {
+            from { clip-path: inset(50% 0); opacity: 0.4; }
+            to   { clip-path: inset(0% 0);  opacity: 1;   }
+        }
+        .anim-split-in .overlay-content {
+            animation: splitIn var(--anim-duration, 1.4s) cubic-bezier(0.16,1,0.3,1);
+        }
+
+        /* NEW: pop-in — elastic scale pop */
+        @keyframes popIn {
+            0%   { transform: scale(0.5);  opacity: 0; }
+            55%  { transform: scale(1.08); opacity: 1; }
+            75%  { transform: scale(0.96); }
+            100% { transform: scale(1);    opacity: 1; }
+        }
+        .anim-pop-in .overlay-content {
+            animation: popIn var(--anim-duration, 1.2s) cubic-bezier(0.16,1,0.3,1);
+        }
+
+        /* NEW: neon-on — flickers on like a neon sign */
+        @keyframes neonOn {
+            0%   { opacity: 0; }
+            5%   { opacity: 0.9; filter: brightness(1.8); }
+            10%  { opacity: 0.1; }
+            15%  { opacity: 1;   filter: brightness(1.4); }
+            22%  { opacity: 0.4; }
+            28%  { opacity: 1;   filter: brightness(1.6); }
+            36%  { opacity: 0.7; filter: brightness(1.2); }
+            50%  { opacity: 1;   filter: brightness(1);   }
+            100% { opacity: 1;   filter: brightness(1);   }
+        }
+        .anim-neon-on .overlay-content {
+            animation: neonOn var(--anim-duration, 2s) ease-in;
+        }
+
+        /* NEW: wipe-up — clip-path wipe from bottom */
+        @keyframes wipeUp {
+            from { clip-path: polygon(0 100%, 100% 100%, 100% 100%, 0 100%); }
+            to   { clip-path: polygon(0 0,    100% 0,    100% 100%, 0 100%); }
+        }
+        .anim-wipe-up .overlay-content {
+            animation: wipeUp var(--anim-duration, 1.4s) cubic-bezier(0.16,1,0.3,1);
+        }
+
+        /* NEW: swoop-in — arcs in from bottom-left */
+        @keyframes swoopIn {
+            from { transform: translate(-200px, 150px) rotate(-8deg) scale(0.8); opacity: 0; }
+            to   { transform: translate(0, 0)          rotate(0)     scale(1);   opacity: 1; }
+        }
+        .anim-swoop-in .overlay-content {
+            animation: swoopIn var(--anim-duration, 2s) cubic-bezier(0.16,1,0.3,1);
+        }
+
+        /* ─── Stagger / text animations — container fades quickly,
+               individual text elements animate with delay ─────── */
+
+        /* wave-in (existing) */
+        @keyframes waveInEl {
+            0%   { opacity: 0; transform: translateX(-30px); }
+            100% { opacity: 1; transform: translateX(0);     }
+        }
+        .anim-wave-in .overlay-content { animation: fadeIn 0.4s ease; }
+        .anim-wave-in .church-label { animation: waveInEl var(--anim-duration, 1.6s) cubic-bezier(0.16,1,0.3,1) backwards; animation-delay: 0s; }
+        .anim-wave-in .main-title   { animation: waveInEl var(--anim-duration, 1.6s) cubic-bezier(0.16,1,0.3,1) backwards; animation-delay: 0.35s; }
+        .anim-wave-in .subtitle     { animation: waveInEl var(--anim-duration, 1.6s) cubic-bezier(0.16,1,0.3,1) backwards; animation-delay: 0.7s; }
+        .anim-wave-in .bible-verse  { animation: waveInEl var(--anim-duration, 1.6s) cubic-bezier(0.16,1,0.3,1) backwards; animation-delay: 1.0s; }
+
+        /* NEW: cascade — each line drops in */
+        .anim-cascade .overlay-content { animation: fadeIn 0.3s ease; }
+        .anim-cascade .church-label { animation: dropIn var(--anim-duration, 0.7s) cubic-bezier(0.22,1,0.36,1) backwards; animation-delay: 0s; }
+        .anim-cascade .main-title   { animation: dropIn var(--anim-duration, 0.8s) cubic-bezier(0.22,1,0.36,1) backwards; animation-delay: 0.2s; }
+        .anim-cascade .subtitle     { animation: dropIn var(--anim-duration, 0.8s) cubic-bezier(0.22,1,0.36,1) backwards; animation-delay: 0.42s; }
+        .anim-cascade .bible-verse  { animation: dropIn var(--anim-duration, 0.8s) cubic-bezier(0.22,1,0.36,1) backwards; animation-delay: 0.62s; }
+
+        /* NEW: word-fly — lines fly in from the right */
+        @keyframes flyRight {
+            from { transform: translateX(100px); opacity: 0; }
+            to   { transform: translateX(0);     opacity: 1; }
+        }
+        .anim-word-fly .overlay-content { animation: fadeIn 0.3s ease; }
+        .anim-word-fly .church-label { animation: flyRight var(--anim-duration, 0.7s) cubic-bezier(0.16,1,0.3,1) backwards; animation-delay: 0s; }
+        .anim-word-fly .main-title   { animation: flyRight var(--anim-duration, 0.7s) cubic-bezier(0.16,1,0.3,1) backwards; animation-delay: 0.2s; }
+        .anim-word-fly .subtitle     { animation: flyRight var(--anim-duration, 0.7s) cubic-bezier(0.16,1,0.3,1) backwards; animation-delay: 0.4s; }
+        .anim-word-fly .bible-verse  { animation: flyRight var(--anim-duration, 0.7s) cubic-bezier(0.16,1,0.3,1) backwards; animation-delay: 0.6s; }
+
+        /* NEW: rise-up — lines rise from beneath */
+        @keyframes riseUp {
+            from { transform: translateY(40px); opacity: 0; }
+            to   { transform: translateY(0);    opacity: 1; }
+        }
+        .anim-rise-up .overlay-content { animation: fadeIn 0.3s ease; }
+        .anim-rise-up .church-label { animation: riseUp var(--anim-duration, 0.8s) cubic-bezier(0.16,1,0.3,1) backwards; animation-delay: 0s; }
+        .anim-rise-up .main-title   { animation: riseUp var(--anim-duration, 0.9s) cubic-bezier(0.16,1,0.3,1) backwards; animation-delay: 0.18s; }
+        .anim-rise-up .subtitle     { animation: riseUp var(--anim-duration, 0.9s) cubic-bezier(0.16,1,0.3,1) backwards; animation-delay: 0.36s; }
+        .anim-rise-up .bible-verse  { animation: riseUp var(--anim-duration, 0.9s) cubic-bezier(0.16,1,0.3,1) backwards; animation-delay: 0.54s; }
+
+        /* Typewriter */
         .anim-typewriter .church-label,
         .anim-typewriter .main-title,
         .anim-typewriter .subtitle,
         .anim-typewriter .bible-verse { opacity: 0; }
-        .anim-typewriter .church-label.typing,
-        .anim-typewriter .main-title.typing,
-        .anim-typewriter .subtitle.typing,
-        .anim-typewriter .bible-verse.typing { opacity: 1; }
-        .anim-typewriter .church-label.typed,
-        .anim-typewriter .main-title.typed,
-        .anim-typewriter .subtitle.typed,
-        .anim-typewriter .bible-verse.typed { opacity: 1; }
-        .anim-typewriter .church-label.typing::after,
-        .anim-typewriter .main-title.typing::after,
-        .anim-typewriter .subtitle.typing::after,
-        .anim-typewriter .bible-verse.typing::after {
-            content: '|';
-            animation: blink 0.7s step-end infinite;
-            margin-left: 2px;
+        .anim-typewriter .church-label.tw-active,
+        .anim-typewriter .main-title.tw-active,
+        .anim-typewriter .subtitle.tw-active,
+        .anim-typewriter .bible-verse.tw-active { opacity: 1; }
+        .anim-typewriter .church-label.tw-active::after,
+        .anim-typewriter .main-title.tw-active::after,
+        .anim-typewriter .subtitle.tw-active::after,
+        .anim-typewriter .bible-verse.tw-active::after {
+            content: '|'; animation: blink 0.7s step-end infinite; margin-left: 2px;
         }
+        .anim-typewriter .church-label.tw-done,
+        .anim-typewriter .main-title.tw-done,
+        .anim-typewriter .subtitle.tw-done,
+        .anim-typewriter .bible-verse.tw-done { opacity: 1; }
         @keyframes blink { 50% { opacity: 0; } }
 
-        @keyframes waveIn {
-            0%   { opacity: 0; transform: translateX(-30px); }
-            100% { opacity: 1; transform: translateX(0);     }
-        }
-        .anim-wave-in .church-label { animation: waveIn 1.6s cubic-bezier(0.16,1,0.3,1) backwards; animation-delay: 0s;    }
-        .anim-wave-in .main-title   { animation: waveIn 1.6s cubic-bezier(0.16,1,0.3,1) backwards; animation-delay: 0.35s; }
-        .anim-wave-in .subtitle     { animation: waveIn 1.6s cubic-bezier(0.16,1,0.3,1) backwards; animation-delay: 0.7s;  }
-        .anim-wave-in .bible-verse  { animation: waveIn 1.6s cubic-bezier(0.16,1,0.3,1) backwards; animation-delay: 1.0s;  }
-
+        /* Glitch */
         @keyframes glitch {
             0%,100% { transform: translate(0); }
             20%     { transform: translate(-3px, 3px); }
@@ -269,33 +339,79 @@
             25%     { text-shadow: -3px 0 var(--accent-color), 3px 0 #3b82f6, 0 4px 12px rgba(0,0,0,0.4); }
             75%     { text-shadow:  3px 0 var(--accent-color),-3px 0 #3b82f6, 0 4px 12px rgba(0,0,0,0.4); }
         }
-        .anim-glitch .main-title { animation: glitch 0.4s ease-in-out 3, glitchColor 0.4s ease-in-out 3; }
-
-        @keyframes reveal {
-            from { clip-path: polygon(0 0, 0 0, 0 100%, 0 100%); }
-            to   { clip-path: polygon(0 0,100% 0,100% 100%, 0 100%); }
+        .anim-glitch .overlay-content { animation: fadeIn 0.4s ease; }
+        .anim-glitch .main-title {
+            animation: glitch 0.35s ease-in-out 4, glitchColor 0.35s ease-in-out 4;
         }
-        .anim-reveal .overlay-content { animation: reveal 2.2s cubic-bezier(0.16, 1, 0.3, 1); }
 
-        @keyframes slideRight {
-            from { transform: translateX(150px); opacity: 0; }
-            to   { transform: translateX(0);     opacity: 1; }
-        }
-        .anim-slide-right .overlay-content { animation: slideRight 2s cubic-bezier(0.16, 1, 0.3, 1); }
-
-        @keyframes rotateIn {
-            from { transform: rotate(-180deg) scale(0); opacity: 0; }
-            to   { transform: rotate(0)       scale(1); opacity: 1; }
-        }
-        .anim-rotate-in .overlay-content { animation: rotateIn 2.2s cubic-bezier(0.16, 1, 0.3, 1); }
-
+        /* none */
         .anim-none .overlay-content { animation: none; }
 
+        /* ═══════════════════════════════════════════════════════════
+           EXIT ANIMATIONS
+        ═══════════════════════════════════════════════════════════ */
+
+        @keyframes fadeOutAnim {
+            from { opacity: 1; transform: scale(1);    }
+            to   { opacity: 0; transform: scale(0.94); }
+        }
+        .exit-fade-out-exit .overlay-content {
+            animation: fadeOutAnim var(--exit-duration, 0.8s) ease-out forwards;
+        }
+
+        @keyframes slideDownExit {
+            from { transform: translateY(0);    opacity: 1; }
+            to   { transform: translateY(120px); opacity: 0; }
+        }
+        .exit-slide-down-exit .overlay-content {
+            animation: slideDownExit var(--exit-duration, 0.8s) cubic-bezier(0.4,0,1,1) forwards;
+        }
+
+        @keyframes slideUpExit {
+            from { transform: translateY(0);     opacity: 1; }
+            to   { transform: translateY(-100px); opacity: 0; }
+        }
+        .exit-slide-up-exit .overlay-content {
+            animation: slideUpExit var(--exit-duration, 0.8s) cubic-bezier(0.4,0,1,1) forwards;
+        }
+
+        @keyframes slideRightExit {
+            from { transform: translateX(0);    opacity: 1; }
+            to   { transform: translateX(200px); opacity: 0; }
+        }
+        .exit-slide-right-exit .overlay-content {
+            animation: slideRightExit var(--exit-duration, 0.8s) cubic-bezier(0.4,0,1,1) forwards;
+        }
+
+        @keyframes zoomOutExit {
+            from { transform: scale(1);   opacity: 1; }
+            to   { transform: scale(0.7); opacity: 0; }
+        }
+        .exit-zoom-out-exit .overlay-content {
+            animation: zoomOutExit var(--exit-duration, 0.8s) ease-out forwards;
+        }
+
+        @keyframes flipOutAnim {
+            from { transform: perspective(800px) rotateX(0deg);  opacity: 1; }
+            to   { transform: perspective(800px) rotateX(80deg); opacity: 0; }
+        }
+        .exit-flip-out-exit .overlay-content {
+            animation: flipOutAnim var(--exit-duration, 0.8s) ease-out forwards;
+        }
+
+        @keyframes wipeOutAnim {
+            from { clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%); }
+            to   { clip-path: polygon(100% 0, 100% 0, 100% 100%, 100% 100%); }
+        }
+        .exit-wipe-out-exit .overlay-content {
+            animation: wipeOutAnim var(--exit-duration, 0.8s) ease-out forwards;
+        }
+
+        /* ─── Accent stripe pulse ───────────────────────────────── */
         @keyframes glowPulse {
             0%,100% { box-shadow: 0 0 20px rgba(var(--accent-rgb),0.3); }
             50%     { box-shadow: 0 0 40px rgba(var(--accent-rgb),0.6); }
         }
-        .accent-stripe { animation: glowPulse 3s ease-in-out infinite; }
     </style>
 </head>
 <body>
@@ -320,488 +436,708 @@
     </div>
 
     <script>
-        // ── DOM refs ──────────────────────────────────────────────────────
-        const lowerThird       = document.getElementById('lower-third');
-        const churchInfo       = document.getElementById('church-info');
-        const mainTitle        = document.getElementById('main-title');
-        const subtitle         = document.getElementById('subtitle');
-        const bibleVerse       = document.getElementById('bible-verse');
-        const connectionStatus = document.getElementById('connection-status');
+    // ═══════════════════════════════════════════════════════════════════
+    // DOM REFS
+    // ═══════════════════════════════════════════════════════════════════
+    const lowerThird       = document.getElementById('lower-third');
+    const churchInfo       = document.getElementById('church-info');
+    const mainTitle        = document.getElementById('main-title');
+    const subtitle         = document.getElementById('subtitle');
+    const bibleVerse       = document.getElementById('bible-verse');
+    const connectionStatus = document.getElementById('connection-status');
 
-        // ── Runtime state ─────────────────────────────────────────────────
-        let currentState       = null;   // last applied full state object
-        let currentVersion     = -1;
-        let autoInterval       = null;   // setInterval handle for auto-rotation
-        let autoTimeout        = null;   // spare setTimeout for auto tick
-        let typewriterTimeouts = [];
-        let sceneActive        = false;  // true while sceneSwitch is mid-transition
+    // ═══════════════════════════════════════════════════════════════════
+    // ANIMATION CATALOGUE
+    //   base_ms: default CSS animation duration
+    //   exit_ms: default exit animation duration
+    // ═══════════════════════════════════════════════════════════════════
+    const ANIMS = {
+        // container entrance
+        'slide-up':   { cls: 'anim-slide-up',   base_ms: 2000 },
+        'fade-in':    { cls: 'anim-fade-in',     base_ms: 2000 },
+        'slide-left': { cls: 'anim-slide-left',  base_ms: 2000 },
+        'slide-right':{ cls: 'anim-slide-right', base_ms: 2000 },
+        'slide-down': { cls: 'anim-slide-down',  base_ms: 2000 },
+        'zoom-in':    { cls: 'anim-zoom-in',     base_ms: 1800 },
+        'bounce-in':  { cls: 'anim-bounce-in',   base_ms: 2400 },
+        'rotate-in':  { cls: 'anim-rotate-in',   base_ms: 2200 },
+        'reveal':     { cls: 'anim-reveal',      base_ms: 2200 },
+        'flip-in':    { cls: 'anim-flip-in',     base_ms: 1600 },
+        'drop-in':    { cls: 'anim-drop-in',     base_ms: 1800 },
+        'split-in':   { cls: 'anim-split-in',    base_ms: 1400 },
+        'pop-in':     { cls: 'anim-pop-in',      base_ms: 1200 },
+        'neon-on':    { cls: 'anim-neon-on',     base_ms: 2000 },
+        'wipe-up':    { cls: 'anim-wipe-up',     base_ms: 1400 },
+        'swoop-in':   { cls: 'anim-swoop-in',    base_ms: 2000 },
+        // stagger text
+        'wave-in':    { cls: 'anim-wave-in',     base_ms: 1600 },
+        'cascade':    { cls: 'anim-cascade',     base_ms:  800 },
+        'word-fly':   { cls: 'anim-word-fly',    base_ms:  700 },
+        'rise-up':    { cls: 'anim-rise-up',     base_ms:  800 },
+        'glitch':     { cls: 'anim-glitch',      base_ms: 1400 },
+        // special — duration handled by JS
+        'typewriter': { cls: 'anim-typewriter',  base_ms:    0 },
+        'none':       { cls: 'anim-none',        base_ms:    0 },
+    };
 
-        // ── Animation class map ───────────────────────────────────────────
-        const animationClasses = {
-            'none':        'anim-none',
-            'slide-up':    'anim-slide-up',
-            'fade-in':     'anim-fade-in',
-            'slide-left':  'anim-slide-left',
-            'slide-right': 'anim-slide-right',
-            'slide-down':  'anim-slide-down',
-            'zoom-in':     'anim-zoom-in',
-            'bounce-in':   'anim-bounce-in',
-            'rotate-in':   'anim-rotate-in',
-            'typewriter':  'anim-typewriter',
-            'wave-in':     'anim-wave-in',
-            'glitch':      'anim-glitch',
-            'reveal':      'anim-reveal'
-        };
+    const EXIT_ANIMS = {
+        'none':              { cls: null,                      ms: 0    },
+        'fade-out-exit':     { cls: 'exit-fade-out-exit',     ms: 800  },
+        'slide-down-exit':   { cls: 'exit-slide-down-exit',   ms: 800  },
+        'slide-up-exit':     { cls: 'exit-slide-up-exit',     ms: 800  },
+        'slide-right-exit':  { cls: 'exit-slide-right-exit',  ms: 800  },
+        'zoom-out-exit':     { cls: 'exit-zoom-out-exit',     ms: 800  },
+        'flip-out-exit':     { cls: 'exit-flip-out-exit',     ms: 800  },
+        'wipe-out-exit':     { cls: 'exit-wipe-out-exit',     ms: 800  },
+    };
 
-        const DEFAULT_ANIMATIONS = [
-            'slide-up','fade-in','slide-left','slide-right','slide-down',
-            'zoom-in','bounce-in','rotate-in','wave-in','reveal','typewriter','glitch'
-        ];
+    const DEFAULT_POOL = ['slide-up','fade-in','slide-left','zoom-in','wave-in'];
 
-        // ── Helpers ───────────────────────────────────────────────────────
+    // ═══════════════════════════════════════════════════════════════════
+    // RUNTIME STATE
+    // ═══════════════════════════════════════════════════════════════════
+    let currentState    = null;
+    let currentVersion  = -1;
 
-        function hexToRgb(hex) {
-            const r = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-            return r ? `${parseInt(r[1],16)}, ${parseInt(r[2],16)}, ${parseInt(r[3],16)}` : '16, 185, 129';
+    // Rotation: chained setTimeout (so typewriter always completes first)
+    let rotationTimer   = null;
+    let rotationAborted = false;   // set true to cancel the current chain
+
+    // Auto show/hide cycle
+    let cycleDisplayTimer = null;
+    let cycleHideTimer    = null;
+    let cycleRunning      = false;
+
+    // Typewriter
+    let twTimeouts = [];
+
+    // Scene-switch guard
+    let sceneActive = false;
+
+    // ═══════════════════════════════════════════════════════════════════
+    // HELPERS
+    // ═══════════════════════════════════════════════════════════════════
+
+    function hexToRgb(hex) {
+        const r = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+        return r ? `${parseInt(r[1],16)}, ${parseInt(r[2],16)}, ${parseInt(r[3],16)}` : '16, 185, 129';
+    }
+
+    function applyColors(colors) {
+        if (!colors) return;
+        const ac  = colors.accent || '#10b981';
+        const rgb = hexToRgb(ac);
+        document.documentElement.style.setProperty('--accent-color', ac);
+        document.documentElement.style.setProperty('--accent-rgb', rgb);
+
+        const stripe = document.querySelector('.accent-stripe');
+        if (stripe) stripe.style.background =
+            `linear-gradient(180deg, ${ac} 0%, ${ac}dd 50%, ${ac}bb 100%)`;
+
+        document.querySelectorAll('.shape-1, .shape-2').forEach((s, i) => {
+            const op = i === 0 ? ['0.15','0.08'] : ['0.12','0.06'];
+            s.style.background =
+                `linear-gradient(135deg, rgba(${rgb},${op[0]}) 0%, rgba(${rgb},${op[1]}) 100%)`;
+        });
+
+        if (churchInfo) {
+            churchInfo.style.color       = colors.church_label || ac;
+            churchInfo.style.background  = `rgba(${rgb}, 0.1)`;
+            churchInfo.style.borderColor = `rgba(${rgb}, 0.2)`;
+        }
+        if (mainTitle)  mainTitle.style.color  = colors.main_title || '#ffffff';
+        if (subtitle)   subtitle.style.color   = colors.subtitle   || 'rgba(255,255,255,0.85)';
+        if (bibleVerse) bibleVerse.style.color  = colors.verse      || ac;
+
+        const cd = document.querySelector('.corner-decoration');
+        if (cd) cd.style.background =
+            `linear-gradient(135deg, rgba(${rgb},0.15) 0%, transparent 60%)`;
+
+        const bg = document.querySelector('.bottom-glow');
+        if (bg) bg.style.background =
+            `linear-gradient(90deg, transparent 0%, ${ac} 20%, ${ac}dd 50%, ${ac} 80%, transparent 100%)`;
+    }
+
+    function applyContent(state) {
+        mainTitle.textContent    = '';
+        subtitle.textContent     = '';
+        subtitle.style.display   = 'none';
+        bibleVerse.textContent   = '';
+        bibleVerse.style.display = 'none';
+
+        if (state.church) {
+            churchInfo.textContent  = (state.church.description && state.church.description.trim())
+                ? state.church.name + ' \u2022 ' + state.church.description
+                : state.church.name;
+            churchInfo.style.display = 'inline-block';
+        } else {
+            churchInfo.style.display = 'none';
         }
 
-        function applyColors(colors) {
-            if (!colors) return;
-            const ac  = colors.accent || '#10b981';
-            const rgb = hexToRgb(ac);
-            document.documentElement.style.setProperty('--accent-color', ac);
-            document.documentElement.style.setProperty('--accent-rgb', rgb);
-            const stripe = document.querySelector('.accent-stripe');
-            if (stripe) stripe.style.background =
-                `linear-gradient(180deg, ${ac} 0%, ${ac}dd 50%, ${ac}bb 100%)`;
-            document.querySelectorAll('.shape-1, .shape-2').forEach((s, i) => {
-                const op = i === 0 ? ['0.15','0.08'] : ['0.12','0.06'];
-                s.style.background =
-                    `linear-gradient(135deg, rgba(${rgb},${op[0]}) 0%, rgba(${rgb},${op[1]}) 100%)`;
-            });
-            if (churchInfo) {
-                churchInfo.style.color       = colors.church_label || '#10b981';
-                churchInfo.style.background  = `rgba(${rgb}, 0.1)`;
-                churchInfo.style.borderColor = `rgba(${rgb}, 0.2)`;
+        if (state.mode === 'minister' && state.minister) {
+            mainTitle.textContent  = state.minister.name;
+            subtitle.textContent   = state.minister.title || '';
+            subtitle.style.display = state.minister.title ? 'block' : 'none';
+        } else if (state.mode === 'sermon' && state.sermon) {
+            mainTitle.textContent  = state.sermon.title;
+            subtitle.textContent   = state.sermon.minister_name || '';
+            subtitle.style.display = state.sermon.minister_name ? 'block' : 'none';
+            if (state.sermon.bible_verse) {
+                bibleVerse.textContent   = state.sermon.bible_verse;
+                bibleVerse.style.display = 'block';
             }
-            if (mainTitle)  mainTitle.style.color  = colors.main_title || '#ffffff';
-            if (subtitle)   subtitle.style.color   = colors.subtitle   || 'rgba(255,255,255,0.85)';
-            if (bibleVerse) bibleVerse.style.color  = colors.verse      || '#10b981';
-            const cd = document.querySelector('.corner-decoration');
-            if (cd) cd.style.background =
-                `linear-gradient(135deg, rgba(${rgb},0.15) 0%, transparent 60%)`;
-            try {
-                document.styleSheets[0].insertRule(
-                    `.corner-decoration::before { border-top-color: rgba(${rgb},0.4) !important; border-right-color: rgba(${rgb},0.4) !important; }`, 0);
-                document.styleSheets[0].insertRule(
-                    `.anim-typewriter .church-label.typing::after,
-                     .anim-typewriter .main-title.typing::after,
-                     .anim-typewriter .subtitle.typing::after,
-                     .anim-typewriter .bible-verse.typing::after { color: ${ac} !important; }`, 0);
-            } catch(e) {}
-            const bg = document.querySelector('.bottom-glow');
-            if (bg) bg.style.background =
-                `linear-gradient(90deg, transparent 0%, ${ac} 20%, ${ac}dd 50%, ${ac} 80%, transparent 100%)`;
         }
+    }
 
-        // Write DOM content from state — always resets all fields first
-        function applyContent(state) {
-            mainTitle.textContent    = '';
-            subtitle.textContent     = '';
-            subtitle.style.display   = 'none';
-            bibleVerse.textContent   = '';
-            bibleVerse.style.display = 'none';
+    function getAllAnimClasses() {
+        return [
+            ...Object.values(ANIMS).map(a => a.cls),
+            ...Object.values(EXIT_ANIMS).map(a => a.cls),
+        ].filter(Boolean);
+    }
 
-            if (state.church) {
-                churchInfo.textContent  = (state.church.description && state.church.description.trim())
-                    ? state.church.name + ' \u2022 ' + state.church.description
-                    : state.church.name;
-                churchInfo.style.display = 'inline-block';
-            } else {
-                churchInfo.style.display = 'none';
-            }
+    function clearAnimClasses() {
+        getAllAnimClasses().forEach(cls => lowerThird.classList.remove(cls));
+    }
 
-            if (state.mode === 'minister' && state.minister) {
-                mainTitle.textContent  = state.minister.name;
-                subtitle.textContent   = state.minister.title || '';
-                subtitle.style.display = state.minister.title ? 'block' : 'none';
-            } else if (state.mode === 'sermon' && state.sermon) {
-                mainTitle.textContent  = state.sermon.title;
-                subtitle.textContent   = state.sermon.minister_name || '';
-                subtitle.style.display = state.sermon.minister_name ? 'block' : 'none';
-                if (state.sermon.bible_verse) {
-                    bibleVerse.textContent   = state.sermon.bible_verse;
-                    bibleVerse.style.display = 'block';
+    function clearInlineStyles() {
+        const oc = document.querySelector('.overlay-content');
+        oc.style.transition = '';
+        oc.style.transform  = '';
+        oc.style.opacity    = '';
+    }
+
+    function getEffectiveDuration(name, settings) {
+        const speed   = settings?.animation_speed || 1.0;
+        const base_ms = ANIMS[name]?.base_ms ?? 2000;
+        return Math.round(base_ms * speed);
+    }
+
+    function getExitDuration(exitName, settings) {
+        const speed = settings?.animation_speed || 1.0;
+        const base  = EXIT_ANIMS[exitName]?.ms ?? 800;
+        return Math.round(base * speed);
+    }
+
+    function buildPool(settings) {
+        if (!settings) return DEFAULT_POOL;
+        const raw = settings.enabled_animations;
+        if (!raw || raw.length === 0) return DEFAULT_POOL;
+        const list = Array.isArray(raw) ? raw : raw.split(',');
+        const clean = list.map(s => s.trim()).filter(s => s && ANIMS[s]);
+        return clean.length > 0 ? clean : DEFAULT_POOL;
+    }
+
+    function pickRandom(pool, exclude) {
+        const filtered = exclude ? pool.filter(a => a !== exclude) : pool;
+        const src = filtered.length > 0 ? filtered : pool;
+        return src[Math.floor(Math.random() * src.length)];
+    }
+
+    // ═══════════════════════════════════════════════════════════════════
+    // TYPEWRITER — resolves only after ALL text is fully typed
+    //              Speed respects animation_speed multiplier.
+    // ═══════════════════════════════════════════════════════════════════
+
+    function clearTwTimeouts() {
+        twTimeouts.forEach(t => clearTimeout(t));
+        twTimeouts = [];
+    }
+
+    function typewriterElement(el, text, msPerChar) {
+        return new Promise(resolve => {
+            el.textContent = '';
+            el.classList.add('tw-active');
+            el.classList.remove('tw-done');
+            let i = 0;
+            function tick() {
+                if (i < text.length) {
+                    el.textContent += text.charAt(i++);
+                    twTimeouts.push(setTimeout(tick, msPerChar));
+                } else {
+                    el.classList.remove('tw-active');
+                    el.classList.add('tw-done');
+                    resolve();
                 }
             }
+            tick();
+        });
+    }
+
+    // Returns a Promise that resolves when all elements are done typing.
+    async function runTypewriter(settings) {
+        clearTwTimeouts();
+        [churchInfo, mainTitle, subtitle, bibleVerse].forEach(el => {
+            el.classList.remove('tw-active', 'tw-done');
+        });
+
+        const speed    = settings?.animation_speed || 1.0;
+        const baseMs   = settings?.typewriter_speed ?? 50;
+        const msPerChar = Math.max(10, Math.round(baseMs * speed));
+
+        const items = [];
+        if (churchInfo.style.display !== 'none' && churchInfo.textContent)
+            items.push({ el: churchInfo, text: churchInfo.textContent });
+        if (mainTitle.textContent)
+            items.push({ el: mainTitle,  text: mainTitle.textContent });
+        if (subtitle.style.display !== 'none' && subtitle.textContent)
+            items.push({ el: subtitle,   text: subtitle.textContent });
+        if (bibleVerse.style.display !== 'none' && bibleVerse.textContent)
+            items.push({ el: bibleVerse, text: bibleVerse.textContent });
+
+        // Pre-clear all text so typewriter starts clean
+        items.forEach(({ el }) => el.textContent = '');
+
+        for (const { el, text } of items) {
+            await typewriterElement(el, text, msPerChar);
         }
+    }
 
-        // Remove all animation CSS classes from lowerThird
-        function clearAnimClasses() {
-            Object.values(animationClasses).forEach(cls => lowerThird.classList.remove(cls));
-        }
+    // ═══════════════════════════════════════════════════════════════════
+    // SCRAMBLE text effect (JS-driven)
+    // ═══════════════════════════════════════════════════════════════════
 
-        // Remove inline transition/transform/opacity set by sceneSwitch
-        function clearInlineStyles() {
-            const oc = document.querySelector('.overlay-content');
-            oc.style.transition = '';
-            oc.style.transform  = '';
-            oc.style.opacity    = '';
-        }
+    const SCRAMBLE_CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
 
-        // ── Typewriter effect ─────────────────────────────────────────────
-
-        function clearTypewriterTimeouts() {
-            typewriterTimeouts.forEach(t => clearTimeout(t));
-            typewriterTimeouts = [];
-        }
-
-        function typewriterEffect(el, text, speed) {
-            return new Promise(resolve => {
-                el.textContent = '';
-                el.classList.add('typing');
-                el.classList.remove('typed');
-                let i = 0;
-                function type() {
-                    if (i < text.length) {
-                        el.textContent += text.charAt(i++);
-                        typewriterTimeouts.push(setTimeout(type, speed));
+    function scrambleElement(el, finalText, durationMs) {
+        return new Promise(resolve => {
+            el.style.opacity = '1';
+            const steps    = Math.max(10, Math.ceil(durationMs / 40));
+            let   step     = 0;
+            const interval = setInterval(() => {
+                const progress = step / steps;
+                let out = '';
+                for (let i = 0; i < finalText.length; i++) {
+                    if (finalText[i] === ' ') { out += ' '; continue; }
+                    if (i / finalText.length < progress) {
+                        out += finalText[i];
                     } else {
-                        el.classList.remove('typing');
-                        el.classList.add('typed');
-                        resolve();
+                        out += SCRAMBLE_CHARS[Math.floor(Math.random() * SCRAMBLE_CHARS.length)];
                     }
                 }
-                type();
-            });
-        }
+                el.textContent = out;
+                step++;
+                if (step > steps) {
+                    clearInterval(interval);
+                    el.textContent = finalText;
+                    resolve();
+                }
+            }, 40);
+            twTimeouts.push(interval); // store so we can cancel
+        });
+    }
 
-        async function runTypewriter() {
-            clearTypewriterTimeouts();
-            [churchInfo, mainTitle, subtitle, bibleVerse].forEach(el => el.classList.remove('typing','typed'));
-            const items = [];
-            if (churchInfo.style.display !== 'none' && churchInfo.textContent)
-                items.push({ el: churchInfo, speed: 55 });
-            if (mainTitle.textContent)
-                items.push({ el: mainTitle,  speed: 70 });
-            if (subtitle.style.display !== 'none' && subtitle.textContent)
-                items.push({ el: subtitle,   speed: 60 });
-            if (bibleVerse.style.display !== 'none' && bibleVerse.textContent)
-                items.push({ el: bibleVerse, speed: 55 });
-            for (const { el, speed } of items) {
-                await typewriterEffect(el, el.textContent, speed);
-            }
-        }
+    async function runScramble(settings) {
+        clearTwTimeouts();
+        const speed    = settings?.animation_speed || 1.0;
+        const durMs    = Math.round(1800 * speed);
 
-        // ── Build a clean animation pool from settings ────────────────────
-        // Filters out empty strings and names that have no CSS class defined.
-        function buildPool(animSettings) {
-            if (!animSettings) return DEFAULT_ANIMATIONS;
-            const raw = animSettings.enabled_animations;
-            if (!raw || raw.length === 0) return DEFAULT_ANIMATIONS;
-            // raw may be an array (from Python .split(',')) or a comma-string
-            const list = Array.isArray(raw) ? raw : raw.split(',');
-            const clean = list.map(s => s.trim()).filter(s => s && animationClasses[s]);
-            return clean.length > 0 ? clean : DEFAULT_ANIMATIONS;
-        }
+        const items = [];
+        if (churchInfo.style.display !== 'none' && churchInfo.textContent)
+            items.push({ el: churchInfo, text: churchInfo.textContent });
+        if (mainTitle.textContent)
+            items.push({ el: mainTitle,  text: mainTitle.textContent });
+        if (subtitle.style.display !== 'none' && subtitle.textContent)
+            items.push({ el: subtitle,   text: subtitle.textContent });
+        if (bibleVerse.style.display !== 'none' && bibleVerse.textContent)
+            items.push({ el: bibleVerse, text: bibleVerse.textContent });
 
-        function pickRandom(pool) {
-            return pool[Math.floor(Math.random() * pool.length)];
-        }
+        // hide all, then scramble each with slight stagger
+        items.forEach(({ el }) => { el.style.opacity = '0'; el.style.display = el.style.display || 'block'; });
 
-        // ── Apply one named animation to lowerThird ───────────────────────
-        // Hides overlay, then shows it with the chosen animation class.
-        // Does NOT touch autoInterval — caller manages that.
-        function playAnimation(name) {
+        await new Promise(r => setTimeout(r, 50));
+        for (const { el, text } of items) {
+            el.textContent = text; // restore original (hidden) so scramble knows target
+            scrambleElement(el, text, durMs); // fire without awaiting — run in parallel
+        }
+        // Wait for the longest scramble to finish
+        await new Promise(r => setTimeout(r, durMs + 100));
+    }
+
+    // ═══════════════════════════════════════════════════════════════════
+    // EXIT ANIMATION — plays, then calls onDone
+    // ═══════════════════════════════════════════════════════════════════
+
+    function playExit(exitName, settings, onDone) {
+        const info = EXIT_ANIMS[exitName] || EXIT_ANIMS['fade-out-exit'];
+        const dur  = getExitDuration(exitName, settings);
+
+        document.documentElement.style.setProperty('--exit-duration', dur + 'ms');
+        clearAnimClasses();
+
+        if (!info.cls || exitName === 'none') {
+            lowerThird.classList.remove('visible');
             clearAnimClasses();
-            clearTypewriterTimeouts();
+            if (onDone) onDone();
+            return;
+        }
+
+        lowerThird.classList.add(info.cls);
+        setTimeout(() => {
+            lowerThird.classList.remove('visible');
+            clearAnimClasses();
+            if (onDone) onDone();
+        }, dur + 50);
+    }
+
+    // ═══════════════════════════════════════════════════════════════════
+    // ENTRANCE — plays one named animation, returns Promise that resolves
+    // when the animation (including typewriter / scramble) is COMPLETE.
+    // ═══════════════════════════════════════════════════════════════════
+
+    function playEntrance(name, settings) {
+        return new Promise(resolve => {
+            clearTwTimeouts();
+            clearAnimClasses();
             clearInlineStyles();
             lowerThird.classList.remove('visible');
 
+            const dur = getEffectiveDuration(name, settings);
+            document.documentElement.style.setProperty('--anim-duration', dur + 'ms');
+
             setTimeout(() => {
-                const cls = animationClasses[name];
-                if (cls) lowerThird.classList.add(cls);
+                const info = ANIMS[name] || ANIMS['fade-in'];
+                if (info.cls) lowerThird.classList.add(info.cls);
                 lowerThird.classList.add('visible');
-                if (name === 'typewriter') setTimeout(runTypewriter, 100);
-            }, 50);
-        }
 
-        // ── Stop auto-rotation ────────────────────────────────────────────
-        function stopAuto() {
-            if (autoInterval) { clearInterval(autoInterval);  autoInterval = null; }
-            if (autoTimeout)  { clearTimeout(autoTimeout);    autoTimeout  = null; }
-        }
-
-        // ── Start (or restart) auto-rotation ─────────────────────────────
-        //
-        // This is the ONLY function that manages autoInterval.
-        // It always cancels the existing timer first, then:
-        //
-        //   playNow=true  → play one animation immediately, then set interval
-        //   playNow=false → just set a new interval (don't disturb current display)
-        //
-        // Use playNow=false when only the interval/pool changed while the overlay
-        // was already showing — avoids a flicker/re-entrance animation mid-display.
-        //
-        function startAuto(animSettings, playNow) {
-            stopAuto();
-
-            // Nothing to do if auto_rotate is off
-            if (!animSettings || !animSettings.auto_rotate) return;
-
-            // Nothing to do if overlay is hidden
-            if (!currentState || currentState.mode === 'hidden') return;
-
-            const pool     = buildPool(animSettings);
-            const interval = Math.max((animSettings.rotation_interval || 5), 1) * 1000;
-
-            if (playNow) {
-                playAnimation(pickRandom(pool));
-            }
-
-            autoInterval = setInterval(() => {
-                if (!currentState || currentState.mode === 'hidden') {
-                    stopAuto();
-                    return;
+                if (name === 'typewriter') {
+                    setTimeout(async () => {
+                        await runTypewriter(settings);
+                        resolve();
+                    }, 80);
+                } else if (name === 'scramble') {
+                    setTimeout(async () => {
+                        await runScramble(settings);
+                        resolve();
+                    }, 80);
+                } else {
+                    // resolve after animation duration so rotation waits for it
+                    setTimeout(resolve, Math.max(dur, 100));
                 }
-                playAnimation(pickRandom(pool));
-            }, interval);
+            }, 50);
+        });
+    }
+
+    // ═══════════════════════════════════════════════════════════════════
+    // ROTATION ENGINE — chained setTimeout (NOT setInterval)
+    // Each call plays ONE animation, then schedules the next.
+    // Aborted by setting rotationAborted=true before cancelling timer.
+    // ═══════════════════════════════════════════════════════════════════
+
+    function stopRotation() {
+        rotationAborted = true;
+        if (rotationTimer) { clearTimeout(rotationTimer); rotationTimer = null; }
+        clearTwTimeouts();
+    }
+
+    let _lastRotationAnim = null;
+
+    async function rotationTick(pool, intervalMs, settings) {
+        if (rotationAborted) return;
+        if (!currentState || currentState.mode === 'hidden') return;
+
+        const name = pickRandom(pool, _lastRotationAnim);
+        _lastRotationAnim = name;
+
+        await playEntrance(name, settings);
+
+        if (rotationAborted) return;
+
+        // Schedule NEXT tick only AFTER this animation fully completed
+        rotationTimer = setTimeout(() => {
+            rotationTick(pool, intervalMs, settings);
+        }, intervalMs);
+    }
+
+    function startRotation(settings, playNow) {
+        stopRotation();
+
+        if (!settings?.auto_rotate) return;
+        if (!currentState || currentState.mode === 'hidden') return;
+
+        const pool       = buildPool(settings);
+        const intervalMs = Math.max((settings.rotation_interval || 8), 1) * 1000;
+
+        rotationAborted = false;
+
+        if (playNow) {
+            // Kick off immediately
+            rotationTick(pool, intervalMs, settings);
+        } else {
+            // Just schedule the first tick after one interval
+            rotationTimer = setTimeout(() => {
+                rotationTick(pool, intervalMs, settings);
+            }, intervalMs);
+        }
+    }
+
+    // ═══════════════════════════════════════════════════════════════════
+    // AUTO SHOW/HIDE CYCLE
+    // ═══════════════════════════════════════════════════════════════════
+
+    function stopCycle() {
+        cycleRunning = false;
+        if (cycleDisplayTimer) { clearTimeout(cycleDisplayTimer); cycleDisplayTimer = null; }
+        if (cycleHideTimer)    { clearTimeout(cycleHideTimer);    cycleHideTimer    = null; }
+    }
+
+    function startCycle(settings) {
+        stopCycle();
+        stopRotation();
+
+        if (!settings?.auto_cycle) return;
+        if (!currentState || currentState.mode === 'hidden') return;
+
+        cycleRunning = true;
+
+        const displayMs = Math.max((settings.display_duration || 30), 1) * 1000;
+        const hideMs    = Math.max((settings.hide_duration    || 10), 1) * 1000;
+        const enterAnim = settings.cycle_enter_animation || 'auto';
+        const exitAnim  = settings.cycle_exit_animation  || 'fade-out-exit';
+
+        // Show phase
+        function showPhase() {
+            if (!cycleRunning) return;
+            const pool = buildPool(settings);
+            const anim = (enterAnim === 'auto') ? pickRandom(pool) : (ANIMS[enterAnim] ? enterAnim : pickRandom(pool));
+
+            playEntrance(anim, settings).then(() => {
+                if (!cycleRunning) return;
+                // Start rotation during display phase
+                if (settings.auto_rotate) startRotation(settings, false);
+                // Schedule hide
+                cycleDisplayTimer = setTimeout(() => {
+                    if (!cycleRunning) return;
+                    stopRotation();
+                    playExit(exitAnim, settings, () => {
+                        if (!cycleRunning) return;
+                        // Hide phase
+                        cycleHideTimer = setTimeout(() => {
+                            if (!cycleRunning) return;
+                            showPhase();
+                        }, hideMs);
+                    });
+                }, displayMs);
+            });
         }
 
-        // ── Snapshot key for detecting animation_settings changes ─────────
-        function settingsKey(animSettings) {
-            if (!animSettings) return '';
-            const pool = buildPool(animSettings);
-            return `${animSettings.auto_rotate}|${animSettings.rotation_interval}|${pool.join(',')}`;
-        }
+        showPhase();
+    }
 
-        // ── Scene switch: slide out old, swap content, slide in new ───────
-        function sceneSwitch(newState, onComplete) {
-            if (sceneActive) {
-                // Already mid-transition — snap to new state immediately
+    // ═══════════════════════════════════════════════════════════════════
+    // SCENE SWITCH — smooth content crossfade while overlay stays visible
+    // ═══════════════════════════════════════════════════════════════════
+
+    function sceneSwitch(newState, onComplete) {
+        if (sceneActive) {
+            clearInlineStyles();
+            applyContent(newState);
+            sceneActive = false;
+            if (onComplete) onComplete();
+            return;
+        }
+        sceneActive = true;
+        const oc = document.querySelector('.overlay-content');
+        clearInlineStyles();
+        oc.getBoundingClientRect();
+
+        oc.style.transition = 'transform 0.38s cubic-bezier(0.4,0,1,1), opacity 0.38s ease';
+        oc.style.transform  = 'translateY(32px)';
+        oc.style.opacity    = '0';
+
+        setTimeout(() => {
+            applyContent(newState);
+            oc.style.transition = 'none';
+            oc.style.transform  = 'translateY(-24px)';
+            oc.style.opacity    = '0';
+            oc.getBoundingClientRect();
+            oc.style.transition = 'transform 0.5s cubic-bezier(0.16,1,0.3,1), opacity 0.45s cubic-bezier(0.16,1,0.3,1)';
+            oc.style.transform  = 'translateY(0)';
+            oc.style.opacity    = '1';
+            setTimeout(() => {
                 clearInlineStyles();
-                applyContent(newState);
                 sceneActive = false;
                 if (onComplete) onComplete();
-                return;
-            }
-            sceneActive = true;
-            const oc = document.querySelector('.overlay-content');
-            clearInlineStyles();
-            oc.getBoundingClientRect(); // force reflow
+            }, 510);
+        }, 400);
+    }
 
-            oc.style.transition = 'transform 0.38s cubic-bezier(0.4,0,1,1), opacity 0.38s ease';
-            oc.style.transform  = 'translateY(32px)';
-            oc.style.opacity    = '0';
+    // ═══════════════════════════════════════════════════════════════════
+    // SETTLE — called after any show operation to start the right mode
+    // ═══════════════════════════════════════════════════════════════════
 
-            setTimeout(() => {
-                applyContent(newState);
-                oc.style.transition = 'none';
-                oc.style.transform  = 'translateY(-24px)';
-                oc.style.opacity    = '0';
-                oc.getBoundingClientRect(); // force reflow
-                oc.style.transition = 'transform 0.5s cubic-bezier(0.16,1,0.3,1), opacity 0.45s cubic-bezier(0.16,1,0.3,1)';
-                oc.style.transform  = 'translateY(0)';
-                oc.style.opacity    = '1';
-                setTimeout(() => {
-                    clearInlineStyles();
-                    sceneActive = false;
-                    if (onComplete) onComplete();
-                }, 510);
-            }, 400);
+    function settle(state) {
+        const s = state.animation_settings;
+        const explicitAnim = state.animation;
+        const isExplicit   = explicitAnim && explicitAnim !== 'auto' && explicitAnim !== 'none' && ANIMS[explicitAnim];
+        const isNone       = explicitAnim === 'none';
+
+        if (s?.auto_cycle) {
+            startCycle(s);
+            return;
         }
 
-        // ── shouldUpdate guard ────────────────────────────────────────────
-        function shouldUpdate(s) {
-            if (!currentState) return true;
-            if (s.version !== undefined && s.version > currentVersion) return true;
-            return JSON.stringify(currentState) !== JSON.stringify(s);
+        if (isExplicit) {
+            stopCycle(); stopRotation();
+            playEntrance(explicitAnim, s);
+            return;
         }
 
-        // ═══════════════════════════════════════════════════════════════════
-        // MAIN UPDATE FUNCTION
-        //
-        // Called on every SSE event (init / update).
-        //
-        // Decision tree:
-        //   A. mode === 'hidden'              → hide everything, stop auto
-        //   B. First show / from hidden       → write content, start animation mode
-        //   C. Content changed while live     → sceneSwitch, then resume animation mode
-        //   D. Only animation field changed   → replay explicit OR restart auto (playNow)
-        //   E. Only animation_settings changed→ if auto mode: restart interval (no flicker)
-        //                                       if explicit mode: no visible change needed
-        //   F. Color/church-only update       → recolor, no animation restart
-        // ═══════════════════════════════════════════════════════════════════
-        function updateDisplay(state) {
-            if (!state) return;
-            if (!shouldUpdate(state)) return;
-
-            const isFirstLoad = (currentState === null);
-            const wasHidden   = !currentState || currentState.mode === 'hidden';
-
-            // ── Compute diffs BEFORE committing new state ─────────────────
-            const prevAnim     = currentState ? (currentState.animation || 'auto') : 'auto';
-            const prevSettings = currentState ? settingsKey(currentState.animation_settings) : '';
-
-            const prevContentKey = currentState
-                ? JSON.stringify({ mode: currentState.mode, m: currentState.minister, s: currentState.sermon })
-                : null;
-            const newContentKey = JSON.stringify({ mode: state.mode, m: state.minister, s: state.sermon });
-
-            const contentChanged  = prevContentKey !== newContentKey;
-            const newAnim         = state.animation || 'auto';
-            const animChanged     = prevAnim !== newAnim;
-            const newSettings     = settingsKey(state.animation_settings);
-            const settingsChanged = prevSettings !== newSettings;
-
-            // ── Commit state ──────────────────────────────────────────────
-            currentState = state;
-            if (state.version !== undefined) currentVersion = state.version;
-            if (state.colors) applyColors(state.colors);
-
-            // Resolved animation mode:
-            //   'auto'     → auto-rotation using animation_settings
-            //   'none'     → show with no animation
-            //   anything else → play that specific animation once, no interval
-            const isExplicit = (newAnim !== 'auto' && newAnim !== 'none');
-            const animSettings = state.animation_settings || null;
-
-            // ── A. Hidden ─────────────────────────────────────────────────
-            if (state.mode === 'hidden') {
-                lowerThird.classList.remove('visible');
-                stopAuto();
-                clearAnimClasses();
-                clearInlineStyles();
-                return;
-            }
-
-            // Helper called after any transition to settle into the correct mode
-            function settle() {
-                if (isExplicit) {
-                    stopAuto();
-                    playAnimation(newAnim);
-                } else if (newAnim === 'none') {
-                    stopAuto();
-                    clearAnimClasses();
-                    clearInlineStyles();
-                    lowerThird.classList.add('visible');
-                } else {
-                    // auto — play immediately and start interval
-                    startAuto(animSettings, true);
-                }
-            }
-
-            // ── B. First show / coming out of hidden ──────────────────────
-            if (isFirstLoad || wasHidden) {
-                applyContent(state);
-                settle();
-                return;
-            }
-
-            // ── C. Content changed while live ─────────────────────────────
-            if (contentChanged) {
-                stopAuto();
-                sceneSwitch(state, () => settle());
-                return;
-            }
-
-            // ── D. Animation field changed (same content) ─────────────────
-            // e.g. user switched from 'slide-up' → 'auto', or 'auto' → 'fade-in'
-            if (animChanged) {
-                stopAuto();
-                clearAnimClasses();
-                clearInlineStyles();
-                if (isExplicit) {
-                    playAnimation(newAnim);
-                } else if (newAnim === 'none') {
-                    lowerThird.classList.add('visible');
-                } else {
-                    // Switching into auto — play one immediately and start interval
-                    startAuto(animSettings, true);
-                }
-                return;
-            }
-
-            // ── E. animation_settings changed (admin saved settings) ──────
-            //
-            // This is the previously broken case. We now handle it explicitly.
-            //
-            // Two sub-cases:
-            //   E1. auto_rotate just turned OFF → stop interval, keep overlay visible
-            //   E2. In auto mode and settings changed → restart with new interval/pool
-            //       Use playNow=false to avoid a hide-show flicker since the overlay
-            //       is already visible with a valid animation showing.
-            //   E3. In explicit mode → settings don't affect current display;
-            //       new settings will take effect next time auto mode is entered.
-            //
-            if (settingsChanged) {
-                if (!isExplicit && newAnim !== 'none') {
-                    // We are in auto mode
-                    if (!animSettings || !animSettings.auto_rotate) {
-                        // E1: auto_rotate was just turned off — stop the interval,
-                        //     but leave the overlay exactly as it is (no flicker).
-                        stopAuto();
-                    } else {
-                        // E2: interval or pool changed — restart with new values.
-                        //     playNow=false: don't replay the animation, just reset the timer.
-                        startAuto(animSettings, false);
-                    }
-                }
-                // E3: explicit mode — nothing to do, already handled above.
-                return;
-            }
-
-            // ── F. Color / church / other metadata only ───────────────────
-            // applyColors already ran above. No animation restart needed.
-            // (auto interval keeps ticking unchanged)
+        if (isNone) {
+            stopCycle(); stopRotation();
+            clearAnimClasses(); clearInlineStyles();
+            lowerThird.classList.add('visible');
+            return;
         }
 
-        // ── Polling (replaces SSE -- shared hosting incompatible with streaming) ──
-        let pollTimer    = null;
-        let pollFailures = 0;
+        // auto rotation
+        stopCycle();
+        startRotation(s, true);
+    }
 
-        function updateConnectionStatus(status, message) {
-            connectionStatus.className   = status;
-            connectionStatus.textContent = message;
+    // ═══════════════════════════════════════════════════════════════════
+    // SHOULD UPDATE
+    // ═══════════════════════════════════════════════════════════════════
+
+    function shouldUpdate(s) {
+        if (!currentState) return true;
+        if (s.version !== undefined && s.version > currentVersion) return true;
+        return JSON.stringify(currentState) !== JSON.stringify(s);
+    }
+
+    function contentKey(s) {
+        return JSON.stringify({ mode: s.mode, m: s.minister, ser: s.sermon });
+    }
+
+    function settingsKey(s) {
+        const a = s?.animation_settings;
+        if (!a) return '';
+        return JSON.stringify(a);
+    }
+
+    // ═══════════════════════════════════════════════════════════════════
+    // MAIN UPDATE — called on every poll
+    // ═══════════════════════════════════════════════════════════════════
+
+    function updateDisplay(state) {
+        if (!state || !shouldUpdate(state)) return;
+
+        const isFirst   = (currentState === null);
+        const wasHidden = !currentState || currentState.mode === 'hidden';
+
+        const prevContent  = currentState ? contentKey(currentState)  : null;
+        const prevSettings = currentState ? settingsKey(currentState)  : '';
+        const prevAnim     = currentState ? (currentState.animation || 'auto') : 'auto';
+
+        const newContent    = contentKey(state);
+        const newSettingsKey = settingsKey(state);
+        const contentChanged  = prevContent !== newContent;
+        const settingsChanged = prevSettings !== newSettingsKey;
+        const animChanged     = prevAnim !== (state.animation || 'auto');
+
+        // Commit
+        currentState = state;
+        if (state.version !== undefined) currentVersion = state.version;
+        if (state.colors) applyColors(state.colors);
+
+        const s = state.animation_settings;
+
+        // ── A. Hidden ──────────────────────────────────────────────
+        if (state.mode === 'hidden') {
+            stopCycle(); stopRotation(); clearTwTimeouts();
+            lowerThird.classList.remove('visible');
+            clearAnimClasses(); clearInlineStyles();
+            return;
         }
 
-        async function poll() {
-            try {
-                const res   = await fetch('/api/overlay/state');
-                if (!res.ok) throw new Error('HTTP ' + res.status);
-                const state = await res.json();
-                pollFailures = 0;
-                updateConnectionStatus('connected', 'Connected (v' + (state.version || currentVersion) + ')');
-                updateDisplay(state);
-            } catch (e) {
-                pollFailures++;
-                const msg = pollFailures > 3 ? 'Connection lost. Retrying...' : 'Connecting...';
-                updateConnectionStatus(pollFailures > 3 ? 'disconnected' : 'connecting', msg);
+        // ── B. First show / coming out of hidden ───────────────────
+        if (isFirst || wasHidden) {
+            applyContent(state);
+            settle(state);
+            return;
+        }
+
+        // ── C. Content changed while live ─────────────────────────
+        if (contentChanged) {
+            stopCycle(); stopRotation(); clearTwTimeouts();
+            sceneSwitch(state, () => settle(state));
+            return;
+        }
+
+        // ── D. Animation field changed ─────────────────────────────
+        if (animChanged) {
+            stopCycle(); stopRotation();
+            settle(state);
+            return;
+        }
+
+        // ── E. Settings changed (admin saved) ─────────────────────
+        if (settingsChanged) {
+            // Restart whatever mode is now configured
+            if (s?.auto_cycle) {
+                startCycle(s);
+            } else if (s?.auto_rotate) {
+                stopCycle();
+                startRotation(s, false); // don't re-play entrance, just reset timer
+            } else {
+                stopCycle(); stopRotation();
+                // keep overlay visible as-is
             }
+            return;
         }
 
-        function startPolling() {
-            if (pollTimer) clearInterval(pollTimer);
-            poll();                              // immediate first fetch
-            pollTimer = setInterval(poll, 1500); // then every 1.5 s
+        // ── F. Colors / church only ────────────────────────────────
+        // applyColors already ran — nothing else needed
+    }
+
+    // ═══════════════════════════════════════════════════════════════════
+    // POLLING
+    // ═══════════════════════════════════════════════════════════════════
+
+    let pollTimer    = null;
+    let pollFailures = 0;
+
+    function updateConnectionStatus(status, message) {
+        connectionStatus.className   = status;
+        connectionStatus.textContent = message;
+    }
+
+    async function poll() {
+        try {
+            const res   = await fetch('/api/overlay/state');
+            if (!res.ok) throw new Error('HTTP ' + res.status);
+            const state = await res.json();
+            pollFailures = 0;
+            updateConnectionStatus('connected', 'Connected (v' + (state.version ?? currentVersion) + ')');
+            updateDisplay(state);
+        } catch (e) {
+            pollFailures++;
+            updateConnectionStatus(
+                pollFailures > 3 ? 'disconnected' : 'connecting',
+                pollFailures > 3 ? 'Connection lost. Retrying...' : 'Connecting...'
+            );
         }
+    }
 
-        startPolling();
+    function startPolling() {
+        if (pollTimer) clearInterval(pollTimer);
+        poll();
+        pollTimer = setInterval(poll, 1500);
+    }
 
-        document.addEventListener('visibilitychange', () => {
-            if (!document.hidden) { poll(); }
-        });
+    startPolling();
 
-        window.addEventListener('beforeunload', () => {
-            if (pollTimer) clearInterval(pollTimer);
-            stopAuto();
-        });
+    document.addEventListener('visibilitychange', () => { if (!document.hidden) poll(); });
 
-        // Hide the connection status indicator after 3 s once connected
-        setTimeout(() => {
-            if (connectionStatus.classList.contains('connected'))
-                connectionStatus.style.display = 'none';
-        }, 3000);
+    window.addEventListener('beforeunload', () => {
+        if (pollTimer) clearInterval(pollTimer);
+        stopCycle(); stopRotation();
+    });
+
+    setTimeout(() => {
+        if (connectionStatus.classList.contains('connected'))
+            connectionStatus.style.display = 'none';
+    }, 3000);
     </script>
 </body>
 </html>

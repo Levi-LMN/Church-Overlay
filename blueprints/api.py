@@ -13,6 +13,22 @@ from utils.helpers import (admin_required, auth_required as check_auth_required,
 api_bp = Blueprint('api', __name__)
 
 
+def _anim_to_dict(anim):
+    """Serialize AnimationSettings to the overlay_state dict format."""
+    return {
+        'auto_rotate':            anim.auto_rotate,
+        'rotation_interval':      anim.rotation_interval,
+        'enabled_animations':     anim.enabled_animations.split(','),
+        'animation_speed':        anim.animation_speed        if anim.animation_speed        is not None else 1.0,
+        'typewriter_speed':       anim.typewriter_speed       if anim.typewriter_speed       is not None else 50,
+        'auto_cycle':             anim.auto_cycle             if anim.auto_cycle             is not None else False,
+        'display_duration':       anim.display_duration       if anim.display_duration       is not None else 30,
+        'hide_duration':          anim.hide_duration          if anim.hide_duration          is not None else 10,
+        'cycle_enter_animation':  anim.cycle_enter_animation  if anim.cycle_enter_animation  is not None else 'auto',
+        'cycle_exit_animation':   anim.cycle_exit_animation   if anim.cycle_exit_animation   is not None else 'fade-out-exit',
+    }
+
+
 # ============================================================================
 # AUTHENTICATION & GENERAL
 # ============================================================================
@@ -41,11 +57,6 @@ def get_overlay_state():
     return response
 
 
-
-# SSE streaming removed -- not compatible with shared hosting (causes SIGTERM).
-# The display page uses polling (/api/overlay/state) instead.
-
-
 @api_bp.route('/overlay/update', methods=['POST'])
 @login_optional
 def update_overlay():
@@ -57,8 +68,6 @@ def update_overlay():
     with state_lock:
         overlay_state['mode'] = mode
         if 'animation' in data:
-            # Store whatever was sent, including 'auto' -- the display page needs
-            # to receive 'auto' explicitly to cancel any previously locked animation
             overlay_state['animation'] = data['animation']
         details = f"Mode: {mode}"
 
@@ -175,11 +184,7 @@ def update_overlay():
 
             anim = AnimationSettings.query.first()
             if anim:
-                overlay_state['animation_settings'] = {
-                    'auto_rotate': anim.auto_rotate,
-                    'rotation_interval': anim.rotation_interval,
-                    'enabled_animations': anim.enabled_animations.split(',')
-                }
+                overlay_state['animation_settings'] = _anim_to_dict(anim)
 
             log_activity('OVERLAY_UPDATE', details)
 
@@ -210,13 +215,13 @@ def manage_church():
             church = Church()
             db.session.add(church)
 
-        church.name              = data.get('name')
-        church.description       = data.get('description')
-        church.accent_color      = data.get('accent_color', '#10b981')
+        church.name               = data.get('name')
+        church.description        = data.get('description')
+        church.accent_color       = data.get('accent_color', '#10b981')
         church.church_label_color = data.get('church_label_color', '#10b981')
-        church.main_title_color  = data.get('main_title_color', '#ffffff')
-        church.subtitle_color    = data.get('subtitle_color', 'rgba(255, 255, 255, 0.85)')
-        church.verse_color       = data.get('verse_color', '#10b981')
+        church.main_title_color   = data.get('main_title_color', '#ffffff')
+        church.subtitle_color     = data.get('subtitle_color', 'rgba(255, 255, 255, 0.85)')
+        church.verse_color        = data.get('verse_color', '#10b981')
         db.session.commit()
 
         with state_lock:
@@ -239,21 +244,24 @@ def manage_church():
 # MINISTER MANAGEMENT
 # ============================================================================
 
-@api_bp.route('/ministers', methods=['GET', 'POST'])
-@admin_required
-def manage_ministers():
+@api_bp.route('/ministers', methods=['GET'])
+@login_optional
+def list_ministers():
     from models import Minister
-
-    if request.method == 'POST':
-        data = request.json
-        minister = Minister(name=data['name'], title=data.get('title'))
-        db.session.add(minister)
-        db.session.commit()
-        log_activity('MINISTER_ADD', f"Added minister: {minister.name}")
-        return jsonify({'success': True, 'id': minister.id})
-
     ministers = Minister.query.order_by(Minister.last_used.desc().nulls_last()).all()
     return jsonify([{'id': m.id, 'name': m.name, 'title': m.title} for m in ministers])
+
+
+@api_bp.route('/ministers', methods=['POST'])
+@admin_required
+def create_minister():
+    from models import Minister
+    data = request.json
+    minister = Minister(name=data['name'], title=data.get('title'))
+    db.session.add(minister)
+    db.session.commit()
+    log_activity('MINISTER_ADD', f"Added minister: {minister.name}")
+    return jsonify({'success': True, 'id': minister.id})
 
 
 @api_bp.route('/ministers/<int:id>', methods=['PUT', 'DELETE'])
@@ -283,28 +291,31 @@ def modify_minister(id):
 # SERMON MANAGEMENT
 # ============================================================================
 
-@api_bp.route('/sermons', methods=['GET', 'POST'])
-@admin_required
-def manage_sermons():
+@api_bp.route('/sermons', methods=['GET'])
+@login_optional
+def list_sermons():
     from models import Sermon
-
-    if request.method == 'POST':
-        data = request.json
-        sermon = Sermon(
-            title=data['title'],
-            minister_name=data.get('minister_name'),
-            bible_verse=data.get('bible_verse')
-        )
-        db.session.add(sermon)
-        db.session.commit()
-        log_activity('SERMON_ADD', f"Added sermon: {sermon.title}")
-        return jsonify({'success': True, 'id': sermon.id})
-
     sermons = Sermon.query.order_by(Sermon.date.desc()).all()
     return jsonify([{
         'id': s.id, 'title': s.title, 'minister_name': s.minister_name,
         'bible_verse': s.bible_verse, 'date': s.date.isoformat()
     } for s in sermons])
+
+
+@api_bp.route('/sermons', methods=['POST'])
+@admin_required
+def create_sermon():
+    from models import Sermon
+    data = request.json
+    sermon = Sermon(
+        title=data['title'],
+        minister_name=data.get('minister_name'),
+        bible_verse=data.get('bible_verse')
+    )
+    db.session.add(sermon)
+    db.session.commit()
+    log_activity('SERMON_ADD', f"Added sermon: {sermon.title}")
+    return jsonify({'success': True, 'id': sermon.id})
 
 
 @api_bp.route('/sermons/<int:id>', methods=['PUT', 'DELETE'])
@@ -323,9 +334,9 @@ def modify_sermon(id):
 
     data = request.json
     old_title = sermon.title
-    sermon.title        = data.get('title', sermon.title)
+    sermon.title         = data.get('title', sermon.title)
     sermon.minister_name = data.get('minister_name', sermon.minister_name)
-    sermon.bible_verse  = data.get('bible_verse', sermon.bible_verse)
+    sermon.bible_verse   = data.get('bible_verse', sermon.bible_verse)
     db.session.commit()
     log_activity('SERMON_UPDATE', f"Updated sermon: {old_title} -> {sermon.title}")
     return jsonify({'success': True})
@@ -337,7 +348,6 @@ def modify_sermon(id):
 
 @api_bp.route('/temporary-content', methods=['GET'])
 def get_temporary_content():
-    """Return recent temporary content -- shared across all users."""
     from models import TemporaryContent
 
     temp_ministers = (TemporaryContent.query
@@ -379,7 +389,7 @@ def delete_temporary_content(id):
 
 
 # ============================================================================
-# SHARED CUSTOM CONTENT  (persisted fields, visible to all users)
+# SHARED CUSTOM CONTENT
 # ============================================================================
 
 CUSTOM_KEYS = [
@@ -393,7 +403,6 @@ CUSTOM_KEYS = [
 
 @api_bp.route('/custom-content', methods=['GET'])
 def get_custom_content():
-    """Return the shared custom minister / sermon fields."""
     from models import Settings
     result = {}
     for key in CUSTOM_KEYS:
@@ -405,15 +414,10 @@ def get_custom_content():
 @api_bp.route('/custom-content', methods=['POST'])
 @login_optional
 def save_custom_content():
-    """
-    Persist shared custom fields AND create a TemporaryContent record so
-    the entry shows up in the 'Recently Used' dropdown for all users.
-    """
     from models import Settings, TemporaryContent
     data = request.json or {}
     saved = []
 
-    # 1. Persist raw key/value fields (pre-fills the form on next load)
     for key in CUSTOM_KEYS:
         if key in data:
             setting = Settings.query.filter_by(key=key).first()
@@ -423,7 +427,6 @@ def save_custom_content():
             setting.value = data[key]
             saved.append(key)
 
-    # 2. Minister save -> upsert TemporaryContent row (no duplicates)
     if data.get('custom_minister_name'):
         name  = data['custom_minister_name']
         title = data.get('custom_minister_title', '')
@@ -440,7 +443,6 @@ def save_custom_content():
             )
             db.session.add(temp)
 
-    # 3. Sermon save -> upsert TemporaryContent row (no duplicates)
     if data.get('custom_sermon_title'):
         title   = data['custom_sermon_title']
         mname   = data.get('custom_sermon_minister', '')
@@ -481,18 +483,21 @@ def manage_animation_settings():
             settings = AnimationSettings()
             db.session.add(settings)
 
-        settings.auto_rotate         = data.get('auto_rotate', True)
-        settings.rotation_interval   = data.get('rotation_interval', 5)
-        settings.enabled_animations  = data.get('enabled_animations',
-                                                 'slide-up,fade-in,slide-left,zoom-in,wave-in')
+        settings.auto_rotate            = data.get('auto_rotate', True)
+        settings.rotation_interval      = int(data.get('rotation_interval', 8))
+        settings.enabled_animations     = data.get('enabled_animations',
+                                                    'slide-up,fade-in,slide-left,zoom-in,wave-in')
+        settings.animation_speed        = float(data.get('animation_speed', 1.0))
+        settings.typewriter_speed       = int(data.get('typewriter_speed', 50))
+        settings.auto_cycle             = data.get('auto_cycle', False)
+        settings.display_duration       = int(data.get('display_duration', 30))
+        settings.hide_duration          = int(data.get('hide_duration', 10))
+        settings.cycle_enter_animation  = data.get('cycle_enter_animation', 'auto')
+        settings.cycle_exit_animation   = data.get('cycle_exit_animation', 'fade-out-exit')
         db.session.commit()
 
         with state_lock:
-            overlay_state['animation_settings'] = {
-                'auto_rotate':        settings.auto_rotate,
-                'rotation_interval':  settings.rotation_interval,
-                'enabled_animations': settings.enabled_animations.split(',')
-            }
+            overlay_state['animation_settings'] = _anim_to_dict(settings)
 
         notify_state_change()
         log_activity('ANIMATION_SETTINGS_UPDATE', "Updated animation settings")
@@ -500,13 +505,14 @@ def manage_animation_settings():
 
     settings = AnimationSettings.query.first()
     if settings:
-        return jsonify({
-            'auto_rotate':        settings.auto_rotate,
-            'rotation_interval':  settings.rotation_interval,
-            'enabled_animations': settings.enabled_animations
-        })
-    return jsonify({'auto_rotate': True, 'rotation_interval': 5,
-                    'enabled_animations': 'slide-up,fade-in,slide-left,zoom-in,wave-in'})
+        return jsonify(_anim_to_dict(settings))
+    return jsonify({
+        'auto_rotate': True, 'rotation_interval': 8,
+        'enabled_animations': 'slide-up,fade-in,slide-left,zoom-in,wave-in',
+        'animation_speed': 1.0, 'typewriter_speed': 50,
+        'auto_cycle': False, 'display_duration': 30, 'hide_duration': 10,
+        'cycle_enter_animation': 'auto', 'cycle_exit_animation': 'fade-out-exit',
+    })
 
 
 # ============================================================================

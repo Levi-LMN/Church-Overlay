@@ -7,6 +7,49 @@ from flask_login import current_user
 from extensions import db, login_manager, oauth, csrf, overlay_state, ADMIN_EMAIL
 
 
+def _migrate_animation_settings(app):
+    """Add new AnimationSettings columns to existing SQLite databases."""
+    with app.app_context():
+        try:
+            from sqlalchemy import text
+            with db.engine.connect() as conn:
+                rows = conn.execute(text("PRAGMA table_info(animation_settings)")).fetchall()
+                existing = {row[1] for row in rows}
+
+                migrations = [
+                    ('animation_speed',           'FLOAT DEFAULT 1.0'),
+                    ('typewriter_speed',           'INTEGER DEFAULT 50'),
+                    ('auto_cycle',                 'BOOLEAN DEFAULT 0'),
+                    ('display_duration',           'INTEGER DEFAULT 30'),
+                    ('hide_duration',              'INTEGER DEFAULT 10'),
+                    ('cycle_enter_animation',      "VARCHAR(50) DEFAULT 'auto'"),
+                    ('cycle_exit_animation',       "VARCHAR(50) DEFAULT 'fade-out-exit'"),
+                ]
+                for col, defn in migrations:
+                    if col not in existing:
+                        conn.execute(text(f"ALTER TABLE animation_settings ADD COLUMN {col} {defn}"))
+                        print(f"[MIGRATION] Added column: animation_settings.{col}")
+                conn.commit()
+        except Exception as e:
+            print(f"[MIGRATION] {e}")
+
+
+def _anim_to_dict(anim):
+    """Convert an AnimationSettings row to the overlay_state dict format."""
+    return {
+        'auto_rotate':            anim.auto_rotate,
+        'rotation_interval':      anim.rotation_interval,
+        'enabled_animations':     anim.enabled_animations.split(','),
+        'animation_speed':        anim.animation_speed        if anim.animation_speed        is not None else 1.0,
+        'typewriter_speed':       anim.typewriter_speed       if anim.typewriter_speed       is not None else 50,
+        'auto_cycle':             anim.auto_cycle             if anim.auto_cycle             is not None else False,
+        'display_duration':       anim.display_duration       if anim.display_duration       is not None else 30,
+        'hide_duration':          anim.hide_duration          if anim.hide_duration          is not None else 10,
+        'cycle_enter_animation':  anim.cycle_enter_animation  if anim.cycle_enter_animation  is not None else 'auto',
+        'cycle_exit_animation':   anim.cycle_exit_animation   if anim.cycle_exit_animation   is not None else 'fade-out-exit',
+    }
+
+
 def create_app():
     load_dotenv()
 
@@ -28,8 +71,7 @@ def create_app():
     app.config['GOOGLE_CLIENT_ID']     = os.environ.get('GOOGLE_CLIENT_ID')
     app.config['GOOGLE_CLIENT_SECRET'] = os.environ.get('GOOGLE_CLIENT_SECRET')
 
-    # WTF CSRF -- exempt the SSE stream and JSON API routes
-    app.config['WTF_CSRF_CHECK_DEFAULT'] = False  # manual exemptions below
+    app.config['WTF_CSRF_CHECK_DEFAULT'] = False
 
     # ------------------------------------------------------------------
     # Initialise extensions
@@ -72,7 +114,6 @@ def create_app():
     app.register_blueprint(display_bp, url_prefix='/display')
     app.register_blueprint(api_bp,     url_prefix='/api')
 
-    # Exempt the entire API blueprint from CSRF (JSON API with no forms)
     csrf.exempt(api_bp)
 
     # ------------------------------------------------------------------
@@ -100,6 +141,9 @@ def create_app():
         try:
             db.create_all()
 
+            # Run column migrations for existing databases
+            _migrate_animation_settings(app)
+
             if not Settings.query.filter_by(key='require_auth').first():
                 db.session.add(Settings(key='require_auth', value='false'))
             if not Settings.query.filter_by(key='selected_animation').first():
@@ -109,8 +153,15 @@ def create_app():
             if not AnimationSettings.query.first():
                 db.session.add(AnimationSettings(
                     auto_rotate=True,
-                    rotation_interval=5,
-                    enabled_animations='slide-up,fade-in,slide-left,zoom-in,wave-in'
+                    rotation_interval=8,
+                    enabled_animations='slide-up,fade-in,slide-left,zoom-in,wave-in',
+                    animation_speed=1.0,
+                    typewriter_speed=50,
+                    auto_cycle=False,
+                    display_duration=30,
+                    hide_duration=10,
+                    cycle_enter_animation='auto',
+                    cycle_exit_animation='fade-out-exit',
                 ))
             db.session.commit()
 
@@ -130,11 +181,7 @@ def create_app():
 
             anim = AnimationSettings.query.first()
             if anim:
-                overlay_state['animation_settings'] = {
-                    'auto_rotate':        anim.auto_rotate,
-                    'rotation_interval':  anim.rotation_interval,
-                    'enabled_animations': anim.enabled_animations.split(',')
-                }
+                overlay_state['animation_settings'] = _anim_to_dict(anim)
 
             print("[OK] Database initialised successfully")
 

@@ -1,47 +1,152 @@
 {% extends 'admin/base_admin.html' %}
 {% block page_title %}Settings{% endblock %}
-{% block page_subtitle %}Church info, colours, animation and access control{% endblock %}
+{% block page_subtitle %}Church info, colours, animations, timing & access control{% endblock %}
+
+{% block admin_extra_head %}
+<style>
+    .settings-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+    @media (max-width: 900px) { .settings-grid { grid-template-columns: 1fr; } }
+
+    .settings-section {
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+        padding: 24px;
+    }
+    .section-title {
+        font-size: 15px;
+        font-weight: 700;
+        color: #111827;
+        margin-bottom: 20px;
+    }
+
+    .range-row {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    .range-row input[type="range"] {
+        flex: 1;
+        accent-color: #10b981;
+    }
+    .range-val {
+        min-width: 46px;
+        text-align: right;
+        font-weight: 700;
+        font-size: 12px;
+        color: #059669;
+    }
+
+    .anim-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(138px, 1fr));
+        gap: 7px;
+    }
+    .anim-chip {
+        display: flex;
+        align-items: center;
+        gap: 7px;
+        padding: 7px 11px;
+        border: 1.5px solid #e5e7eb;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.15s;
+        font-size: 12px;
+        font-weight: 500;
+        color: #374151;
+        background: white;
+    }
+    .anim-chip:hover { border-color: #10b981; background: #f0fdf4; }
+    .anim-chip input { accent-color: #10b981; flex-shrink: 0; pointer-events: none; }
+    .anim-chip.checked { border-color: #10b981; background: #f0fdf4; color: #065f46; }
+
+    .chip-label {
+        font-size: 10px;
+        font-weight: 700;
+        color: #9ca3af;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin: 14px 0 7px;
+    }
+
+    .toggle-row {
+        display: flex;
+        align-items: flex-start;
+        gap: 12px;
+        padding: 10px 0;
+    }
+    .toggle-row + .toggle-row { border-top: 1px solid #f3f4f6; }
+    .toggle-info p { font-size: 13px; font-weight: 600; color: #374151; }
+    .toggle-info span { font-size: 12px; color: #9ca3af; }
+
+    .cycle-box {
+        margin-top: 14px;
+        padding: 16px;
+        background: #f0fdf4;
+        border: 1.5px solid #bbf7d0;
+        border-radius: 10px;
+        display: none;
+        gap: 16px;
+        flex-direction: column;
+    }
+    .cycle-box.open { display: flex; }
+
+    .exit-sel {
+        width: 100%;
+        padding: 9px 13px;
+        border: 1.5px solid #e5e7eb;
+        border-radius: 8px;
+        font-size: 13px;
+        outline: none;
+        background: white;
+        color: #374151;
+    }
+    .exit-sel:focus { border-color: #10b981; box-shadow: 0 0 0 3px rgba(16,185,129,0.1); }
+</style>
+{% endblock %}
 
 {% block admin_content %}
-<div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+<div class="settings-grid">
 
-    <!-- Church Info -->
-    <div class="card p-6">
-        <h2 class="text-base font-bold text-gray-900 mb-5">🏛️ Church Information</h2>
+    <!-- ── Church Info ── -->
+    <div class="settings-section">
+        <div class="section-title">🏛️ Church Information</div>
         <div class="space-y-4">
             <div>
                 <label class="block text-xs font-semibold text-gray-600 mb-1">Church Name *</label>
-                <input id="church-name" class="input-field" value="{{ church.name if church else '' }}" placeholder="Grace Community Church">
+                <input id="church-name" class="input-field"
+                       value="{{ church.name if church else '' }}" placeholder="Grace Community Church">
             </div>
             <div>
                 <label class="block text-xs font-semibold text-gray-600 mb-1">Tagline / Description</label>
-                <input id="church-desc" class="input-field" value="{{ church.description if church else '' }}" placeholder="Spreading grace and love">
+                <input id="church-desc" class="input-field"
+                       value="{{ church.description if church else '' }}" placeholder="Spreading grace and love">
             </div>
         </div>
         <button onclick="saveChurch()" class="btn btn-primary mt-5">Save Church Info</button>
     </div>
 
-    <!-- Colours -->
-    <div class="card p-6">
-        <h2 class="text-base font-bold text-gray-900 mb-5">🎨 Overlay Colours</h2>
+    <!-- ── Overlay Colours ── -->
+    <div class="settings-section">
+        <div class="section-title">🎨 Overlay Colours</div>
         <div class="grid grid-cols-2 gap-4">
             {% set color_fields = [
-                ('church-label-color',  'Church Label',  church.church_label_color if church else '#10b981'),
-                ('accent-color',        'Accent',        church.accent_color if church else '#10b981'),
-                ('main-title-color',    'Main Title',    church.main_title_color if church else '#ffffff'),
-                ('subtitle-color',      'Subtitle',      church.subtitle_color if church else 'rgba(255,255,255,0.85)'),
-                ('verse-color',         'Verse',         church.verse_color if church else '#10b981'),
+                ('church-label-color','Church Label', church.church_label_color if church else '#10b981'),
+                ('accent-color',      'Accent',       church.accent_color if church else '#10b981'),
+                ('main-title-color',  'Main Title',   church.main_title_color if church else '#ffffff'),
+                ('subtitle-color',    'Subtitle',     church.subtitle_color if church else 'rgba(255,255,255,0.85)'),
+                ('verse-color',       'Verse',        church.verse_color if church else '#10b981'),
             ] %}
-            {% for field_id, label, value in color_fields %}
+            {% for fid, lbl, val in color_fields %}
             <div>
-                <label class="block text-xs font-semibold text-gray-600 mb-1">{{ label }}</label>
+                <label class="block text-xs font-semibold text-gray-600 mb-1">{{ lbl }}</label>
                 <div class="flex gap-2 items-center">
-                    <input type="color" id="{{ field_id }}-picker"
-                           value="{{ value if value.startswith('#') else '#10b981' }}"
+                    <input type="color" id="{{ fid }}-picker"
+                           value="{{ val if val.startswith('#') else '#10b981' }}"
                            class="w-10 h-9 rounded border border-gray-200 cursor-pointer p-0.5 flex-shrink-0"
-                           oninput="document.getElementById('{{ field_id }}').value=this.value">
-                    <input id="{{ field_id }}" class="input-field" value="{{ value }}"
-                           oninput="try{document.getElementById('{{ field_id }}-picker').value=this.value}catch(e){}">
+                           oninput="document.getElementById('{{ fid }}').value=this.value">
+                    <input id="{{ fid }}" class="input-field" value="{{ val }}"
+                           oninput="try{document.getElementById('{{ fid }}-picker').value=this.value}catch(e){}">
                 </div>
             </div>
             {% endfor %}
@@ -49,70 +154,267 @@
         <button onclick="saveColours()" class="btn btn-primary mt-5">Save Colours</button>
     </div>
 
-    <!-- Animation -->
-    <div class="card p-6">
-        <h2 class="text-base font-bold text-gray-900 mb-5">🎬 Animation Settings</h2>
-        <div class="space-y-4">
-            <label class="flex items-center gap-3 cursor-pointer">
-                <input type="checkbox" id="auto-rotate"
-                       {% if animation_settings and animation_settings.auto_rotate %}checked{% endif %}
-                       class="w-4 h-4 accent-emerald-500">
-                <span class="text-sm font-medium text-gray-700">Auto-rotate animations</span>
+    <!-- ── Animation Pool ── -->
+    <div class="settings-section">
+        <div class="section-title">🎬 Animation Pool</div>
+        <p class="text-xs text-gray-500 mb-3">Choose which animations are included in auto-rotation.</p>
+
+        {% set enabled = (animation_settings.enabled_animations.split(',') if animation_settings else ['slide-up','fade-in','slide-left','zoom-in','wave-in']) %}
+
+        <div class="chip-label">Container / Entry</div>
+        <div class="anim-grid">
+            {% for a in ['slide-up','slide-down','slide-left','slide-right','fade-in','zoom-in',
+                         'bounce-in','rotate-in','reveal','wipe-right','flip-in','elastic-in','blur-in','rise-shine'] %}
+            <label class="anim-chip {% if a in enabled %}checked{% endif %}">
+                <input type="checkbox" name="anim" value="{{ a }}"
+                       {% if a in enabled %}checked{% endif %}>
+                {{ a }}
             </label>
-            <div>
-                <label class="block text-xs font-semibold text-gray-600 mb-1">Rotation Interval (seconds)</label>
-                <input type="number" id="rotation-interval" class="input-field" min="2" max="30"
-                       value="{{ animation_settings.rotation_interval if animation_settings else 5 }}">
-            </div>
-            <div>
-                <label class="block text-xs font-semibold text-gray-600 mb-2">Enabled Animations</label>
-                {% set all_anims = ['slide-up','fade-in','slide-left','slide-right','slide-down','zoom-in','bounce-in','rotate-in','wave-in','typewriter','glitch','reveal'] %}
-                {% set enabled   = (animation_settings.enabled_animations.split(',') if animation_settings else ['slide-up','fade-in','slide-left','zoom-in','wave-in']) %}
-                <div class="grid grid-cols-2 gap-2">
-                    {% for anim in all_anims %}
-                    <label class="flex items-center gap-2 cursor-pointer">
-                        <input type="checkbox" name="anim" value="{{ anim }}"
-                               {% if anim in enabled %}checked{% endif %}
-                               class="w-3.5 h-3.5 accent-emerald-500">
-                        <span class="text-xs text-gray-700">{{ anim }}</span>
-                    </label>
-                    {% endfor %}
-                </div>
-            </div>
+            {% endfor %}
         </div>
-        <button onclick="saveAnimation()" class="btn btn-primary mt-5">Save Animation</button>
+
+        <div class="chip-label">Text Animations</div>
+        <div class="anim-grid">
+            {% for a in ['wave-in','cascade-down','typewriter','word-by-word','letter-drop','glitch','neon-flicker'] %}
+            <label class="anim-chip {% if a in enabled %}checked{% endif %}">
+                <input type="checkbox" name="anim" value="{{ a }}"
+                       {% if a in enabled %}checked{% endif %}>
+                {{ a }}
+            </label>
+            {% endfor %}
+        </div>
+
+        <div class="flex gap-3 mt-4">
+            <button onclick="selectAll()" class="btn btn-ghost btn-sm">Select All</button>
+            <button onclick="selectNone()" class="btn btn-ghost btn-sm">Clear All</button>
+        </div>
     </div>
 
-    <!-- Access Control -->
-    <div class="card p-6">
-        <h2 class="text-base font-bold text-gray-900 mb-5">🔐 Access Control</h2>
-        <div class="space-y-4">
-            <label class="flex items-center gap-3 cursor-pointer">
-                <input type="checkbox" id="require-auth"
-                       {% if settings.get('require_auth') == 'true' %}checked{% endif %}
-                       class="w-4 h-4 accent-emerald-500">
-                <div>
-                    <p class="text-sm font-medium text-gray-700">Require Login for Control Panel</p>
-                    <p class="text-xs text-gray-400 mt-0.5">When enabled, only authorised Google accounts can access the panel</p>
-                </div>
+    <!-- ── Timing ── -->
+    <div class="settings-section">
+        <div class="section-title">⏱️ Timing</div>
+
+        <div class="toggle-row mb-2">
+            <input type="checkbox" id="auto-rotate"
+                   {% if animation_settings and animation_settings.auto_rotate %}checked{% endif %}
+                   class="w-4 h-4 accent-emerald-500 mt-0.5 flex-shrink-0">
+            <div class="toggle-info">
+                <p>Auto-rotate animations</p>
+                <span>Cycle through the pool while overlay is visible</span>
+            </div>
+        </div>
+
+        <!-- Rotation interval -->
+        <div class="mb-4">
+            <label class="block text-xs font-semibold text-gray-600 mb-1.5">
+                Rotation Interval — how often animations switch
             </label>
+            <div class="range-row">
+                <input type="range" id="rotation-interval-range" min="2" max="60" step="1"
+                       value="{{ animation_settings.rotation_interval if animation_settings else 5 }}"
+                       oninput="syncRange('rotation-interval','s')">
+                <input type="number" id="rotation-interval" class="input-field" style="width:68px"
+                       min="2" max="60"
+                       value="{{ animation_settings.rotation_interval if animation_settings else 5 }}"
+                       oninput="document.getElementById('rotation-interval-range').value=this.value;updateLabel('rotation-interval','s')">
+                <span class="range-val" id="rotation-interval-lbl">{{ animation_settings.rotation_interval if animation_settings else 5 }}s</span>
+            </div>
+        </div>
+
+        <!-- Entry animation duration -->
+        <div class="mb-4">
+            <label class="block text-xs font-semibold text-gray-600 mb-1.5">
+                Entry Animation Duration — how long the entrance animation plays
+            </label>
+            <div class="range-row">
+                <input type="range" id="animation-duration-range" min="0.3" max="5" step="0.1"
+                       value="{{ animation_settings.animation_duration if animation_settings and animation_settings.animation_duration else 2.0 }}"
+                       oninput="syncRange('animation-duration','s')">
+                <input type="number" id="animation-duration" class="input-field" style="width:68px"
+                       min="0.3" max="5" step="0.1"
+                       value="{{ animation_settings.animation_duration if animation_settings and animation_settings.animation_duration else 2.0 }}"
+                       oninput="document.getElementById('animation-duration-range').value=this.value;updateLabel('animation-duration','s')">
+                <span class="range-val" id="animation-duration-lbl">{{ animation_settings.animation_duration if animation_settings and animation_settings.animation_duration else 2.0 }}s</span>
+            </div>
+        </div>
+
+        <!-- Typewriter / text speed -->
+        <div>
+            <label class="block text-xs font-semibold text-gray-600 mb-1.5">
+                Text Speed (typewriter, word-by-word, letter-drop) — ms per step
+            </label>
+            <div class="range-row">
+                <input type="range" id="typewriter-speed-range" min="15" max="200" step="5"
+                       value="{{ animation_settings.typewriter_speed if animation_settings and animation_settings.typewriter_speed else 60 }}"
+                       oninput="syncRange('typewriter-speed','ms')">
+                <input type="number" id="typewriter-speed" class="input-field" style="width:68px"
+                       min="15" max="200" step="5"
+                       value="{{ animation_settings.typewriter_speed if animation_settings and animation_settings.typewriter_speed else 60 }}"
+                       oninput="document.getElementById('typewriter-speed-range').value=this.value;updateLabel('typewriter-speed','ms')">
+                <span class="range-val" id="typewriter-speed-lbl">{{ animation_settings.typewriter_speed if animation_settings and animation_settings.typewriter_speed else 60 }}ms</span>
+            </div>
+            <p class="text-xs text-gray-400 mt-1.5">
+                💡 When auto-rotate is on, typewriter adapts its speed to always finish before the next rotation fires.
+            </p>
+        </div>
+
+        <button onclick="saveAnimation()" class="btn btn-primary mt-5 w-full">Save Animation & Timing</button>
+    </div>
+
+    <!-- ── Auto-Cycle ── -->
+    <div class="settings-section">
+        <div class="section-title">🔄 Auto-Cycle</div>
+        <p class="text-xs text-gray-500 mb-3">
+            Overlay shows for a set time → plays exit animation → hides → reappears. Loops while content is active.
+        </p>
+
+        <div class="toggle-row">
+            <input type="checkbox" id="auto-cycle"
+                   {% if animation_settings and animation_settings.auto_cycle %}checked{% endif %}
+                   class="w-4 h-4 accent-emerald-500 mt-0.5 flex-shrink-0"
+                   onchange="document.getElementById('cycle-box').classList.toggle('open',this.checked)">
+            <div class="toggle-info">
+                <p>Enable auto-cycle</p>
+                <span>Overlay automatically shows, hides and reappears</span>
+            </div>
+        </div>
+
+        <div id="cycle-box" class="cycle-box {% if animation_settings and animation_settings.auto_cycle %}open{% endif %}">
+
+            <div>
+                <label class="block text-xs font-semibold text-gray-600 mb-1.5">
+                    Visible for (seconds on screen before hiding)
+                </label>
+                <div class="range-row">
+                    <input type="range" id="display-duration-range" min="2" max="120" step="1"
+                           value="{{ animation_settings.display_duration if animation_settings and animation_settings.display_duration else 10 }}"
+                           oninput="syncRange('display-duration','s')">
+                    <input type="number" id="display-duration" class="input-field" style="width:68px"
+                           min="2" max="120"
+                           value="{{ animation_settings.display_duration if animation_settings and animation_settings.display_duration else 10 }}"
+                           oninput="document.getElementById('display-duration-range').value=this.value;updateLabel('display-duration','s')">
+                    <span class="range-val" id="display-duration-lbl">{{ animation_settings.display_duration if animation_settings and animation_settings.display_duration else 10 }}s</span>
+                </div>
+            </div>
+
+            <div>
+                <label class="block text-xs font-semibold text-gray-600 mb-1.5">
+                    Hidden for (seconds off screen before reappearing)
+                </label>
+                <div class="range-row">
+                    <input type="range" id="hide-duration-range" min="1" max="120" step="1"
+                           value="{{ animation_settings.hide_duration if animation_settings and animation_settings.hide_duration else 5 }}"
+                           oninput="syncRange('hide-duration','s')">
+                    <input type="number" id="hide-duration" class="input-field" style="width:68px"
+                           min="1" max="120"
+                           value="{{ animation_settings.hide_duration if animation_settings and animation_settings.hide_duration else 5 }}"
+                           oninput="document.getElementById('hide-duration-range').value=this.value;updateLabel('hide-duration','s')">
+                    <span class="range-val" id="hide-duration-lbl">{{ animation_settings.hide_duration if animation_settings and animation_settings.hide_duration else 5 }}s</span>
+                </div>
+            </div>
+
+            <div>
+                <label class="block text-xs font-semibold text-gray-600 mb-2">Exit Animation</label>
+                <select id="exit-animation" class="exit-sel">
+                    {% set cur = animation_settings.exit_animation if animation_settings and animation_settings.exit_animation else 'fade-out' %}
+                    {% for val, lbl in [
+                        ('fade-out','Fade Out'),
+                        ('slide-down-out','Slide Down'),
+                        ('slide-left-out','Slide Left'),
+                        ('slide-right-out','Slide Right'),
+                        ('zoom-out','Zoom Out'),
+                        ('wipe-left-out','Wipe Left'),
+                        ('flip-out','Flip Out'),
+                        ('blur-out','Blur Out'),
+                        ('none','None (instant)'),
+                    ] %}
+                    <option value="{{ val }}" {% if val == cur %}selected{% endif %}>{{ lbl }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+
+        <button onclick="saveAnimation()" class="btn btn-primary mt-5 w-full">Save Auto-Cycle</button>
+    </div>
+
+    <!-- ── Access Control ── -->
+    <div class="settings-section">
+        <div class="section-title">🔐 Access Control</div>
+        <div class="toggle-row">
+            <input type="checkbox" id="require-auth"
+                   {% if settings.get('require_auth') == 'true' %}checked{% endif %}
+                   class="w-4 h-4 accent-emerald-500 mt-0.5 flex-shrink-0">
+            <div class="toggle-info">
+                <p>Require Login for Control Panel</p>
+                <span>Only authorised Google accounts can access when enabled</span>
+            </div>
         </div>
         <button onclick="saveAccess()" class="btn btn-primary mt-5">Save Access Settings</button>
     </div>
+
 </div>
 {% endblock %}
 
 {% block admin_scripts %}
 <script>
+    // ── Range ↔ Number bidirectional sync ──────────────────────────────
+    function syncRange(baseId, unit) {
+        const rangeEl  = document.getElementById(baseId + '-range');
+        const numEl    = document.getElementById(baseId);
+        const labelEl  = document.getElementById(baseId + '-lbl');
+        if (numEl)    numEl.value     = rangeEl.value;
+        if (labelEl)  labelEl.textContent = rangeEl.value + unit;
+    }
+    function updateLabel(baseId, unit) {
+        const el = document.getElementById(baseId + '-lbl');
+        if (el) el.textContent = document.getElementById(baseId).value + unit;
+    }
+
+    // ── Chip check/uncheck ─────────────────────────────────────────────
+    document.querySelectorAll('.anim-chip').forEach(chip => {
+        chip.addEventListener('click', () => {
+            const cb = chip.querySelector('input');
+            chip.classList.toggle('checked', cb.checked);
+        });
+    });
+
+    function selectAll()  {
+        document.querySelectorAll('input[name="anim"]').forEach(c => {
+            c.checked = true;
+            c.closest('.anim-chip').classList.add('checked');
+        });
+    }
+    function selectNone() {
+        document.querySelectorAll('input[name="anim"]').forEach(c => {
+            c.checked = false;
+            c.closest('.anim-chip').classList.remove('checked');
+        });
+    }
+
+    // ── Collect all animation settings ────────────────────────────────
+    function collectAnimSettings() {
+        return {
+            auto_rotate:        document.getElementById('auto-rotate').checked,
+            rotation_interval:  parseInt(document.getElementById('rotation-interval').value),
+            enabled_animations: Array.from(document.querySelectorAll('input[name="anim"]:checked')).map(c => c.value).join(','),
+            animation_duration: parseFloat(document.getElementById('animation-duration').value),
+            typewriter_speed:   parseInt(document.getElementById('typewriter-speed').value),
+            auto_cycle:         document.getElementById('auto-cycle').checked,
+            display_duration:   parseInt(document.getElementById('display-duration').value),
+            hide_duration:      parseInt(document.getElementById('hide-duration').value),
+            exit_animation:     document.getElementById('exit-animation').value,
+        };
+    }
+
+    // ── API calls ──────────────────────────────────────────────────────
     async function saveChurch() {
         const name = document.getElementById('church-name').value.trim();
-        const desc = document.getElementById('church-desc').value.trim();
         if (!name) { showToast('Church name is required', 'warning'); return; }
-
         const res = await apiFetch('/api/church', {
             method: 'POST',
             body: JSON.stringify({
-                name, description: desc,
+                name,
+                description:        document.getElementById('church-desc').value.trim(),
                 accent_color:       document.getElementById('accent-color').value,
                 church_label_color: document.getElementById('church-label-color').value,
                 main_title_color:   document.getElementById('main-title-color').value,
@@ -125,10 +427,11 @@
     }
 
     async function saveColours() {
+        const name = document.getElementById('church-name').value.trim();
         const res = await apiFetch('/api/church', {
             method: 'POST',
             body: JSON.stringify({
-                name:               document.getElementById('church-name').value.trim(),
+                name: name || 'My Church',
                 description:        document.getElementById('church-desc').value.trim(),
                 accent_color:       document.getElementById('accent-color').value,
                 church_label_color: document.getElementById('church-label-color').value,
@@ -137,19 +440,15 @@
                 verse_color:        document.getElementById('verse-color').value,
             })
         });
-        if (res.ok) showToast('Colours saved — overlay will update live', 'success');
+        if (res.ok) showToast('Colours saved — overlay updates live', 'success');
         else        showToast('Failed to save colours', 'error');
     }
 
     async function saveAnimation() {
-        const enabled = Array.from(document.querySelectorAll('input[name="anim"]:checked')).map(c => c.value);
+        const payload = collectAnimSettings();
+        if (!payload.enabled_animations) { showToast('Select at least one animation', 'warning'); return; }
         const res = await apiFetch('/api/animation-settings', {
-            method: 'POST',
-            body: JSON.stringify({
-                auto_rotate:        document.getElementById('auto-rotate').checked,
-                rotation_interval:  parseInt(document.getElementById('rotation-interval').value),
-                enabled_animations: enabled.join(',')
-            })
+            method: 'POST', body: JSON.stringify(payload)
         });
         if (res.ok) showToast('Animation settings saved', 'success');
         else        showToast('Failed to save', 'error');

@@ -459,8 +459,9 @@
                 <p class="font-semibold text-sm text-gray-800 truncate" id="mobile-status-label">Overlay is Off</p>
                 <p class="text-xs text-gray-400 truncate" id="mobile-preview">Nothing displaying</p>
             </div>
-            <button id="go-live-btn" onclick="goLive()" class="btn btn-live flex-shrink-0" style="padding:14px 20px;font-size:15px;" disabled>▶ Go Live</button>
-            <button id="hide-btn"    onclick="hideOverlay()" class="btn btn-hide flex-shrink-0" style="padding:14px 20px;font-size:15px;display:none;">✕ Hide</button>
+            <button id="switch-btn"  onclick="switchLive()" class="btn btn-override flex-shrink-0" style="padding:14px 16px;font-size:15px;display:none;">⚡ Switch</button>
+            <button id="go-live-btn" onclick="goLive()" class="btn btn-live flex-shrink-0" style="padding:14px 16px;font-size:15px;" disabled>▶ Go Live</button>
+            <button id="hide-btn"    onclick="hideOverlay()" class="btn btn-hide flex-shrink-0" style="padding:14px 16px;font-size:15px;display:none;">✕ Hide</button>
         </div>
     </div>
 </div>
@@ -658,6 +659,9 @@
         if(mB)mB.style.display=show?'':'none'; if(dB)dB.style.display=show?'':'none';
         const mLv=document.getElementById('mobile-currently-live-label'), dLv=document.getElementById('desk-currently-live-label');
         if(mLv)mLv.textContent=ll; if(dLv)dLv.textContent=ll;
+        // Show Switch button in bottom bar only when there is live content to replace
+        const swBtn=document.getElementById('switch-btn');
+        if(swBtn) swBtn.style.display=show?'':'none';
     }
 
     async function switchLive() { if(!staged)return; await sendToOverlay(); }

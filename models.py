@@ -61,10 +61,26 @@ class TemporaryContent(db.Model):
 
 class AnimationSettings(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    auto_rotate = db.Column(db.Boolean, default=True)
-    rotation_interval = db.Column(db.Integer, default=5)
-    enabled_animations = db.Column(db.String(500),
-                                   default='slide-up,fade-in,slide-left,zoom-in,wave-in')
+
+    # ── Rotation ──────────────────────────────────────────────────────────
+    auto_rotate         = db.Column(db.Boolean, default=True)
+    rotation_interval   = db.Column(db.Integer, default=8)   # seconds between animation changes
+    enabled_animations  = db.Column(db.String(500),
+                                    default='slide-up,fade-in,slide-left,zoom-in,wave-in')
+
+    # ── Timing ────────────────────────────────────────────────────────────
+    animation_speed     = db.Column(db.Float, default=1.0)   # multiplier: 0.5=2× faster, 2.0=2× slower
+    typewriter_speed    = db.Column(db.Integer, default=50)  # ms per character
+
+    # ── Auto show / hide cycle ────────────────────────────────────────────
+    # When enabled the display page independently hides after display_duration,
+    # waits hide_duration, then re-shows — regardless of server state (as long
+    # as server mode != 'hidden').
+    auto_cycle              = db.Column(db.Boolean, default=False)
+    display_duration        = db.Column(db.Integer, default=30)   # seconds visible
+    hide_duration           = db.Column(db.Integer, default=10)   # seconds hidden
+    cycle_enter_animation   = db.Column(db.String(50), default='auto')   # 'auto' = use pool
+    cycle_exit_animation    = db.Column(db.String(50), default='fade-out-exit')
 
 
 class ActivityLog(db.Model):
