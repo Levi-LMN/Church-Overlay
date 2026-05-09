@@ -26,6 +26,14 @@ def _anim_to_dict(anim):
         'hide_duration':          anim.hide_duration          if anim.hide_duration          is not None else 10,
         'cycle_enter_animation':  anim.cycle_enter_animation  if anim.cycle_enter_animation  is not None else 'auto',
         'cycle_exit_animation':   anim.cycle_exit_animation   if anim.cycle_exit_animation   is not None else 'fade-out-exit',
+        # Ticker / secondary messages — these were missing, causing the ticker
+        # to silently abort on the display page (ticker_enabled was undefined/falsy)
+        'ticker_enabled':         anim.ticker_enabled         if anim.ticker_enabled         is not None else True,
+        'ticker_duration':        anim.ticker_duration        if anim.ticker_duration        is not None else 6,
+        'ticker_delay':           anim.ticker_delay           if anim.ticker_delay           is not None else 4,
+        'ticker_enter_animation': anim.ticker_enter_animation if anim.ticker_enter_animation is not None else 'fade-in',
+        'ticker_exit_animation':  anim.ticker_exit_animation  if anim.ticker_exit_animation  is not None else 'fade-out-exit',
+        'ticker_end_behavior':    anim.ticker_end_behavior    if anim.ticker_end_behavior    is not None else 'loop',
     }
 
 
@@ -82,7 +90,8 @@ def update_overlay():
                         minister.last_used = datetime.utcnow()
                         db.session.commit()
                         overlay_state['minister'] = {
-                            'id': minister.id, 'name': minister.name, 'title': minister.title
+                            'id': minister.id, 'name': minister.name, 'title': minister.title,
+                            'secondary_messages': [m.to_dict() for m in minister.secondary_messages]
                         }
                         details = f"Displayed minister: {minister.name}"
                 elif temp_id:
@@ -494,6 +503,12 @@ def manage_animation_settings():
         settings.hide_duration          = int(data.get('hide_duration', 10))
         settings.cycle_enter_animation  = data.get('cycle_enter_animation', 'auto')
         settings.cycle_exit_animation   = data.get('cycle_exit_animation', 'fade-out-exit')
+        settings.ticker_enabled         = data.get('ticker_enabled', True)
+        settings.ticker_duration        = int(data.get('ticker_duration', 6))
+        settings.ticker_delay           = int(data.get('ticker_delay', 4))
+        settings.ticker_enter_animation = data.get('ticker_enter_animation', 'fade-in')
+        settings.ticker_exit_animation  = data.get('ticker_exit_animation', 'fade-out-exit')
+        settings.ticker_end_behavior    = data.get('ticker_end_behavior', 'loop')
         db.session.commit()
 
         with state_lock:
@@ -512,8 +527,92 @@ def manage_animation_settings():
         'animation_speed': 1.0, 'typewriter_speed': 50,
         'auto_cycle': False, 'display_duration': 30, 'hide_duration': 10,
         'cycle_enter_animation': 'auto', 'cycle_exit_animation': 'fade-out-exit',
+        'ticker_enabled': True, 'ticker_duration': 6, 'ticker_delay': 4,
+        'ticker_enter_animation': 'fade-in', 'ticker_exit_animation': 'fade-out-exit',
+        'ticker_end_behavior': 'loop',
     })
 
+
+
+
+# ============================================================================
+# SECONDARY MESSAGES (TICKER) — Per-Minister
+# ============================================================================
+
+@api_bp.route('/ministers/<int:minister_id>/messages', methods=['GET'])
+@login_optional
+def list_secondary_messages(minister_id):
+    from models import Minister, SecondaryMessage
+    minister = Minister.query.get_or_404(minister_id)
+    return jsonify([m.to_dict() for m in minister.secondary_messages])
+
+
+@api_bp.route('/ministers/<int:minister_id>/messages', methods=['POST'])
+@admin_required
+def create_secondary_message(minister_id):
+    from models import SecondaryMessage
+    Minister = __import__('models', fromlist=['Minister']).Minister
+    Minister.query.get_or_404(minister_id)  # ensure exists
+
+    data = request.json
+    if not data.get('text'):
+        return jsonify({'error': 'text is required'}), 400
+
+    # Determine sort_order: max existing + 1
+    from models import SecondaryMessage
+    max_order = db.session.query(db.func.max(SecondaryMessage.sort_order))        .filter_by(minister_id=minister_id).scalar() or 0
+
+    msg = SecondaryMessage(
+        minister_id      = minister_id,
+        text             = data['text'],
+        sort_order       = data.get('sort_order', max_order + 1),
+        display_duration = data.get('display_duration'),   # None = global default
+        enter_animation  = data.get('enter_animation'),
+        exit_animation   = data.get('exit_animation'),
+    )
+    db.session.add(msg)
+    db.session.commit()
+    log_activity('SECONDARY_MSG_ADD', f"Added ticker message for minister #{minister_id}: {msg.text[:60]}")
+    return jsonify({'success': True, 'message': msg.to_dict()})
+
+
+@api_bp.route('/ministers/<int:minister_id>/messages/<int:msg_id>', methods=['PUT', 'DELETE'])
+@admin_required
+def modify_secondary_message(minister_id, msg_id):
+    from models import SecondaryMessage
+    msg = SecondaryMessage.query.filter_by(id=msg_id, minister_id=minister_id).first_or_404()
+
+    if request.method == 'DELETE':
+        db.session.delete(msg)
+        db.session.commit()
+        log_activity('SECONDARY_MSG_DELETE', f"Deleted ticker message #{msg_id}")
+        return jsonify({'success': True})
+
+    data = request.json
+    msg.text             = data.get('text', msg.text)
+    msg.sort_order       = data.get('sort_order', msg.sort_order)
+    msg.display_duration = data.get('display_duration', msg.display_duration)
+    msg.enter_animation  = data.get('enter_animation', msg.enter_animation)
+    msg.exit_animation   = data.get('exit_animation', msg.exit_animation)
+    db.session.commit()
+    log_activity('SECONDARY_MSG_UPDATE', f"Updated ticker message #{msg_id}")
+    return jsonify({'success': True, 'message': msg.to_dict()})
+
+
+@api_bp.route('/ministers/<int:minister_id>/messages/reorder', methods=['POST'])
+@admin_required
+def reorder_secondary_messages(minister_id):
+    """Accept [{id, sort_order}, ...] and persist the new order."""
+    from models import SecondaryMessage
+    items = request.json.get('order', [])
+    for item in items:
+        msg = SecondaryMessage.query.filter_by(
+            id=item['id'], minister_id=minister_id
+        ).first()
+        if msg:
+            msg.sort_order = item['sort_order']
+    db.session.commit()
+    return jsonify({'success': True})
 
 # ============================================================================
 # USER MANAGEMENT

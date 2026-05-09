@@ -1,0 +1,312 @@
+{#
+  secondary_messages_modal.html
+  Include this at the END of any admin template that lists ministers:
+    {% include 'admin/secondary_messages_modal.html' %}
+
+  Then add a button per minister:
+    <button onclick="openMessagesModal({{ m.id }}, {{ m.name|tojson }})">💬 Messages</button>
+#}
+
+<!-- ═══════════════════════════════════════════════════════════
+     SECONDARY MESSAGES MODAL
+═══════════════════════════════════════════════════════════ -->
+<div id="msg-modal" style="
+    display:none; position:fixed; inset:0; z-index:1000;
+    background:rgba(0,0,0,0.55); backdrop-filter:blur(4px);
+    align-items:center; justify-content:center; padding:16px;">
+
+    <div style="
+        background:white; border-radius:18px; width:100%; max-width:640px;
+        max-height:92vh; overflow:hidden; display:flex; flex-direction:column;
+        box-shadow:0 24px 60px rgba(0,0,0,0.3);">
+
+        <!-- Header -->
+        <div style="padding:20px 24px 16px; border-bottom:1px solid #f0f0f0;
+                    display:flex; align-items:center; justify-content:space-between; flex-shrink:0;">
+            <div>
+                <h2 id="msg-modal-title" style="font-size:16px;font-weight:700;color:#111827;">
+                    💬 Secondary Messages
+                </h2>
+                <p style="font-size:12px;color:#9ca3af;margin-top:2px;">
+                    Rotate automatically on the OBS overlay below the minister's name
+                </p>
+            </div>
+            <button onclick="closeMessagesModal()"
+                    style="padding:8px;border-radius:8px;border:none;background:transparent;
+                           cursor:pointer;color:#6b7280;font-size:20px;line-height:1;"
+                    onmouseover="this.style.background='#f3f4f6'"
+                    onmouseout="this.style.background='transparent'">✕</button>
+        </div>
+
+        <!-- Message list (scrollable) -->
+        <div id="msg-list" style="flex:1;overflow-y:auto;padding:16px 20px;min-height:80px;">
+            <p class="text-sm text-gray-400 text-center py-4">Loading…</p>
+        </div>
+
+        <!-- Add / Edit form -->
+        <div style="padding:16px 20px; border-top:1px solid #f0f0f0; flex-shrink:0;
+                    background:#fafafa;">
+            <p style="font-size:11px;font-weight:700;color:#9ca3af;text-transform:uppercase;
+                      letter-spacing:.6px;margin-bottom:10px;" id="msg-form-label">
+                ＋ Add New Message
+            </p>
+
+            <!-- Text -->
+            <textarea id="msg-text" rows="2"
+                placeholder='e.g. "Welcome to Chrisco Church Thika" or "We are glad you are watching"'
+                style="width:100%;padding:10px 14px;border:1.5px solid #e5e7eb;border-radius:9px;
+                       font-size:14px;font-family:inherit;outline:none;resize:vertical;
+                       transition:border-color .15s,box-shadow .15s;"
+                onfocus="this.style.borderColor='#10b981';this.style.boxShadow='0 0 0 3px rgba(16,185,129,.12)'"
+                onblur="this.style.borderColor='#e5e7eb';this.style.boxShadow='none'"></textarea>
+
+            <!-- Per-message overrides (collapsible) -->
+            <details style="margin-top:10px;">
+                <summary style="font-size:12px;font-weight:600;color:#6b7280;cursor:pointer;user-select:none;
+                                padding:4px 0;">
+                    ⚙ Override timing &amp; animation (optional — leave blank to use global settings)
+                </summary>
+                <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-top:10px;">
+
+                    <!-- Duration -->
+                    <div>
+                        <label style="display:block;font-size:11px;font-weight:600;color:#6b7280;margin-bottom:4px;">
+                            Duration (s)
+                        </label>
+                        <input id="msg-duration" type="number" min="1" max="60"
+                               placeholder="e.g. 8"
+                               style="width:100%;padding:8px 10px;border:1.5px solid #e5e7eb;border-radius:7px;
+                                      font-size:13px;outline:none;transition:border-color .15s;"
+                               onfocus="this.style.borderColor='#10b981'"
+                               onblur="this.style.borderColor='#e5e7eb'">
+                    </div>
+
+                    <!-- Enter animation -->
+                    <div>
+                        <label style="display:block;font-size:11px;font-weight:600;color:#6b7280;margin-bottom:4px;">
+                            Enter animation
+                        </label>
+                        <select id="msg-enter"
+                                style="width:100%;padding:8px 10px;border:1.5px solid #e5e7eb;border-radius:7px;
+                                       font-size:13px;outline:none;background:white;">
+                            <option value="">Global default</option>
+                            <option value="fade-in">Fade In</option>
+                            <option value="slide-up">Slide Up</option>
+                            <option value="slide-down">Slide Down</option>
+                            <option value="slide-left">Slide Left</option>
+                            <option value="slide-right">Slide Right</option>
+                            <option value="zoom-in">Zoom In</option>
+                        </select>
+                    </div>
+
+                    <!-- Exit animation -->
+                    <div>
+                        <label style="display:block;font-size:11px;font-weight:600;color:#6b7280;margin-bottom:4px;">
+                            Exit animation
+                        </label>
+                        <select id="msg-exit"
+                                style="width:100%;padding:8px 10px;border:1.5px solid #e5e7eb;border-radius:7px;
+                                       font-size:13px;outline:none;background:white;">
+                            <option value="">Global default</option>
+                            <option value="fade-out-exit">Fade Out</option>
+                            <option value="slide-down-exit">Slide Down</option>
+                            <option value="slide-up-exit">Slide Up</option>
+                            <option value="slide-right-exit">Slide Right</option>
+                            <option value="zoom-out-exit">Zoom Out</option>
+                        </select>
+                    </div>
+                </div>
+            </details>
+
+            <!-- Action buttons -->
+            <div style="display:flex;gap:8px;margin-top:12px;">
+                <button id="msg-save-btn" onclick="saveMessage()"
+                        style="flex:1;padding:11px;border-radius:9px;font-size:13px;font-weight:700;
+                               cursor:pointer;border:none;
+                               background:linear-gradient(135deg,#10b981,#059669);color:white;
+                               transition:opacity .15s;"
+                        onmouseover="this.style.opacity='.88'"
+                        onmouseout="this.style.opacity='1'">
+                    + Add Message
+                </button>
+                <button id="msg-cancel-edit" onclick="cancelEdit()"
+                        style="display:none;padding:11px 16px;border-radius:9px;font-size:13px;font-weight:600;
+                               cursor:pointer;border:1.5px solid #d1d5db;background:white;color:#374151;">
+                    Cancel
+                </button>
+            </div>
+            <p style="font-size:11px;color:#9ca3af;margin-top:8px;">
+                💡 Tip: Add multiple messages! Each one rotates in turn. Click a message above to edit it.
+            </p>
+        </div>
+    </div>
+</div>
+
+<script>
+// ── Secondary Messages Modal JS ────────────────────────────────────────────
+
+let _msgMinisterId   = null;
+let _msgMinisterName = '';
+let _editingMsgId    = null;
+
+function openMessagesModal(ministerId, ministerName) {
+    _msgMinisterId   = ministerId;
+    _msgMinisterName = ministerName;
+    document.getElementById('msg-modal-title').textContent = `💬 Secondary Messages — ${ministerName}`;
+    document.getElementById('msg-modal').style.display = 'flex';
+    loadMessages();
+}
+
+function closeMessagesModal() {
+    document.getElementById('msg-modal').style.display = 'none';
+    _msgMinisterId = null;
+    cancelEdit();
+}
+
+async function loadMessages() {
+    const list = document.getElementById('msg-list');
+    list.innerHTML = '<p style="text-align:center;color:#9ca3af;font-size:13px;padding:20px 0;">Loading…</p>';
+    try {
+        const res  = await apiFetch(`/api/ministers/${_msgMinisterId}/messages`);
+        const msgs = await res.json();
+        renderMessages(msgs);
+    } catch(e) {
+        list.innerHTML = '<p style="text-align:center;color:#dc2626;font-size:13px;padding:20px 0;">Failed to load messages</p>';
+    }
+}
+
+function renderMessages(msgs) {
+    const list = document.getElementById('msg-list');
+    if (!msgs.length) {
+        list.innerHTML = `
+            <div style="text-align:center;padding:28px 0;">
+                <div style="font-size:32px;margin-bottom:10px;">💬</div>
+                <p style="font-size:13px;font-weight:600;color:#374151;">No secondary messages yet</p>
+                <p style="font-size:12px;color:#9ca3af;margin-top:4px;">
+                    Add messages below — they'll rotate automatically on the OBS overlay<br>
+                    while this minister's name is displayed.
+                </p>
+            </div>`;
+        return;
+    }
+    list.innerHTML = msgs.map((m, i) => `
+        <div style="display:flex;align-items:flex-start;gap:10px;
+                    padding:12px 14px;border:1.5px solid #e5e7eb;border-radius:10px;
+                    background:white;margin-bottom:8px;transition:border-color .15s;"
+             onmouseover="this.style.borderColor='#d1d5db'"
+             onmouseout="this.style.borderColor='#e5e7eb'">
+            <div style="display:flex;flex-direction:column;align-items:center;flex-shrink:0;padding-top:2px;gap:2px;">
+                <span style="font-size:14px;color:#d1d5db;line-height:1;">${i+1}</span>
+            </div>
+            <div style="flex:1;min-width:0;">
+                <p style="font-size:14px;font-weight:600;color:#111827;word-break:break-word;line-height:1.4;">
+                    ${escHtml(m.text)}
+                </p>
+                <div style="display:flex;gap:10px;margin-top:5px;flex-wrap:wrap;">
+                    <span style="font-size:11px;color:#9ca3af;background:#f9fafb;padding:2px 7px;border-radius:999px;border:1px solid #f0f0f0;">
+                        ⏱ ${m.display_duration != null ? m.display_duration + 's' : 'global default'}
+                    </span>
+                    ${m.enter_animation ? `<span style="font-size:11px;color:#9ca3af;background:#f9fafb;padding:2px 7px;border-radius:999px;border:1px solid #f0f0f0;">↗ ${m.enter_animation}</span>` : ''}
+                    ${m.exit_animation  ? `<span style="font-size:11px;color:#9ca3af;background:#f9fafb;padding:2px 7px;border-radius:999px;border:1px solid #f0f0f0;">↙ ${m.exit_animation}</span>`  : ''}
+                </div>
+            </div>
+            <div style="display:flex;gap:6px;flex-shrink:0;">
+                <button onclick="editMessage(${JSON.stringify(m).replace(/"/g,'&quot;')})"
+                    style="padding:6px 12px;border-radius:7px;font-size:12px;font-weight:600;
+                           cursor:pointer;border:1.5px solid #e5e7eb;background:white;color:#374151;transition:all .15s;"
+                    onmouseover="this.style.borderColor='#10b981';this.style.color='#059669'"
+                    onmouseout="this.style.borderColor='#e5e7eb';this.style.color='#374151'">
+                    Edit
+                </button>
+                <button onclick="deleteMessage(${m.id})"
+                    style="padding:6px 10px;border-radius:7px;font-size:12px;font-weight:700;
+                           cursor:pointer;border:1.5px solid #fee2e2;background:#fff5f5;color:#dc2626;transition:all .15s;"
+                    onmouseover="this.style.background='#fee2e2'"
+                    onmouseout="this.style.background='#fff5f5'">✕</button>
+            </div>
+        </div>
+    `).join('');
+}
+
+function _esc(t) { return String(t ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function escHtml(t) { return _esc(t); }
+
+function editMessage(msg) {
+    _editingMsgId = msg.id;
+    document.getElementById('msg-text').value     = msg.text;
+    document.getElementById('msg-duration').value = msg.display_duration != null ? msg.display_duration : '';
+    document.getElementById('msg-enter').value    = msg.enter_animation  || '';
+    document.getElementById('msg-exit').value     = msg.exit_animation   || '';
+    document.getElementById('msg-save-btn').textContent   = '💾 Update Message';
+    document.getElementById('msg-form-label').textContent = '✏ Editing Message';
+    document.getElementById('msg-cancel-edit').style.display = 'inline-flex';
+    document.getElementById('msg-text').focus();
+    document.querySelector('#msg-modal > div > div:last-child').scrollIntoView({ behavior:'smooth' });
+}
+
+function cancelEdit() {
+    _editingMsgId = null;
+    const t = document.getElementById('msg-text');
+    if (t) t.value = '';
+    const d = document.getElementById('msg-duration');
+    if (d) d.value = '';
+    const en = document.getElementById('msg-enter');
+    if (en) en.value = '';
+    const ex = document.getElementById('msg-exit');
+    if (ex) ex.value = '';
+    const btn = document.getElementById('msg-save-btn');
+    if (btn) btn.textContent = '+ Add Message';
+    const lbl = document.getElementById('msg-form-label');
+    if (lbl) lbl.textContent = '＋ Add New Message';
+    const cxl = document.getElementById('msg-cancel-edit');
+    if (cxl) cxl.style.display = 'none';
+}
+
+async function saveMessage() {
+    const text = document.getElementById('msg-text').value.trim();
+    if (!text) { showToast('Please enter message text', 'warning'); return; }
+
+    const durVal = document.getElementById('msg-duration').value.trim();
+    const payload = {
+        text,
+        display_duration: durVal ? parseInt(durVal) : null,
+        enter_animation:  document.getElementById('msg-enter').value || null,
+        exit_animation:   document.getElementById('msg-exit').value  || null,
+    };
+
+    let res;
+    if (_editingMsgId) {
+        res = await apiFetch(`/api/ministers/${_msgMinisterId}/messages/${_editingMsgId}`, {
+            method: 'PUT', body: JSON.stringify(payload)
+        });
+    } else {
+        res = await apiFetch(`/api/ministers/${_msgMinisterId}/messages`, {
+            method: 'POST', body: JSON.stringify(payload)
+        });
+    }
+
+    if (res.ok) {
+        showToast(_editingMsgId ? 'Message updated ✓' : 'Message added ✓', 'success');
+        cancelEdit();
+        loadMessages();
+    } else {
+        const err = await res.json().catch(() => ({}));
+        showToast(err.error || 'Failed to save message', 'error');
+    }
+}
+
+async function deleteMessage(msgId) {
+    if (!confirm('Delete this secondary message?')) return;
+    const res = await apiFetch(`/api/ministers/${_msgMinisterId}/messages/${msgId}`, { method: 'DELETE' });
+    if (res.ok) { showToast('Message deleted', 'success'); loadMessages(); }
+    else         showToast('Failed to delete', 'error');
+}
+
+// Close modal on backdrop click or Escape
+document.addEventListener('click', e => {
+    if (e.target && e.target.id === 'msg-modal') closeMessagesModal();
+});
+document.addEventListener('keydown', e => {
+    if (e.key === 'Escape' && _msgMinisterId) closeMessagesModal();
+});
+</script>

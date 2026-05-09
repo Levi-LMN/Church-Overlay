@@ -43,7 +43,7 @@
 
         .overlay-content {
             position: absolute; bottom: 80px; left: 100px;
-            max-width: 1600px; max-height: 280px;
+            max-width: 1600px; max-height: 420px;
             background: rgba(17, 24, 39, 0.92);
             backdrop-filter: blur(20px) saturate(180%);
             padding: 0; border-radius: 24px;
@@ -58,7 +58,6 @@
 
         .content-wrapper {
             padding: 30px 40px 30px 60px; position: relative;
-            max-height: 280px; overflow: hidden;
             display: flex; flex-direction: column; justify-content: center;
         }
 
@@ -87,6 +86,71 @@
             word-wrap: break-word; overflow-wrap: break-word;
             max-width: 1400px; flex-shrink: 0;
         }
+
+        /* ── Secondary Messages / Ticker ───────────────────────── */
+        #main-content-area {
+            position: relative;
+            min-height: 90px;
+        }
+        #primary-block {
+            transition: opacity 0.35s ease;
+        }
+        .secondary-msg {
+            font-weight: 800;
+            line-height: 1.15;
+            letter-spacing: -0.5px;
+            text-shadow: 0 4px 12px rgba(0,0,0,0.4);
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+            max-width: 1400px;
+            width: 100%;
+            transition: opacity 0.55s ease, transform 0.55s cubic-bezier(0.16,1,0.3,1);
+        }
+        /* ── Ticker enter states (before .tk-visible is added) ── */
+        .secondary-msg.tk-enter-fade        { opacity: 0; transform: translateY(0); }
+        .secondary-msg.tk-enter-slide-up    { opacity: 0; transform: translateY(24px); }
+        .secondary-msg.tk-enter-slide-down  { opacity: 0; transform: translateY(-24px); }
+        .secondary-msg.tk-enter-slide-left  { opacity: 0; transform: translateX(-40px); }
+        .secondary-msg.tk-enter-slide-right { opacity: 0; transform: translateX(40px); }
+        .secondary-msg.tk-enter-zoom        { opacity: 0; transform: scale(0.88); }
+        .secondary-msg.tk-enter-blur        { opacity: 0; filter: blur(12px); transform: scale(1.04); }
+        .secondary-msg.tk-enter-wipe-right  { opacity: 0; clip-path: inset(0 100% 0 0); }
+        .secondary-msg.tk-enter-elastic     { opacity: 0; transform: translateY(32px) scaleY(0.7); }
+        .secondary-msg.tk-enter-bounce      { opacity: 0; transform: translateY(40px) scale(0.9); }
+        .secondary-msg.tk-enter-flip        { opacity: 0; transform: perspective(600px) rotateX(-60deg); }
+        .secondary-msg.tk-enter-drop        { opacity: 0; transform: translateY(-30px) scaleY(0.85); }
+        .secondary-msg.tk-enter-pop         { opacity: 0; transform: scale(0.6); }
+        .secondary-msg.tk-enter-slam        { opacity: 0; transform: scale(1.4); }
+
+        /* ── Visible state (all enter classes resolve to this) ── */
+        .secondary-msg.tk-visible {
+            opacity: 1 !important;
+            transform: none !important;
+            filter: none !important;
+            clip-path: none !important;
+        }
+        .secondary-msg.tk-exit { opacity: 0 !important; }
+
+        /* ── Typewriter / JS-driven ticker modes ── */
+        .secondary-msg.tk-typewriter { opacity: 1; }
+        .secondary-msg.tk-typewriter::after {
+            content: '|';
+            animation: blink 0.7s step-end infinite;
+            margin-left: 2px;
+        }
+        .secondary-msg.tk-typewriter.tw-done::after { display: none; }
+
+        /* wave-in stagger for ticker — each word slides in */
+        @keyframes tkWaveWord {
+            from { opacity: 0; transform: translateX(-20px); }
+            to   { opacity: 1; transform: translateX(0); }
+        }
+        .secondary-msg.tk-wave span.tk-word {
+            display: inline-block;
+            opacity: 0;
+            animation: tkWaveWord 0.5s cubic-bezier(0.16,1,0.3,1) forwards;
+        }
+        .secondary-msg.tk-wave.tk-visible span.tk-word { opacity: 1; }
 
         .corner-decoration {
             position: absolute; top: -1px; right: -1px; width: 120px; height: 120px;
@@ -347,6 +411,228 @@
         /* none */
         .anim-none .overlay-content { animation: none; }
 
+        /* ──────────────────────────────────────────────────────────
+           NEW ENTRANCE ANIMATIONS
+        ────────────────────────────────────────────────────────── */
+
+        /* elastic-in — spring bounce from below with rubbery overshoot */
+        @keyframes elasticIn {
+            0%   { transform: translateY(160px) scaleY(0.7); opacity: 0; }
+            50%  { transform: translateY(-22px) scaleY(1.06); opacity: 1; }
+            68%  { transform: translateY(10px)  scaleY(0.97); }
+            82%  { transform: translateY(-6px)  scaleY(1.02); }
+            92%  { transform: translateY(3px)   scaleY(0.99); }
+            100% { transform: translateY(0)     scaleY(1);    opacity: 1; }
+        }
+        .anim-elastic-in .overlay-content {
+            animation: elasticIn var(--anim-duration, 2.2s) cubic-bezier(0.16,1,0.3,1);
+        }
+
+        /* blur-in — materialises from a blurry haze */
+        @keyframes blurIn {
+            from { opacity: 0; filter: blur(24px); transform: scale(1.06); }
+            to   { opacity: 1; filter: blur(0px);  transform: scale(1);    }
+        }
+        .anim-blur-in .overlay-content {
+            animation: blurIn var(--anim-duration, 1.8s) cubic-bezier(0.16,1,0.3,1);
+        }
+
+        /* rise-shine — slides up with a radiant glow sweep */
+        @keyframes riseShine {
+            0%   { transform: translateY(80px); opacity: 0; filter: brightness(0.4); }
+            50%  { filter: brightness(1.35); }
+            100% { transform: translateY(0);   opacity: 1; filter: brightness(1); }
+        }
+        .anim-rise-shine .overlay-content {
+            animation: riseShine var(--anim-duration, 2s) cubic-bezier(0.16,1,0.3,1);
+        }
+
+        /* wipe-right — clip-path wipe from left to right */
+        @keyframes wipeRight {
+            from { clip-path: inset(0 100% 0 0); opacity: 0.6; }
+            to   { clip-path: inset(0 0%   0 0); opacity: 1;   }
+        }
+        .anim-wipe-right .overlay-content {
+            animation: wipeRight var(--anim-duration, 1.5s) cubic-bezier(0.16,1,0.3,1);
+        }
+
+        /* slam-in — crashes down from above with hard impact bounce */
+        @keyframes slamIn {
+            0%   { transform: translateY(-300px) scaleY(1.15); opacity: 0; }
+            62%  { transform: translateY(14px) scaleY(0.93);   opacity: 1; }
+            78%  { transform: translateY(-5px) scaleY(1.02); }
+            90%  { transform: translateY(3px)  scaleY(0.99); }
+            100% { transform: translateY(0)    scaleY(1);    }
+        }
+        .anim-slam-in .overlay-content {
+            animation: slamIn var(--anim-duration, 1.4s) cubic-bezier(0.22,1,0.36,1);
+        }
+
+        /* morph-in — grows from a pill/oval shape */
+        @keyframes morphIn {
+            from { transform: scaleX(0.2) scaleY(0.6); opacity: 0; border-radius: 50%; }
+            to   { transform: scaleX(1)   scaleY(1);   opacity: 1; border-radius: 24px; }
+        }
+        .anim-morph-in .overlay-content {
+            animation: morphIn var(--anim-duration, 1.8s) cubic-bezier(0.16,1,0.3,1);
+            transform-origin: left center;
+        }
+
+        /* stretch-in — accordion-style stretch from left */
+        @keyframes stretchIn {
+            0%   { transform: scaleX(0); opacity: 0; }
+            55%  { transform: scaleX(1.04); opacity: 1; }
+            75%  { transform: scaleX(0.98); }
+            100% { transform: scaleX(1); opacity: 1; }
+        }
+        .anim-stretch-in .overlay-content {
+            animation: stretchIn var(--anim-duration, 1.6s) cubic-bezier(0.16,1,0.3,1);
+            transform-origin: left center;
+        }
+
+        /* spotlight — appears with a circular reveal + brightness burst */
+        @keyframes spotlightReveal {
+            0%   { clip-path: circle(0% at 50% 100%); opacity: 0; filter: brightness(2); }
+            40%  { filter: brightness(1.4); }
+            100% { clip-path: circle(150% at 50% 100%); opacity: 1; filter: brightness(1); }
+        }
+        .anim-spotlight .overlay-content {
+            animation: spotlightReveal var(--anim-duration, 1.8s) cubic-bezier(0.16,1,0.3,1);
+        }
+
+        /* glide-in — smooth diagonal glide from bottom-right */
+        @keyframes glideIn {
+            from { transform: translate(120px, 60px) rotate(2deg); opacity: 0; }
+            to   { transform: translate(0, 0)        rotate(0);    opacity: 1; }
+        }
+        .anim-glide-in .overlay-content {
+            animation: glideIn var(--anim-duration, 2s) cubic-bezier(0.16,1,0.3,1);
+        }
+
+        /* unfold — unfolds vertically from the top edge */
+        @keyframes unfold {
+            from { transform: scaleY(0); opacity: 0.4; transform-origin: top; }
+            to   { transform: scaleY(1); opacity: 1;   transform-origin: top; }
+        }
+        .anim-unfold .overlay-content {
+            animation: unfold var(--anim-duration, 1.4s) cubic-bezier(0.16,1,0.3,1);
+            transform-origin: bottom center;
+        }
+
+        /* iris-in — circular reveal from center */
+        @keyframes irisIn {
+            from { clip-path: circle(0%   at 50% 50%); opacity: 0.8; }
+            to   { clip-path: circle(150% at 50% 50%); opacity: 1;   }
+        }
+        .anim-iris-in .overlay-content {
+            animation: irisIn var(--anim-duration, 1.6s) cubic-bezier(0.16,1,0.3,1);
+        }
+
+        /* tv-on — like a CRT powering on: horizontal line expands to full */
+        @keyframes tvOn {
+            0%   { clip-path: inset(50% 5%); opacity: 0; filter: brightness(2.5); }
+            30%  { clip-path: inset(48% 0%); opacity: 1; filter: brightness(1.6); }
+            60%  { clip-path: inset(10% 0%); filter: brightness(1.2); }
+            100% { clip-path: inset(0% 0%);  filter: brightness(1); }
+        }
+        .anim-tv-on .overlay-content {
+            animation: tvOn var(--anim-duration, 1.8s) cubic-bezier(0.16,1,0.3,1);
+        }
+
+        /* ── New stagger / text animations ───────────────────────── */
+
+        /* blur-reveal — each line blurs into clarity in sequence */
+        @keyframes blurRevealEl {
+            from { opacity: 0; filter: blur(18px); transform: scale(1.04); }
+            to   { opacity: 1; filter: blur(0);    transform: scale(1); }
+        }
+        .anim-blur-reveal .overlay-content { animation: blurIn 0.3s ease; }
+        .anim-blur-reveal .church-label { animation: blurRevealEl var(--anim-duration, 0.9s) ease backwards; animation-delay: 0s; }
+        .anim-blur-reveal .main-title   { animation: blurRevealEl var(--anim-duration, 1.0s) ease backwards; animation-delay: 0.22s; }
+        .anim-blur-reveal .subtitle     { animation: blurRevealEl var(--anim-duration, 1.0s) ease backwards; animation-delay: 0.44s; }
+        .anim-blur-reveal .bible-verse  { animation: blurRevealEl var(--anim-duration, 1.0s) ease backwards; animation-delay: 0.66s; }
+
+        /* neon-flicker — each element flickers on like neon gas */
+        @keyframes neonFlickerEl {
+            0%   { opacity: 0; }
+            8%   { opacity: 1;   filter: brightness(2.2) drop-shadow(0 0 12px var(--accent-color)); }
+            12%  { opacity: 0.2; }
+            20%  { opacity: 1;   filter: brightness(1.6) drop-shadow(0 0 8px var(--accent-color)); }
+            28%  { opacity: 0.5; }
+            36%  { opacity: 1;   filter: brightness(1.4) drop-shadow(0 0 6px var(--accent-color)); }
+            50%  { opacity: 0.8; filter: brightness(1.1); }
+            70%  { opacity: 1;   filter: brightness(1); }
+            100% { opacity: 1;   filter: brightness(1); }
+        }
+        .anim-neon-flicker .overlay-content { animation: fadeIn 0.2s ease; }
+        .anim-neon-flicker .church-label { animation: neonFlickerEl var(--anim-duration, 2.2s) ease-in backwards; animation-delay: 0s; }
+        .anim-neon-flicker .main-title   { animation: neonFlickerEl var(--anim-duration, 2.2s) ease-in backwards; animation-delay: 0.5s; }
+        .anim-neon-flicker .subtitle     { animation: neonFlickerEl var(--anim-duration, 2.2s) ease-in backwards; animation-delay: 0.85s; }
+        .anim-neon-flicker .bible-verse  { animation: neonFlickerEl var(--anim-duration, 2.2s) ease-in backwards; animation-delay: 1.1s; }
+
+        /* stamp-in — each line stamps down like a rubber stamp */
+        @keyframes stampEl {
+            0%   { transform: scale(1.5) translateY(-10px); opacity: 0; filter: blur(4px); }
+            55%  { transform: scale(0.96) translateY(2px);  opacity: 1; filter: blur(0); }
+            75%  { transform: scale(1.02); }
+            100% { transform: scale(1) translateY(0); opacity: 1; }
+        }
+        .anim-stamp-in .overlay-content { animation: fadeIn 0.3s ease; }
+        .anim-stamp-in .church-label { animation: stampEl var(--anim-duration, 0.6s) cubic-bezier(0.22,1,0.36,1) backwards; animation-delay: 0s; }
+        .anim-stamp-in .main-title   { animation: stampEl var(--anim-duration, 0.7s) cubic-bezier(0.22,1,0.36,1) backwards; animation-delay: 0.2s; }
+        .anim-stamp-in .subtitle     { animation: stampEl var(--anim-duration, 0.7s) cubic-bezier(0.22,1,0.36,1) backwards; animation-delay: 0.42s; }
+        .anim-stamp-in .bible-verse  { animation: stampEl var(--anim-duration, 0.7s) cubic-bezier(0.22,1,0.36,1) backwards; animation-delay: 0.64s; }
+
+        /* slide-alternate — odd lines from left, even from right */
+        @keyframes slideFromLeft  { from { transform: translateX(-80px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+        @keyframes slideFromRight { from { transform: translateX(80px);  opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+        .anim-slide-alternate .overlay-content { animation: fadeIn 0.3s ease; }
+        .anim-slide-alternate .church-label { animation: slideFromLeft  var(--anim-duration, 0.8s) cubic-bezier(0.16,1,0.3,1) backwards; animation-delay: 0s; }
+        .anim-slide-alternate .main-title   { animation: slideFromRight var(--anim-duration, 0.8s) cubic-bezier(0.16,1,0.3,1) backwards; animation-delay: 0.2s; }
+        .anim-slide-alternate .subtitle     { animation: slideFromLeft  var(--anim-duration, 0.8s) cubic-bezier(0.16,1,0.3,1) backwards; animation-delay: 0.4s; }
+        .anim-slide-alternate .bible-verse  { animation: slideFromRight var(--anim-duration, 0.8s) cubic-bezier(0.16,1,0.3,1) backwards; animation-delay: 0.6s; }
+
+        /* zoom-stagger — each line zooms in from 0 with stagger */
+        @keyframes zoomStaggerEl {
+            from { transform: scale(0.4); opacity: 0; }
+            to   { transform: scale(1);   opacity: 1; }
+        }
+        .anim-zoom-stagger .overlay-content { animation: fadeIn 0.3s ease; }
+        .anim-zoom-stagger .church-label { animation: zoomStaggerEl var(--anim-duration, 0.7s) cubic-bezier(0.16,1,0.3,1) backwards; animation-delay: 0s; }
+        .anim-zoom-stagger .main-title   { animation: zoomStaggerEl var(--anim-duration, 0.8s) cubic-bezier(0.16,1,0.3,1) backwards; animation-delay: 0.18s; }
+        .anim-zoom-stagger .subtitle     { animation: zoomStaggerEl var(--anim-duration, 0.8s) cubic-bezier(0.16,1,0.3,1) backwards; animation-delay: 0.36s; }
+        .anim-zoom-stagger .bible-verse  { animation: zoomStaggerEl var(--anim-duration, 0.8s) cubic-bezier(0.16,1,0.3,1) backwards; animation-delay: 0.54s; }
+
+        /* word-by-word — JS driven, CSS handles visibility */
+        .anim-word-by-word .overlay-content { animation: fadeIn 0.25s ease; }
+        .anim-word-by-word .church-label,
+        .anim-word-by-word .main-title,
+        .anim-word-by-word .subtitle,
+        .anim-word-by-word .bible-verse { opacity: 0; }
+        .anim-word-by-word .church-label.tw-done,
+        .anim-word-by-word .main-title.tw-done,
+        .anim-word-by-word .subtitle.tw-done,
+        .anim-word-by-word .bible-verse.tw-done { opacity: 1; }
+
+        /* letter-drop — JS driven */
+        .anim-letter-drop .overlay-content { animation: fadeIn 0.25s ease; }
+        .anim-letter-drop .church-label,
+        .anim-letter-drop .main-title,
+        .anim-letter-drop .subtitle,
+        .anim-letter-drop .bible-verse { opacity: 0; }
+        .anim-letter-drop .church-label.tw-done,
+        .anim-letter-drop .main-title.tw-done,
+        .anim-letter-drop .subtitle.tw-done,
+        .anim-letter-drop .bible-verse.tw-done { opacity: 1; }
+        .letter-drop-char {
+            display: inline-block;
+            animation: letterDropChar 0.45s cubic-bezier(0.22,1,0.36,1) backwards;
+        }
+        @keyframes letterDropChar {
+            from { transform: translateY(-40px) rotate(-8deg); opacity: 0; }
+            to   { transform: translateY(0) rotate(0); opacity: 1; }
+        }
+
         /* ═══════════════════════════════════════════════════════════
            EXIT ANIMATIONS
         ═══════════════════════════════════════════════════════════ */
@@ -407,6 +693,49 @@
             animation: wipeOutAnim var(--exit-duration, 0.8s) ease-out forwards;
         }
 
+        @keyframes blurOutAnim {
+            from { opacity: 1; filter: blur(0px);  transform: scale(1); }
+            to   { opacity: 0; filter: blur(20px); transform: scale(1.06); }
+        }
+        .exit-blur-out-exit .overlay-content {
+            animation: blurOutAnim var(--exit-duration, 0.8s) ease-in forwards;
+        }
+
+        @keyframes shrinkExit {
+            from { transform: scaleY(1);   opacity: 1; }
+            50%  { transform: scaleY(0.05) scaleX(1.4); opacity: 0.8; }
+            to   { transform: scaleY(0)   scaleX(1.6); opacity: 0; }
+        }
+        .exit-shrink-exit .overlay-content {
+            animation: shrinkExit var(--exit-duration, 0.7s) cubic-bezier(0.4,0,1,1) forwards;
+        }
+
+        @keyframes wipeLeftExit {
+            from { clip-path: inset(0 0% 0 0); }
+            to   { clip-path: inset(0 100% 0 0); }
+        }
+        .exit-wipe-left-exit .overlay-content {
+            animation: wipeLeftExit var(--exit-duration, 0.8s) ease-in forwards;
+        }
+
+        @keyframes bounceOutExit {
+            0%   { transform: translateY(0) scaleY(1); opacity: 1; }
+            18%  { transform: translateY(-18px) scaleY(1.04); }
+            50%  { transform: translateY(160px) scaleY(0.88); opacity: 0.4; }
+            100% { transform: translateY(300px) scaleY(0.8); opacity: 0; }
+        }
+        .exit-bounce-out-exit .overlay-content {
+            animation: bounceOutExit var(--exit-duration, 0.9s) cubic-bezier(0.4,0,1,1) forwards;
+        }
+
+        @keyframes spinOutExit {
+            from { transform: rotate(0deg) scale(1); opacity: 1; }
+            to   { transform: rotate(8deg) scale(0.8) translateY(80px); opacity: 0; }
+        }
+        .exit-spin-out-exit .overlay-content {
+            animation: spinOutExit var(--exit-duration, 0.8s) ease-in forwards;
+        }
+
         /* ─── Accent stripe pulse ───────────────────────────────── */
         @keyframes glowPulse {
             0%,100% { box-shadow: 0 0 20px rgba(var(--accent-rgb),0.3); }
@@ -427,9 +756,15 @@
             <div class="corner-decoration"></div>
             <div class="content-wrapper">
                 <div class="church-label" id="church-info"></div>
-                <div class="main-title"   id="main-title"></div>
-                <div class="subtitle"     id="subtitle"></div>
-                <div class="bible-verse"  id="bible-verse"></div>
+                <!-- Main content area: minister name + title, OR secondary ticker message -->
+                <div id="main-content-area" style="position:relative;">
+                    <div id="primary-block">
+                        <div class="main-title" id="main-title"></div>
+                        <div class="subtitle"   id="subtitle"></div>
+                    </div>
+                    <div class="secondary-msg" id="secondary-msg" style="display:none;"></div>
+                </div>
+                <div class="bible-verse" id="bible-verse"></div>
             </div>
             <div class="bottom-glow"></div>
         </div>
@@ -441,6 +776,7 @@
     // ═══════════════════════════════════════════════════════════════════
     const lowerThird       = document.getElementById('lower-third');
     const churchInfo       = document.getElementById('church-info');
+    const secondaryMsg     = document.getElementById('secondary-msg');
     const mainTitle        = document.getElementById('main-title');
     const subtitle         = document.getElementById('subtitle');
     const bibleVerse       = document.getElementById('bible-verse');
@@ -452,43 +788,71 @@
     //   exit_ms: default exit animation duration
     // ═══════════════════════════════════════════════════════════════════
     const ANIMS = {
-        // container entrance
-        'slide-up':   { cls: 'anim-slide-up',   base_ms: 2000 },
-        'fade-in':    { cls: 'anim-fade-in',     base_ms: 2000 },
-        'slide-left': { cls: 'anim-slide-left',  base_ms: 2000 },
-        'slide-right':{ cls: 'anim-slide-right', base_ms: 2000 },
-        'slide-down': { cls: 'anim-slide-down',  base_ms: 2000 },
-        'zoom-in':    { cls: 'anim-zoom-in',     base_ms: 1800 },
-        'bounce-in':  { cls: 'anim-bounce-in',   base_ms: 2400 },
-        'rotate-in':  { cls: 'anim-rotate-in',   base_ms: 2200 },
-        'reveal':     { cls: 'anim-reveal',      base_ms: 2200 },
-        'flip-in':    { cls: 'anim-flip-in',     base_ms: 1600 },
-        'drop-in':    { cls: 'anim-drop-in',     base_ms: 1800 },
-        'split-in':   { cls: 'anim-split-in',    base_ms: 1400 },
-        'pop-in':     { cls: 'anim-pop-in',      base_ms: 1200 },
-        'neon-on':    { cls: 'anim-neon-on',     base_ms: 2000 },
-        'wipe-up':    { cls: 'anim-wipe-up',     base_ms: 1400 },
-        'swoop-in':   { cls: 'anim-swoop-in',    base_ms: 2000 },
-        // stagger text
-        'wave-in':    { cls: 'anim-wave-in',     base_ms: 1600 },
-        'cascade':    { cls: 'anim-cascade',     base_ms:  800 },
-        'word-fly':   { cls: 'anim-word-fly',    base_ms:  700 },
-        'rise-up':    { cls: 'anim-rise-up',     base_ms:  800 },
-        'glitch':     { cls: 'anim-glitch',      base_ms: 1400 },
-        // special — duration handled by JS
-        'typewriter': { cls: 'anim-typewriter',  base_ms:    0 },
-        'none':       { cls: 'anim-none',        base_ms:    0 },
+        // ── Container / entrance ──────────────────────────────────
+        'slide-up':        { cls: 'anim-slide-up',        base_ms: 2000 },
+        'fade-in':         { cls: 'anim-fade-in',         base_ms: 2000 },
+        'slide-left':      { cls: 'anim-slide-left',      base_ms: 2000 },
+        'slide-right':     { cls: 'anim-slide-right',     base_ms: 2000 },
+        'slide-down':      { cls: 'anim-slide-down',      base_ms: 2000 },
+        'zoom-in':         { cls: 'anim-zoom-in',         base_ms: 1800 },
+        'bounce-in':       { cls: 'anim-bounce-in',       base_ms: 2400 },
+        'rotate-in':       { cls: 'anim-rotate-in',       base_ms: 2200 },
+        'reveal':          { cls: 'anim-reveal',          base_ms: 2200 },
+        'flip-in':         { cls: 'anim-flip-in',         base_ms: 1600 },
+        'drop-in':         { cls: 'anim-drop-in',         base_ms: 1800 },
+        'split-in':        { cls: 'anim-split-in',        base_ms: 1400 },
+        'pop-in':          { cls: 'anim-pop-in',          base_ms: 1200 },
+        'neon-on':         { cls: 'anim-neon-on',         base_ms: 2000 },
+        'wipe-up':         { cls: 'anim-wipe-up',         base_ms: 1400 },
+        'swoop-in':        { cls: 'anim-swoop-in',        base_ms: 2000 },
+        // ── New container / entrance ──────────────────────────────
+        'elastic-in':      { cls: 'anim-elastic-in',      base_ms: 2200 },
+        'blur-in':         { cls: 'anim-blur-in',         base_ms: 1800 },
+        'rise-shine':      { cls: 'anim-rise-shine',      base_ms: 2000 },
+        'wipe-right':      { cls: 'anim-wipe-right',      base_ms: 1500 },
+        'slam-in':         { cls: 'anim-slam-in',         base_ms: 1400 },
+        'morph-in':        { cls: 'anim-morph-in',        base_ms: 1800 },
+        'stretch-in':      { cls: 'anim-stretch-in',      base_ms: 1600 },
+        'spotlight':       { cls: 'anim-spotlight',       base_ms: 1800 },
+        'glide-in':        { cls: 'anim-glide-in',        base_ms: 2000 },
+        'unfold':          { cls: 'anim-unfold',          base_ms: 1400 },
+        'iris-in':         { cls: 'anim-iris-in',         base_ms: 1600 },
+        'tv-on':           { cls: 'anim-tv-on',           base_ms: 1800 },
+        // ── Stagger text (existing) ───────────────────────────────
+        'wave-in':         { cls: 'anim-wave-in',         base_ms: 1600 },
+        'cascade':         { cls: 'anim-cascade',         base_ms:  800 },
+        'word-fly':        { cls: 'anim-word-fly',        base_ms:  700 },
+        'rise-up':         { cls: 'anim-rise-up',         base_ms:  800 },
+        'glitch':          { cls: 'anim-glitch',          base_ms: 1400 },
+        // ── Stagger text (new CSS) ────────────────────────────────
+        'blur-reveal':     { cls: 'anim-blur-reveal',     base_ms: 1600 },
+        'neon-flicker':    { cls: 'anim-neon-flicker',    base_ms: 2400 },
+        'stamp-in':        { cls: 'anim-stamp-in',        base_ms:  900 },
+        'slide-alternate': { cls: 'anim-slide-alternate', base_ms:  900 },
+        'zoom-stagger':    { cls: 'anim-zoom-stagger',    base_ms:  900 },
+        // ── JS-driven text animations ─────────────────────────────
+        'typewriter':      { cls: 'anim-typewriter',      base_ms:    0 },
+        'word-by-word':    { cls: 'anim-word-by-word',    base_ms:    0 },
+        'letter-drop':     { cls: 'anim-letter-drop',     base_ms:    0 },
+        'scramble':        { cls: 'anim-scramble',        base_ms:    0 },
+        // ── No animation ─────────────────────────────────────────
+        'none':            { cls: 'anim-none',            base_ms:    0 },
     };
 
     const EXIT_ANIMS = {
-        'none':              { cls: null,                      ms: 0    },
-        'fade-out-exit':     { cls: 'exit-fade-out-exit',     ms: 800  },
-        'slide-down-exit':   { cls: 'exit-slide-down-exit',   ms: 800  },
-        'slide-up-exit':     { cls: 'exit-slide-up-exit',     ms: 800  },
-        'slide-right-exit':  { cls: 'exit-slide-right-exit',  ms: 800  },
-        'zoom-out-exit':     { cls: 'exit-zoom-out-exit',     ms: 800  },
-        'flip-out-exit':     { cls: 'exit-flip-out-exit',     ms: 800  },
-        'wipe-out-exit':     { cls: 'exit-wipe-out-exit',     ms: 800  },
+        'none':              { cls: null,                        ms: 0    },
+        'fade-out-exit':     { cls: 'exit-fade-out-exit',       ms: 800  },
+        'slide-down-exit':   { cls: 'exit-slide-down-exit',     ms: 800  },
+        'slide-up-exit':     { cls: 'exit-slide-up-exit',       ms: 800  },
+        'slide-right-exit':  { cls: 'exit-slide-right-exit',    ms: 800  },
+        'zoom-out-exit':     { cls: 'exit-zoom-out-exit',       ms: 800  },
+        'flip-out-exit':     { cls: 'exit-flip-out-exit',       ms: 800  },
+        'wipe-out-exit':     { cls: 'exit-wipe-out-exit',       ms: 800  },
+        'blur-out-exit':     { cls: 'exit-blur-out-exit',       ms: 800  },
+        'shrink-exit':       { cls: 'exit-shrink-exit',         ms: 700  },
+        'wipe-left-exit':    { cls: 'exit-wipe-left-exit',      ms: 800  },
+        'bounce-out-exit':   { cls: 'exit-bounce-out-exit',     ms: 900  },
+        'spin-out-exit':     { cls: 'exit-spin-out-exit',       ms: 800  },
     };
 
     const DEFAULT_POOL = ['slide-up','fade-in','slide-left','zoom-in','wave-in'];
@@ -564,6 +928,17 @@
         subtitle.style.display   = 'none';
         bibleVerse.textContent   = '';
         bibleVerse.style.display = 'none';
+        // Hide ticker while we reset main content; ticker will restart via settle()
+        secondaryMsg.style.display  = 'none';
+        secondaryMsg.textContent    = '';
+        secondaryMsg.style.fontSize = '';
+        // Always restore primary block when applying new content
+        if (primaryBlock) {
+            primaryBlock.style.display     = 'block';
+            primaryBlock.style.opacity     = '1';
+            primaryBlock.style.visibility  = 'visible';
+            primaryBlock.style.transition  = '';
+        }
 
         if (state.church) {
             churchInfo.textContent  = (state.church.description && state.church.description.trim())
@@ -587,6 +962,323 @@
                 bibleVerse.style.display = 'block';
             }
         }
+    }
+
+
+    // ═══════════════════════════════════════════════════════════════════
+    // TICKER ENGINE — Secondary / rotating messages under minister name
+    // ═══════════════════════════════════════════════════════════════════
+
+    let tickerTimer    = null;
+    let tickerIndex    = 0;
+    let tickerRunning  = false;
+    let tickerMessages = [];
+
+    // Map animation names → ticker enter CSS class (or special JS mode)
+    const TICKER_ENTER_MAP = {
+        // CSS-transition based
+        'fade-in':         'tk-enter-fade',
+        'slide-up':        'tk-enter-slide-up',
+        'slide-down':      'tk-enter-slide-down',
+        'slide-left':      'tk-enter-slide-left',
+        'slide-right':     'tk-enter-slide-right',
+        'zoom-in':         'tk-enter-zoom',
+        'blur-in':         'tk-enter-blur',
+        'blur-reveal':     'tk-enter-blur',
+        'wipe-right':      'tk-enter-wipe-right',
+        'elastic-in':      'tk-enter-elastic',
+        'bounce-in':       'tk-enter-bounce',
+        'flip-in':         'tk-enter-flip',
+        'drop-in':         'tk-enter-drop',
+        'pop-in':          'tk-enter-pop',
+        'slam-in':         'tk-enter-slam',
+        'rise-up':         'tk-enter-slide-up',
+        'word-fly':        'tk-enter-slide-right',
+        'slide-alternate': 'tk-enter-slide-left',
+        'zoom-stagger':    'tk-enter-zoom',
+        'cascade':         'tk-enter-drop',
+        'neon-flicker':    'tk-enter-fade',
+        // JS-driven (special modes handled in tickerShowOne)
+        'typewriter':      '__typewriter__',
+        'word-by-word':    '__word-by-word__',
+        'letter-drop':     '__letter-drop__',
+        'scramble':        '__scramble__',
+        'glitch':          '__glitch__',
+        'wave-in':         '__wave__',
+        'stamp-in':        '__stamp__',
+        // fallback
+        'default':         'tk-enter-fade',
+    };
+
+    function tickerEnterClass(animName) {
+        return TICKER_ENTER_MAP[animName] || TICKER_ENTER_MAP['default'];
+    }
+
+    // JS-driven ticker animation modes
+    const TK_JS_MODES = new Set([
+        '__typewriter__', '__word-by-word__', '__letter-drop__',
+        '__scramble__', '__glitch__', '__wave__', '__stamp__'
+    ]);
+
+    function tickerPlayJS(mode, text, speed) {
+        secondaryMsg.textContent = '';
+        secondaryMsg.style.display = 'block';
+        secondaryMsg.style.opacity = '1';
+
+        if (mode === '__typewriter__') {
+            secondaryMsg.className = 'secondary-msg tk-typewriter';
+            let i = 0;
+            const step = () => {
+                if (!tickerRunning) return;
+                if (i <= text.length) {
+                    secondaryMsg.textContent = text.slice(0, i);
+                    i++;
+                    tickerTimer = setTimeout(step, speed);
+                } else {
+                    secondaryMsg.classList.add('tw-done');
+                }
+            };
+            step();
+
+        } else if (mode === '__word-by-word__') {
+            secondaryMsg.className = 'secondary-msg';
+            const words = text.split(' ');
+            let built = '';
+            let i = 0;
+            const step = () => {
+                if (!tickerRunning) return;
+                if (i < words.length) {
+                    built += (i > 0 ? ' ' : '') + words[i];
+                    secondaryMsg.textContent = built;
+                    i++;
+                    tickerTimer = setTimeout(step, speed * 3.5);
+                }
+            };
+            step();
+
+        } else if (mode === '__letter-drop__') {
+            secondaryMsg.className = 'secondary-msg';
+            secondaryMsg.innerHTML = '';
+            [...text].forEach((ch, i) => {
+                const span = document.createElement('span');
+                span.className = 'letter-drop-char';
+                span.style.animationDelay = (i * (speed / 1000 * 0.8)) + 's';
+                span.textContent = ch === ' ' ? '\u00a0' : ch;
+                secondaryMsg.appendChild(span);
+            });
+
+        } else if (mode === '__scramble__') {
+            secondaryMsg.className = 'secondary-msg';
+            const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%';
+            let iterations = 0;
+            const maxIter = text.length * 3;
+            const step = () => {
+                if (!tickerRunning) return;
+                secondaryMsg.textContent = text.split('').map((ch, i) => {
+                    if (i < iterations / 3) return ch;
+                    return ch === ' ' ? ' ' : chars[Math.floor(Math.random() * chars.length)];
+                }).join('');
+                iterations++;
+                if (iterations <= maxIter) tickerTimer = setTimeout(step, speed * 0.6);
+                else secondaryMsg.textContent = text;
+            };
+            step();
+
+        } else if (mode === '__glitch__') {
+            secondaryMsg.className = 'secondary-msg';
+            secondaryMsg.textContent = text;
+            secondaryMsg.style.animation = 'glitch 1.4s ease forwards';
+            setTimeout(() => {
+                if (secondaryMsg) { secondaryMsg.style.animation = ''; secondaryMsg.textContent = text; }
+            }, 1500);
+
+        } else if (mode === '__wave__') {
+            secondaryMsg.className = 'secondary-msg tk-wave';
+            const words = text.split(' ');
+            secondaryMsg.innerHTML = words.map((w, i) =>
+                `<span class="tk-word" style="animation-delay:${i * 0.1}s">${w}</span>`
+            ).join(' ');
+            secondaryMsg.classList.add('tk-visible');
+
+        } else if (mode === '__stamp__') {
+            secondaryMsg.className = 'secondary-msg';
+            secondaryMsg.textContent = text;
+            secondaryMsg.style.transform = 'scale(1.5)';
+            secondaryMsg.style.opacity = '0';
+            secondaryMsg.getBoundingClientRect();
+            secondaryMsg.style.transition = 'transform 0.25s cubic-bezier(0.22,1,0.36,1), opacity 0.2s ease';
+            secondaryMsg.style.transform = 'scale(1)';
+            secondaryMsg.style.opacity = '1';
+        }
+    }
+
+    const primaryBlock = document.getElementById('primary-block');
+
+    function stopTicker() {
+        tickerRunning = false;
+        if (tickerTimer) { clearTimeout(tickerTimer); tickerTimer = null; }
+        // Snap secondary hidden
+        secondaryMsg.className = 'secondary-msg';
+        secondaryMsg.style.display = 'none';
+        secondaryMsg.textContent = '';
+        secondaryMsg.style.fontSize = '';
+        // Restore primary block
+        if (primaryBlock) {
+            primaryBlock.style.display = 'block';
+            primaryBlock.style.opacity = '1';
+            primaryBlock.style.visibility = 'visible';
+            primaryBlock.style.transition = '';
+        }
+    }
+
+    function tickerShowOne(text, enterAnim, exitAnim, holdMs, onDone, twSpeed) {
+        if (!tickerRunning) return;
+
+        const enterMode = tickerEnterClass(enterAnim);
+        const isJSMode  = TK_JS_MODES.has(enterMode);
+
+        // Collapse primary block entirely
+        if (primaryBlock) {
+            primaryBlock.style.transition = 'opacity 0.25s ease';
+            primaryBlock.style.opacity = '0';
+            setTimeout(() => { if (primaryBlock) primaryBlock.style.display = 'none'; }, 260);
+        }
+
+        // Adaptive font size
+        const len = text.length;
+        let fs;
+        if      (len <= 35)  fs = 'clamp(28px, 3.5vw, 50px)';
+        else if (len <= 55)  fs = 'clamp(22px, 2.8vw, 40px)';
+        else if (len <= 80)  fs = 'clamp(18px, 2.2vw, 32px)';
+        else if (len <= 115) fs = 'clamp(14px, 1.7vw, 26px)';
+        else                 fs = 'clamp(12px, 1.4vw, 22px)';
+        secondaryMsg.style.fontSize = fs;
+        secondaryMsg.style.color = mainTitle.style.color || '#ffffff';
+
+        if (isJSMode) {
+            // JS-driven: tickerPlayJS handles display itself
+            tickerPlayJS(enterMode, text, twSpeed || 60);
+
+            // Hold, then exit
+            tickerTimer = setTimeout(() => {
+                if (!tickerRunning) return;
+                secondaryMsg.style.transition = 'opacity 0.4s ease';
+                secondaryMsg.style.opacity = '0';
+                tickerTimer = setTimeout(() => {
+                    secondaryMsg.style.display = 'none';
+                    secondaryMsg.style.opacity = '';
+                    secondaryMsg.style.transition = '';
+                    secondaryMsg.innerHTML = '';
+                    secondaryMsg.textContent = '';
+                    if (onDone) onDone();
+                }, 420);
+            }, holdMs);
+
+        } else {
+            // CSS-transition based
+            secondaryMsg.className = 'secondary-msg ' + enterMode;
+            secondaryMsg.textContent = text;
+            secondaryMsg.style.display = 'block';
+
+            // Force reflow then transition to visible
+            secondaryMsg.getBoundingClientRect();
+            secondaryMsg.style.transition = 'opacity 0.55s ease, transform 0.55s cubic-bezier(0.16,1,0.3,1), filter 0.55s ease, clip-path 0.55s ease';
+            secondaryMsg.classList.add('tk-visible');
+
+            // Hold, then exit
+            tickerTimer = setTimeout(() => {
+                if (!tickerRunning) return;
+                secondaryMsg.style.transition = 'opacity 0.4s ease, transform 0.4s ease';
+                secondaryMsg.classList.remove('tk-visible');
+                secondaryMsg.classList.add('tk-exit');
+
+                tickerTimer = setTimeout(() => {
+                    secondaryMsg.classList.remove('tk-exit');
+                    secondaryMsg.style.display = 'none';
+                    if (onDone) onDone();
+                }, 420);
+            }, holdMs);
+        }
+    }
+
+    /**
+     * Start the ticker loop for a given state.
+     * Respects: ticker_enabled, ticker_delay, ticker_duration,
+     *           ticker_enter_animation, ticker_exit_animation,
+     *           ticker_end_behavior, and per-message overrides.
+     */
+    function startTicker(state) {
+        stopTicker();
+
+        const s = state.animation_settings;
+        if (!s || !s.ticker_enabled) return;
+
+        const msgs = (state.mode === 'minister' && state.minister && state.minister.secondary_messages) || [];
+        if (msgs.length === 0) return;
+
+        // Sort by sort_order
+        tickerMessages = [...msgs].sort((a, b) => a.sort_order - b.sort_order);
+        tickerIndex    = 0;
+        tickerRunning  = true;
+
+        const globalDelay    = (s.ticker_delay  || 4)  * 1000;
+        const globalDuration = (s.ticker_duration || 6) * 1000;
+        const globalEnter    = s.ticker_enter_animation || 'fade-in';
+        const globalExit     = s.ticker_exit_animation  || 'fade-out-exit';
+        const endBehavior    = s.ticker_end_behavior    || 'loop';
+        const twSpeed        = s.typewriter_speed        || 60;
+
+        function runNext() {
+            if (!tickerRunning) return;
+
+            if (tickerIndex >= tickerMessages.length) {
+                // End of cycle
+                if (endBehavior === 'loop') {
+                    tickerIndex = 0;
+                    // Short pause before looping — primary stays hidden, no flash
+                    tickerTimer = setTimeout(runNext, 600);
+                } else if (endBehavior === 'main') {
+                    // Restore primary subtitle, stop ticker
+                    tickerRunning = false;
+                    if (primaryBlock) {
+                        primaryBlock.style.display = 'block';
+                        primaryBlock.style.opacity = '0';
+                        primaryBlock.getBoundingClientRect();
+                        primaryBlock.style.transition = 'opacity 0.4s ease';
+                        primaryBlock.style.opacity = '1';
+                        setTimeout(() => { if (primaryBlock) primaryBlock.style.transition = ''; }, 420);
+                    }
+                } else {
+                    // 'once' — hide secondary, keep primary hidden (played once, done)
+                    tickerRunning = false;
+                    secondaryMsg.style.display = 'none';
+                    // Also restore primary so the overlay isn't blank
+                    if (primaryBlock) {
+                        primaryBlock.style.display = 'block';
+                        primaryBlock.style.opacity = '0';
+                        primaryBlock.getBoundingClientRect();
+                        primaryBlock.style.transition = 'opacity 0.4s ease';
+                        primaryBlock.style.opacity = '1';
+                        setTimeout(() => { if (primaryBlock) primaryBlock.style.transition = ''; }, 420);
+                    }
+                }
+                return;
+            }
+
+            const msg       = tickerMessages[tickerIndex];
+            const holdMs    = (msg.display_duration != null ? msg.display_duration : s.ticker_duration || 6) * 1000;
+            const enterAnim = msg.enter_animation || globalEnter;
+            const exitAnim  = msg.exit_animation  || globalExit;
+
+            tickerShowOne(msg.text, enterAnim, exitAnim, holdMs, () => {
+                if (!tickerRunning) return;
+                tickerIndex++;
+                tickerTimer = setTimeout(runNext, 180);
+            }, twSpeed);
+        }
+
+        // Wait for initial delay before first message
+        tickerTimer = setTimeout(runNext, globalDelay);
     }
 
     function getAllAnimClasses() {
@@ -755,6 +1447,124 @@
     }
 
     // ═══════════════════════════════════════════════════════════════════
+    // WORD-BY-WORD — pops each word in with a slight zoom+fade
+    // ═══════════════════════════════════════════════════════════════════
+
+    function wordByWordElement(el, text, msPerWord) {
+        return new Promise(resolve => {
+            const words = text.split(/(\s+)/);
+            el.innerHTML = '';
+            el.classList.remove('tw-done');
+            el.style.opacity = '1';
+            words.forEach(word => {
+                const span = document.createElement('span');
+                span.style.display = 'inline-block';
+                span.style.opacity = '0';
+                span.style.transform = 'scale(0.7) translateY(6px)';
+                span.style.transition = 'opacity 0.28s ease, transform 0.28s cubic-bezier(0.16,1,0.3,1)';
+                span.textContent = word;
+                el.appendChild(span);
+            });
+            const spans = Array.from(el.querySelectorAll('span'));
+            let i = 0;
+            function showNext() {
+                if (i >= spans.length) {
+                    el.classList.add('tw-done');
+                    el.innerHTML = text;
+                    resolve();
+                    return;
+                }
+                spans[i].style.opacity = '1';
+                spans[i].style.transform = 'scale(1) translateY(0)';
+                i++;
+                twTimeouts.push(setTimeout(showNext, msPerWord));
+            }
+            twTimeouts.push(setTimeout(showNext, 40));
+        });
+    }
+
+    async function runWordByWord(settings) {
+        clearTwTimeouts();
+        const speed    = settings?.animation_speed || 1.0;
+        const baseMs   = settings?.typewriter_speed ?? 50;
+        const msPerWord = Math.max(60, Math.round(baseMs * 2 * speed));
+
+        const items = [];
+        if (churchInfo.style.display !== 'none' && churchInfo.textContent)
+            items.push({ el: churchInfo, text: churchInfo.textContent });
+        if (mainTitle.textContent)
+            items.push({ el: mainTitle,  text: mainTitle.textContent });
+        if (subtitle.style.display !== 'none' && subtitle.textContent)
+            items.push({ el: subtitle,   text: subtitle.textContent });
+        if (bibleVerse.style.display !== 'none' && bibleVerse.textContent)
+            items.push({ el: bibleVerse, text: bibleVerse.textContent });
+
+        items.forEach(({ el }) => { el.style.opacity = '0'; });
+        await new Promise(r => setTimeout(r, 40));
+        for (const { el, text } of items) {
+            await wordByWordElement(el, text, msPerWord);
+        }
+    }
+
+    // ═══════════════════════════════════════════════════════════════════
+    // LETTER-DROP — each character drops in from above, sequentially
+    // ═══════════════════════════════════════════════════════════════════
+
+    function letterDropElement(el, text, msPerChar) {
+        return new Promise(resolve => {
+            el.innerHTML = '';
+            el.classList.remove('tw-done');
+            el.style.opacity = '1';
+            // Build spans for each character
+            [...text].forEach(char => {
+                const span = document.createElement('span');
+                span.className = 'letter-drop-char';
+                span.style.animationDelay = '9999s'; // hidden until we kick each one
+                span.textContent = char === ' ' ? '\u00A0' : char;
+                el.appendChild(span);
+            });
+            const chars = Array.from(el.querySelectorAll('.letter-drop-char'));
+            let i = 0;
+            function dropNext() {
+                if (i >= chars.length) {
+                    el.classList.add('tw-done');
+                    // Flatten spans back to plain text after animation
+                    setTimeout(() => { el.innerHTML = text; }, 500);
+                    resolve();
+                    return;
+                }
+                chars[i].style.animationDelay = '0s';
+                i++;
+                twTimeouts.push(setTimeout(dropNext, msPerChar));
+            }
+            twTimeouts.push(setTimeout(dropNext, 40));
+        });
+    }
+
+    async function runLetterDrop(settings) {
+        clearTwTimeouts();
+        const speed    = settings?.animation_speed || 1.0;
+        const baseMs   = settings?.typewriter_speed ?? 50;
+        const msPerChar = Math.max(20, Math.round(baseMs * 0.8 * speed));
+
+        const items = [];
+        if (churchInfo.style.display !== 'none' && churchInfo.textContent)
+            items.push({ el: churchInfo, text: churchInfo.textContent });
+        if (mainTitle.textContent)
+            items.push({ el: mainTitle,  text: mainTitle.textContent });
+        if (subtitle.style.display !== 'none' && subtitle.textContent)
+            items.push({ el: subtitle,   text: subtitle.textContent });
+        if (bibleVerse.style.display !== 'none' && bibleVerse.textContent)
+            items.push({ el: bibleVerse, text: bibleVerse.textContent });
+
+        items.forEach(({ el }) => { el.style.opacity = '0'; });
+        await new Promise(r => setTimeout(r, 40));
+        for (const { el, text } of items) {
+            await letterDropElement(el, text, msPerChar);
+        }
+    }
+
+    // ═══════════════════════════════════════════════════════════════════
     // EXIT ANIMATION — plays, then calls onDone
     // ═══════════════════════════════════════════════════════════════════
 
@@ -803,6 +1613,16 @@
                 if (name === 'typewriter') {
                     setTimeout(async () => {
                         await runTypewriter(settings);
+                        resolve();
+                    }, 80);
+                } else if (name === 'word-by-word') {
+                    setTimeout(async () => {
+                        await runWordByWord(settings);
+                        resolve();
+                    }, 80);
+                } else if (name === 'letter-drop') {
+                    setTimeout(async () => {
+                        await runLetterDrop(settings);
                         resolve();
                     }, 80);
                 } else if (name === 'scramble') {
@@ -972,6 +1792,9 @@
         const isExplicit   = explicitAnim && explicitAnim !== 'auto' && explicitAnim !== 'none' && ANIMS[explicitAnim];
         const isNone       = explicitAnim === 'none';
 
+        // Always kick off the ticker when in minister mode (it self-guards if disabled/no msgs)
+        startTicker(state);
+
         if (s?.auto_cycle) {
             startCycle(s);
             return;
@@ -990,9 +1813,15 @@
             return;
         }
 
-        // auto rotation
+        // auto rotation — only if enabled
         stopCycle();
-        startRotation(s, true);
+        if (s?.auto_rotate) {
+            startRotation(s, true);
+        } else {
+            // no rotation, no cycle — just ensure overlay is visible
+            clearAnimClasses(); clearInlineStyles();
+            lowerThird.classList.add('visible');
+        }
     }
 
     // ═══════════════════════════════════════════════════════════════════
@@ -1044,7 +1873,7 @@
 
         // ── A. Hidden ──────────────────────────────────────────────
         if (state.mode === 'hidden') {
-            stopCycle(); stopRotation(); clearTwTimeouts();
+            stopCycle(); stopRotation(); clearTwTimeouts(); stopTicker();
             lowerThird.classList.remove('visible');
             clearAnimClasses(); clearInlineStyles();
             return;
@@ -1059,7 +1888,7 @@
 
         // ── C. Content changed while live ─────────────────────────
         if (contentChanged) {
-            stopCycle(); stopRotation(); clearTwTimeouts();
+            stopCycle(); stopRotation(); clearTwTimeouts(); stopTicker();
             sceneSwitch(state, () => settle(state));
             return;
         }
@@ -1073,15 +1902,24 @@
 
         // ── E. Settings changed (admin saved) ─────────────────────
         if (settingsChanged) {
-            // Restart whatever mode is now configured
+            // Restart ticker with new settings (always — admin just changed something)
+            stopTicker();
+            startTicker(state);
+
+            // Restart animation mode based on new settings
             if (s?.auto_cycle) {
+                stopRotation();
                 startCycle(s);
             } else if (s?.auto_rotate) {
                 stopCycle();
                 startRotation(s, false); // don't re-play entrance, just reset timer
             } else {
-                stopCycle(); stopRotation();
-                // keep overlay visible as-is
+                // Neither cycle nor rotation — stop both, keep overlay as-is
+                stopCycle();
+                stopRotation();
+                clearAnimClasses();
+                clearInlineStyles();
+                lowerThird.classList.add('visible');
             }
             return;
         }
@@ -1131,7 +1969,7 @@
 
     window.addEventListener('beforeunload', () => {
         if (pollTimer) clearInterval(pollTimer);
-        stopCycle(); stopRotation();
+        stopCycle(); stopRotation(); stopTicker();
     });
 
     setTimeout(() => {

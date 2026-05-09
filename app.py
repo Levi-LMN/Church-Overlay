@@ -24,6 +24,13 @@ def _migrate_animation_settings(app):
                     ('hide_duration',              'INTEGER DEFAULT 10'),
                     ('cycle_enter_animation',      "VARCHAR(50) DEFAULT 'auto'"),
                     ('cycle_exit_animation',       "VARCHAR(50) DEFAULT 'fade-out-exit'"),
+                    # Secondary message / ticker columns
+                    ('ticker_enabled',             'BOOLEAN DEFAULT 1'),
+                    ('ticker_duration',            'INTEGER DEFAULT 6'),
+                    ('ticker_delay',               'INTEGER DEFAULT 4'),
+                    ('ticker_enter_animation',     "VARCHAR(50) DEFAULT 'fade-in'"),
+                    ('ticker_exit_animation',      "VARCHAR(50) DEFAULT 'fade-out-exit'"),
+                    ('ticker_end_behavior',        "VARCHAR(20) DEFAULT 'loop'"),
                 ]
                 for col, defn in migrations:
                     if col not in existing:
@@ -47,6 +54,13 @@ def _anim_to_dict(anim):
         'hide_duration':          anim.hide_duration          if anim.hide_duration          is not None else 10,
         'cycle_enter_animation':  anim.cycle_enter_animation  if anim.cycle_enter_animation  is not None else 'auto',
         'cycle_exit_animation':   anim.cycle_exit_animation   if anim.cycle_exit_animation   is not None else 'fade-out-exit',
+        # Ticker / secondary messages
+        'ticker_enabled':         anim.ticker_enabled         if anim.ticker_enabled         is not None else True,
+        'ticker_duration':        anim.ticker_duration        if anim.ticker_duration        is not None else 6,
+        'ticker_delay':           anim.ticker_delay           if anim.ticker_delay           is not None else 4,
+        'ticker_enter_animation': anim.ticker_enter_animation if anim.ticker_enter_animation is not None else 'fade-in',
+        'ticker_exit_animation':  anim.ticker_exit_animation  if anim.ticker_exit_animation  is not None else 'fade-out-exit',
+        'ticker_end_behavior':    anim.ticker_end_behavior    if anim.ticker_end_behavior    is not None else 'loop',
     }
 
 
@@ -162,6 +176,12 @@ def create_app():
                     hide_duration=10,
                     cycle_enter_animation='auto',
                     cycle_exit_animation='fade-out-exit',
+                    ticker_enabled=True,
+                    ticker_duration=6,
+                    ticker_delay=4,
+                    ticker_enter_animation='fade-in',
+                    ticker_exit_animation='fade-out-exit',
+                    ticker_end_behavior='loop',
                 ))
             db.session.commit()
 

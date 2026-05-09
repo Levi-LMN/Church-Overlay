@@ -164,7 +164,10 @@
         <div class="chip-label">Container / Entry</div>
         <div class="anim-grid">
             {% for a in ['slide-up','slide-down','slide-left','slide-right','fade-in','zoom-in',
-                         'bounce-in','rotate-in','reveal','wipe-right','flip-in','elastic-in','blur-in','rise-shine'] %}
+                         'bounce-in','rotate-in','reveal','flip-in','drop-in','split-in','pop-in',
+                         'neon-on','wipe-up','swoop-in',
+                         'elastic-in','blur-in','rise-shine','wipe-right','slam-in','morph-in',
+                         'stretch-in','spotlight','glide-in','unfold','iris-in','tv-on'] %}
             <label class="anim-chip {% if a in enabled %}checked{% endif %}">
                 <input type="checkbox" name="anim" value="{{ a }}"
                        {% if a in enabled %}checked{% endif %}>
@@ -173,9 +176,21 @@
             {% endfor %}
         </div>
 
-        <div class="chip-label">Text Animations</div>
+        <div class="chip-label">Text Stagger</div>
         <div class="anim-grid">
-            {% for a in ['wave-in','cascade-down','typewriter','word-by-word','letter-drop','glitch','neon-flicker'] %}
+            {% for a in ['wave-in','cascade','word-fly','rise-up','blur-reveal','neon-flicker',
+                         'stamp-in','slide-alternate','zoom-stagger'] %}
+            <label class="anim-chip {% if a in enabled %}checked{% endif %}">
+                <input type="checkbox" name="anim" value="{{ a }}"
+                       {% if a in enabled %}checked{% endif %}>
+                {{ a }}
+            </label>
+            {% endfor %}
+        </div>
+
+        <div class="chip-label">JS Text (character / word)</div>
+        <div class="anim-grid">
+            {% for a in ['typewriter','word-by-word','letter-drop','scramble','glitch'] %}
             <label class="anim-chip {% if a in enabled %}checked{% endif %}">
                 <input type="checkbox" name="anim" value="{{ a }}"
                        {% if a in enabled %}checked{% endif %}>
@@ -316,17 +331,21 @@
             <div>
                 <label class="block text-xs font-semibold text-gray-600 mb-2">Exit Animation</label>
                 <select id="exit-animation" class="exit-sel">
-                    {% set cur = animation_settings.exit_animation if animation_settings and animation_settings.exit_animation else 'fade-out' %}
+                    {% set cur = animation_settings.exit_animation if animation_settings and animation_settings.exit_animation else 'fade-out-exit' %}
                     {% for val, lbl in [
-                        ('fade-out','Fade Out'),
-                        ('slide-down-out','Slide Down'),
-                        ('slide-left-out','Slide Left'),
-                        ('slide-right-out','Slide Right'),
-                        ('zoom-out','Zoom Out'),
-                        ('wipe-left-out','Wipe Left'),
-                        ('flip-out','Flip Out'),
-                        ('blur-out','Blur Out'),
-                        ('none','None (instant)'),
+                        ('fade-out-exit',    'Fade Out'),
+                        ('slide-down-exit',  'Slide Down'),
+                        ('slide-up-exit',    'Slide Up'),
+                        ('slide-right-exit', 'Slide Right'),
+                        ('zoom-out-exit',    'Zoom Out'),
+                        ('flip-out-exit',    'Flip Out'),
+                        ('wipe-out-exit',    'Wipe Out (right)'),
+                        ('wipe-left-exit',   'Wipe Out (left)'),
+                        ('blur-out-exit',    'Blur Out'),
+                        ('shrink-exit',      'Shrink'),
+                        ('bounce-out-exit',  'Bounce Down'),
+                        ('spin-out-exit',    'Spin Out'),
+                        ('none',             'None (instant)'),
                     ] %}
                     <option value="{{ val }}" {% if val == cur %}selected{% endif %}>{{ lbl }}</option>
                     {% endfor %}
@@ -335,6 +354,185 @@
         </div>
 
         <button onclick="saveAnimation()" class="btn btn-primary mt-5 w-full">Save Auto-Cycle</button>
+    </div>
+
+
+    <!-- ── Secondary Messages / Ticker ── -->
+    <div class="settings-section" style="grid-column: 1 / -1;">
+        <div class="section-title">💬 Secondary Messages (Ticker)</div>
+        <p class="text-xs text-gray-500 mb-4">
+            When a minister is displayed, rotating secondary messages appear beneath their name —
+            e.g. "Welcome to Chrisco Church Thika" → "We are glad you are watching".
+            Messages are added per-minister in the <a href="{{ url_for('admin.content') }}" class="text-emerald-600 font-semibold hover:underline">Content</a> page.
+            These settings control global timing and behaviour.
+        </p>
+
+        <div class="grid gap-5" style="grid-template-columns: 1fr 1fr; max-width: 900px;">
+
+            <!-- Enable toggle -->
+            <div style="grid-column: 1 / -1;">
+                <div class="toggle-row" style="border-top:none;">
+                    <input type="checkbox" id="ticker-enabled"
+                           {% if animation_settings and animation_settings.ticker_enabled %}checked{% endif %}
+                           class="w-4 h-4 accent-emerald-500 mt-0.5 flex-shrink-0"
+                           onchange="document.getElementById('ticker-options').style.opacity=this.checked?'1':'0.4'">
+                    <div class="toggle-info">
+                        <p>Enable secondary message ticker</p>
+                        <span>Globally enable or disable the rotating message feature for all ministers</span>
+                    </div>
+                </div>
+            </div>
+
+            <div id="ticker-options" style="grid-column:1/-1;display:grid;grid-template-columns:1fr 1fr;gap:20px;
+                opacity:{% if animation_settings and animation_settings.ticker_enabled %}1{% else %}0.4{% endif %};">
+
+                <!-- Delay before first message -->
+                <div>
+                    <label class="block text-xs font-semibold text-gray-600 mb-1.5">
+                        Delay before first message appears
+                    </label>
+                    <div class="range-row">
+                        <input type="range" id="ticker-delay-range" min="0" max="30" step="1"
+                               value="{{ animation_settings.ticker_delay if animation_settings and animation_settings.ticker_delay is not none else 4 }}"
+                               oninput="syncRange('ticker-delay','s')">
+                        <input type="number" id="ticker-delay" class="input-field" style="width:68px" min="0" max="30"
+                               value="{{ animation_settings.ticker_delay if animation_settings and animation_settings.ticker_delay is not none else 4 }}"
+                               oninput="document.getElementById('ticker-delay-range').value=this.value;updateLabel('ticker-delay','s')">
+                        <span class="range-val" id="ticker-delay-lbl">{{ animation_settings.ticker_delay if animation_settings and animation_settings.ticker_delay is not none else 4 }}s</span>
+                    </div>
+                    <p class="text-xs text-gray-400 mt-1">How long after the overlay appears before the first secondary message shows</p>
+                </div>
+
+                <!-- Duration per message -->
+                <div>
+                    <label class="block text-xs font-semibold text-gray-600 mb-1.5">
+                        Default duration per message
+                    </label>
+                    <div class="range-row">
+                        <input type="range" id="ticker-duration-range" min="2" max="30" step="1"
+                               value="{{ animation_settings.ticker_duration if animation_settings and animation_settings.ticker_duration else 6 }}"
+                               oninput="syncRange('ticker-duration','s')">
+                        <input type="number" id="ticker-duration" class="input-field" style="width:68px" min="2" max="30"
+                               value="{{ animation_settings.ticker_duration if animation_settings and animation_settings.ticker_duration else 6 }}"
+                               oninput="document.getElementById('ticker-duration-range').value=this.value;updateLabel('ticker-duration','s')">
+                        <span class="range-val" id="ticker-duration-lbl">{{ animation_settings.ticker_duration if animation_settings and animation_settings.ticker_duration else 6 }}s</span>
+                    </div>
+                    <p class="text-xs text-gray-400 mt-1">Each message can override this individually in the Content page</p>
+                </div>
+
+                <!-- Enter animation -->
+                <div>
+                    <label class="block text-xs font-semibold text-gray-600 mb-1.5">Default enter animation</label>
+                    <select id="ticker-enter-animation" class="exit-sel">
+                        {% set cur_enter = animation_settings.ticker_enter_animation if animation_settings and animation_settings.ticker_enter_animation else 'fade-in' %}
+                        <optgroup label="── Text / Character ──">
+                        {% for val, lbl in [
+                            ('typewriter',      'Typewriter'),
+                            ('word-by-word',    'Word by Word'),
+                            ('letter-drop',     'Letter Drop'),
+                            ('scramble',        'Scramble'),
+                            ('glitch',          'Glitch'),
+                        ] %}
+                        <option value="{{ val }}" {% if val == cur_enter %}selected{% endif %}>{{ lbl }}</option>
+                        {% endfor %}
+                        </optgroup>
+                        <optgroup label="── Text Stagger ──">
+                        {% for val, lbl in [
+                            ('wave-in',         'Wave In'),
+                            ('cascade',         'Cascade'),
+                            ('word-fly',        'Word Fly'),
+                            ('rise-up',         'Rise Up'),
+                            ('blur-reveal',     'Blur Reveal'),
+                            ('neon-flicker',    'Neon Flicker'),
+                            ('stamp-in',        'Stamp In'),
+                            ('slide-alternate', 'Slide Alternate'),
+                            ('zoom-stagger',    'Zoom Stagger'),
+                        ] %}
+                        <option value="{{ val }}" {% if val == cur_enter %}selected{% endif %}>{{ lbl }}</option>
+                        {% endfor %}
+                        </optgroup>
+                        <optgroup label="── Container / Entry ──">
+                        {% for val, lbl in [
+                            ('fade-in',         'Fade In'),
+                            ('slide-up',        'Slide Up'),
+                            ('slide-down',      'Slide Down'),
+                            ('slide-left',      'Slide Left'),
+                            ('slide-right',     'Slide Right'),
+                            ('zoom-in',         'Zoom In'),
+                            ('blur-in',         'Blur In'),
+                            ('wipe-right',      'Wipe Right'),
+                            ('elastic-in',      'Elastic Bounce'),
+                            ('bounce-in',       'Bounce In'),
+                            ('flip-in',         'Flip In'),
+                            ('drop-in',         'Drop In'),
+                            ('pop-in',          'Pop In'),
+                            ('slam-in',         'Slam In'),
+                            ('morph-in',        'Morph In'),
+                            ('spotlight',       'Spotlight'),
+                            ('glide-in',        'Glide In'),
+                        ] %}
+                        <option value="{{ val }}" {% if val == cur_enter %}selected{% endif %}>{{ lbl }}</option>
+                        {% endfor %}
+                        </optgroup>
+                    </select>
+                </div>
+
+                <!-- Exit animation -->
+                <div>
+                    <label class="block text-xs font-semibold text-gray-600 mb-1.5">Default exit animation</label>
+                    <select id="ticker-exit-animation" class="exit-sel">
+                        {% set cur_exit = animation_settings.ticker_exit_animation if animation_settings and animation_settings.ticker_exit_animation else 'fade-out-exit' %}
+                        {% for val, lbl in [
+                            ('fade-out-exit',    'Fade Out'),
+                            ('slide-down-exit',  'Slide Down'),
+                            ('slide-up-exit',    'Slide Up'),
+                            ('slide-right-exit', 'Slide Right'),
+                            ('slide-left-exit',  'Slide Left'),
+                            ('zoom-out-exit',    'Zoom Out'),
+                            ('blur-out-exit',    'Blur Out'),
+                            ('wipe-out-exit',    'Wipe Out (right)'),
+                            ('wipe-left-exit',   'Wipe Out (left)'),
+                            ('shrink-exit',      'Shrink'),
+                            ('bounce-out-exit',  'Bounce Down'),
+                            ('spin-out-exit',    'Spin Out'),
+                            ('flip-out-exit',    'Flip Out'),
+                            ('none',             'None (instant)'),
+                        ] %}
+                        <option value="{{ val }}" {% if val == cur_exit %}selected{% endif %}>{{ lbl }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <!-- End behavior -->
+                <div style="grid-column:1/-1;">
+                    <label class="block text-xs font-semibold text-gray-600 mb-2">After all messages cycle through…</label>
+                    <div class="flex flex-wrap gap-3">
+                        {% set cur_beh = animation_settings.ticker_end_behavior if animation_settings and animation_settings.ticker_end_behavior else 'loop' %}
+                        {% for val, lbl, desc in [
+                            ('loop', '🔁 Loop forever', 'Start the list over from the beginning'),
+                            ('main', '↩ Return to title', 'Show the minister title again and stop rotating'),
+                            ('once', '✋ Show once', 'Play through all messages once, then hide'),
+                        ] %}
+                        <label class="flex items-start gap-2 cursor-pointer p-3 border-2 rounded-lg flex-1"
+                               style="min-width:180px; border-color:{% if val == cur_beh %}#10b981{% else %}#e5e7eb{% endif %};
+                               background:{% if val == cur_beh %}#f0fdf4{% else %}white{% endif %};"
+                               onclick="document.querySelectorAll('.beh-opt').forEach(l=>l.style.cssText='border-color:#e5e7eb;background:white');this.style.borderColor='#10b981';this.style.background='#f0fdf4'">
+                            <input type="radio" name="ticker-end-behavior" value="{{ val }}"
+                                   {% if val == cur_beh %}checked{% endif %}
+                                   class="beh-radio mt-0.5 accent-emerald-500 flex-shrink-0">
+                            <div>
+                                <p class="text-sm font-semibold text-gray-800">{{ lbl }}</p>
+                                <p class="text-xs text-gray-400 mt-0.5">{{ desc }}</p>
+                            </div>
+                        </label>
+                        {% endfor %}
+                    </div>
+                </div>
+
+            </div><!-- /ticker-options -->
+        </div>
+
+        <button onclick="saveTicker()" class="btn btn-primary mt-5">Save Ticker Settings</button>
     </div>
 
     <!-- ── Access Control ── -->
@@ -391,20 +589,36 @@
         });
     }
 
-    // ── Collect all animation settings ────────────────────────────────
-    function collectAnimSettings() {
+    // ── Collect ALL settings into one merged payload ──────────────────
+    //   Always send everything so partial saves don't reset other fields.
+    function collectAllSettings() {
         return {
-            auto_rotate:        document.getElementById('auto-rotate').checked,
-            rotation_interval:  parseInt(document.getElementById('rotation-interval').value),
-            enabled_animations: Array.from(document.querySelectorAll('input[name="anim"]:checked')).map(c => c.value).join(','),
-            animation_duration: parseFloat(document.getElementById('animation-duration').value),
-            typewriter_speed:   parseInt(document.getElementById('typewriter-speed').value),
-            auto_cycle:         document.getElementById('auto-cycle').checked,
-            display_duration:   parseInt(document.getElementById('display-duration').value),
-            hide_duration:      parseInt(document.getElementById('hide-duration').value),
-            exit_animation:     document.getElementById('exit-animation').value,
+            // Animation pool + rotation
+            auto_rotate:            document.getElementById('auto-rotate').checked,
+            rotation_interval:      parseInt(document.getElementById('rotation-interval').value),
+            enabled_animations:     Array.from(document.querySelectorAll('input[name="anim"]:checked')).map(c => c.value).join(','),
+            // Timing (API key is animation_speed, not animation_duration)
+            animation_speed:        parseFloat(document.getElementById('animation-duration').value),
+            typewriter_speed:       parseInt(document.getElementById('typewriter-speed').value),
+            // Auto-cycle (API key is cycle_exit_animation, not exit_animation)
+            auto_cycle:             document.getElementById('auto-cycle').checked,
+            display_duration:       parseInt(document.getElementById('display-duration').value),
+            hide_duration:          parseInt(document.getElementById('hide-duration').value),
+            cycle_enter_animation:  'auto',
+            cycle_exit_animation:   document.getElementById('exit-animation').value,
+            // Ticker
+            ticker_enabled:         document.getElementById('ticker-enabled').checked,
+            ticker_delay:           parseInt(document.getElementById('ticker-delay').value),
+            ticker_duration:        parseInt(document.getElementById('ticker-duration').value),
+            ticker_enter_animation: document.getElementById('ticker-enter-animation').value,
+            ticker_exit_animation:  document.getElementById('ticker-exit-animation').value,
+            ticker_end_behavior:    document.querySelector('input[name="ticker-end-behavior"]:checked')?.value || 'loop',
         };
     }
+
+    // Keep old names as aliases so both Save buttons use the merged payload
+    function collectAnimSettings()   { return collectAllSettings(); }
+    function collectTickerSettings() { return collectAllSettings(); }
 
     // ── API calls ──────────────────────────────────────────────────────
     async function saveChurch() {
@@ -452,6 +666,16 @@
         });
         if (res.ok) showToast('Animation settings saved', 'success');
         else        showToast('Failed to save', 'error');
+    }
+
+    async function saveTicker() {
+        const payload = collectTickerSettings();
+        // Merge with existing animation settings so we don't overwrite them
+        const res = await apiFetch('/api/animation-settings', {
+            method: 'POST', body: JSON.stringify(payload)
+        });
+        if (res.ok) showToast('Ticker settings saved — overlay updates live', 'success');
+        else        showToast('Failed to save ticker settings', 'error');
     }
 
     async function saveAccess() {

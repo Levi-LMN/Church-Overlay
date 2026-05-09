@@ -37,6 +37,47 @@ class Minister(db.Model):
     title = db.Column(db.String(200))
     last_used = db.Column(db.DateTime)
 
+    # Secondary messages (ticker) linked to this minister
+    secondary_messages = db.relationship(
+        'SecondaryMessage',
+        backref='minister',
+        lazy=True,
+        cascade='all, delete-orphan',
+        order_by='SecondaryMessage.sort_order'
+    )
+
+
+class SecondaryMessage(db.Model):
+    """
+    Ticker messages displayed on the OBS overlay while a minister is shown.
+    e.g. "Welcome to Chrisco Church Thika", "We are glad you are watching"
+    """
+    id = db.Column(db.Integer, primary_key=True)
+    minister_id = db.Column(db.Integer, db.ForeignKey('minister.id'), nullable=False)
+
+    text = db.Column(db.String(500), nullable=False)  # The message text
+    sort_order = db.Column(db.Integer, default=0)      # Display order
+
+    # Per-message timing override (seconds). NULL = use global default
+    display_duration = db.Column(db.Integer, nullable=True)
+
+    # Per-message animation overrides. NULL = use global default
+    enter_animation = db.Column(db.String(50), nullable=True)
+    exit_animation  = db.Column(db.String(50), nullable=True)
+
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    def to_dict(self):
+        return {
+            'id':               self.id,
+            'minister_id':      self.minister_id,
+            'text':             self.text,
+            'sort_order':       self.sort_order,
+            'display_duration': self.display_duration,
+            'enter_animation':  self.enter_animation,
+            'exit_animation':   self.exit_animation,
+        }
+
 
 class Sermon(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -64,23 +105,29 @@ class AnimationSettings(db.Model):
 
     # ── Rotation ──────────────────────────────────────────────────────────
     auto_rotate         = db.Column(db.Boolean, default=True)
-    rotation_interval   = db.Column(db.Integer, default=8)   # seconds between animation changes
+    rotation_interval   = db.Column(db.Integer, default=8)
     enabled_animations  = db.Column(db.String(500),
                                     default='slide-up,fade-in,slide-left,zoom-in,wave-in')
 
     # ── Timing ────────────────────────────────────────────────────────────
-    animation_speed     = db.Column(db.Float, default=1.0)   # multiplier: 0.5=2× faster, 2.0=2× slower
-    typewriter_speed    = db.Column(db.Integer, default=50)  # ms per character
+    animation_speed     = db.Column(db.Float, default=1.0)
+    typewriter_speed    = db.Column(db.Integer, default=50)
 
     # ── Auto show / hide cycle ────────────────────────────────────────────
-    # When enabled the display page independently hides after display_duration,
-    # waits hide_duration, then re-shows — regardless of server state (as long
-    # as server mode != 'hidden').
     auto_cycle              = db.Column(db.Boolean, default=False)
-    display_duration        = db.Column(db.Integer, default=30)   # seconds visible
-    hide_duration           = db.Column(db.Integer, default=10)   # seconds hidden
-    cycle_enter_animation   = db.Column(db.String(50), default='auto')   # 'auto' = use pool
+    display_duration        = db.Column(db.Integer, default=30)
+    hide_duration           = db.Column(db.Integer, default=10)
+    cycle_enter_animation   = db.Column(db.String(50), default='auto')
     cycle_exit_animation    = db.Column(db.String(50), default='fade-out-exit')
+
+    # ── Secondary Messages / Ticker ───────────────────────────────────────
+    ticker_enabled          = db.Column(db.Boolean, default=True)
+    ticker_duration         = db.Column(db.Integer, default=6)    # seconds each message shows
+    ticker_delay            = db.Column(db.Integer, default=4)    # seconds before first msg appears
+    ticker_enter_animation  = db.Column(db.String(50), default='fade-in')
+    ticker_exit_animation   = db.Column(db.String(50), default='fade-out-exit')
+    # 'loop' = repeat messages forever | 'main' = return to minister subtitle | 'once' = show once and stop
+    ticker_end_behavior     = db.Column(db.String(20), default='loop')
 
 
 class ActivityLog(db.Model):

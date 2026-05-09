@@ -52,10 +52,26 @@
                         <td class="py-3 px-3 text-gray-500">{{ m.title or '—' }}</td>
                         <td class="py-3 px-3 text-gray-400 text-xs">{{ m.last_used.strftime('%d %b %Y') if m.last_used else 'Never' }}</td>
                         <td class="py-3 px-3 text-right">
-                            <button onclick="editMinister({{ m.id }}, {{ m.name|tojson }}, {{ (m.title or '')|tojson }})"
-                                    class="btn btn-ghost btn-sm mr-1">Edit</button>
-                            <button onclick="deleteMinister({{ m.id }})"
-                                    class="btn btn-danger btn-sm">Delete</button>
+                            {# All buttons use data-* attributes to avoid JS quoting/escaping bugs #}
+                            <button
+                                class="btn btn-ghost btn-sm mr-1 open-messages-btn"
+                                data-id="{{ m.id }}"
+                                data-name="{{ m.name }}"
+                                title="Manage secondary ticker messages">
+                                💬 Messages
+                            </button>
+                            <button
+                                class="btn btn-ghost btn-sm mr-1 edit-minister-btn"
+                                data-id="{{ m.id }}"
+                                data-name="{{ m.name }}"
+                                data-title="{{ m.title or '' }}">
+                                Edit
+                            </button>
+                            <button
+                                class="btn btn-danger btn-sm delete-minister-btn"
+                                data-id="{{ m.id }}">
+                                Delete
+                            </button>
                         </td>
                     </tr>
                     {% endfor %}
@@ -89,10 +105,19 @@
                         <td class="py-3 px-3 text-gray-500 text-xs">{{ s.bible_verse or '—' }}</td>
                         <td class="py-3 px-3 text-gray-400 text-xs">{{ s.date.strftime('%d %b %Y') }}</td>
                         <td class="py-3 px-3 text-right">
-                            <button onclick="editSermon({{ s.id }}, {{ s.title|tojson }}, {{ (s.minister_name or '')|tojson }}, {{ (s.bible_verse or '')|tojson }})"
-                                    class="btn btn-ghost btn-sm mr-1">Edit</button>
-                            <button onclick="deleteSermon({{ s.id }})"
-                                    class="btn btn-danger btn-sm">Delete</button>
+                            <button
+                                class="btn btn-ghost btn-sm mr-1 edit-sermon-btn"
+                                data-id="{{ s.id }}"
+                                data-title="{{ s.title }}"
+                                data-minister="{{ s.minister_name or '' }}"
+                                data-verse="{{ s.bible_verse or '' }}">
+                                Edit
+                            </button>
+                            <button
+                                class="btn btn-danger btn-sm delete-sermon-btn"
+                                data-id="{{ s.id }}">
+                                Delete
+                            </button>
                         </td>
                     </tr>
                     {% endfor %}
@@ -152,6 +177,10 @@
         </div>
     </div>
 </div>
+
+{# Include the secondary messages modal (paste file contents here or use include) #}
+{% include 'admin/secondary_messages_modal.html' %}
+
 {% endblock %}
 
 {% block admin_scripts %}
@@ -165,6 +194,20 @@
 
     function openModal(id) {
         const m = document.getElementById(id);
+        // Reset fields when opening fresh
+        if (id === 'minister-modal') {
+            document.getElementById('minister-edit-id').value = '';
+            document.getElementById('minister-name').value    = '';
+            document.getElementById('minister-title').value   = '';
+            document.getElementById('minister-modal-title').textContent = 'Add Minister';
+        }
+        if (id === 'sermon-modal') {
+            document.getElementById('sermon-edit-id').value  = '';
+            document.getElementById('sermon-title').value    = '';
+            document.getElementById('sermon-minister').value = '';
+            document.getElementById('sermon-verse').value    = '';
+            document.getElementById('sermon-modal-title').textContent = 'Add Sermon';
+        }
         m.classList.remove('hidden');
         m.classList.add('flex');
     }
@@ -174,13 +217,19 @@
         m.classList.remove('flex');
     }
 
+    // Close modals on backdrop click
+    document.getElementById('minister-modal').addEventListener('click', e => { if (e.target === e.currentTarget) closeModal('minister-modal'); });
+    document.getElementById('sermon-modal').addEventListener('click',   e => { if (e.target === e.currentTarget) closeModal('sermon-modal'); });
+
     /* ── Ministers ── */
     function editMinister(id, name, title) {
         document.getElementById('minister-edit-id').value = id;
         document.getElementById('minister-name').value    = name;
         document.getElementById('minister-title').value   = title;
         document.getElementById('minister-modal-title').textContent = 'Edit Minister';
-        openModal('minister-modal');
+        const m = document.getElementById('minister-modal');
+        m.classList.remove('hidden');
+        m.classList.add('flex');
     }
 
     async function saveMinister() {
@@ -216,7 +265,9 @@
         document.getElementById('sermon-minister').value   = minister;
         document.getElementById('sermon-verse').value      = verse;
         document.getElementById('sermon-modal-title').textContent = 'Edit Sermon';
-        openModal('sermon-modal');
+        const m = document.getElementById('sermon-modal');
+        m.classList.remove('hidden');
+        m.classList.add('flex');
     }
 
     async function saveSermon() {
@@ -246,26 +297,34 @@
         } else { showToast('Failed to delete', 'error'); }
     }
 
-    // Reset modals on open
-    document.getElementById('minister-modal').addEventListener('click', e => { if (e.target === e.currentTarget) closeModal('minister-modal'); });
-    document.getElementById('sermon-modal').addEventListener('click', e => { if (e.target === e.currentTarget) closeModal('sermon-modal'); });
-
-    function openModal(id) {
-        const m = document.getElementById(id);
-        if (id === 'minister-modal') {
-            document.getElementById('minister-edit-id').value = '';
-            document.getElementById('minister-name').value    = '';
-            document.getElementById('minister-title').value   = '';
-            document.getElementById('minister-modal-title').textContent = 'Add Minister';
+    // ── Delegate all table button clicks via data attributes ──────────────
+    // This avoids every quoting/escaping issue with onclick + tojson
+    document.addEventListener('click', function(e) {
+        const editMin = e.target.closest('.edit-minister-btn');
+        if (editMin) {
+            editMinister(editMin.dataset.id, editMin.dataset.name, editMin.dataset.title);
+            return;
         }
-        if (id === 'sermon-modal') {
-            document.getElementById('sermon-edit-id').value  = '';
-            document.getElementById('sermon-title').value    = '';
-            document.getElementById('sermon-minister').value = '';
-            document.getElementById('sermon-verse').value    = '';
-            document.getElementById('sermon-modal-title').textContent = 'Add Sermon';
+        const delMin = e.target.closest('.delete-minister-btn');
+        if (delMin) {
+            deleteMinister(delMin.dataset.id);
+            return;
         }
-        m.classList.remove('hidden'); m.classList.add('flex');
-    }
+        const editSer = e.target.closest('.edit-sermon-btn');
+        if (editSer) {
+            editSermon(editSer.dataset.id, editSer.dataset.title, editSer.dataset.minister, editSer.dataset.verse);
+            return;
+        }
+        const delSer = e.target.closest('.delete-sermon-btn');
+        if (delSer) {
+            deleteSermon(delSer.dataset.id);
+            return;
+        }
+        const msgBtn = e.target.closest('.open-messages-btn');
+        if (msgBtn) {
+            openMessagesModal(msgBtn.dataset.id, msgBtn.dataset.name);
+            return;
+        }
+    });
 </script>
 {% endblock %}
